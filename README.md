@@ -16,6 +16,7 @@ Production-direction builds. Each version represents a stable, reviewed iteratio
 | vinline.005 | Multiplier-based margin system (×4.0 default), tap-to-toggle ×/% display |
 | vinline.006 | Hybrid connection UI (connected: hover-reveal, unconnected: red dot + tap to connect) |
 | vinline.007 | Live wine list price sync as margin slider is dragged |
+| vinline.008 | Per-item BTG/BTB toggle in inventory edit controls; dripped from dev.002 |
 
 ### iterative/
 Experimental builds for exploring new features. Reviewed and dripped into main when approved.
@@ -23,6 +24,7 @@ Experimental builds for exploring new features. Reviewed and dripped into main w
 | Build | Description |
 |-------|-------------|
 | vinline.dev.001 | Base for iterative track — seeded from vinline.006 |
+| vinline.dev.002 | BTG/BTB per-item toggle in edit controls; rebased to vinline.007 |
 
 ## Concept
 
