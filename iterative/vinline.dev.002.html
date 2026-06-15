@@ -186,7 +186,7 @@
   .ir-controls{display:flex;align-items:center;justify-content:flex-end;gap:4px}
   .edit-btn{font-family:var(--mono);font-size:6.5px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:2px;padding:0px 3px;cursor:pointer;line-height:1.6;letter-spacing:.01em;transition:all .15s}
   .edit-btn:hover{border-color:var(--ink-3);color:var(--ink-2);background:var(--bg-2)}
-  .slider-wrap{display:none;align-items:center;gap:3px}
+  .slider-wrap{display:none;align-items:center;gap:4px}
   .slider-wrap.visible{display:flex}
   .mg-track{position:relative;width:72px;height:14px;display:flex;align-items:center;flex-shrink:0}
   .mg-track-bg{position:absolute;left:0;right:0;height:1.5px;background:var(--rule);border-radius:1px}
@@ -218,11 +218,11 @@
   .mi-edit-hint{font-family:var(--mono);font-size:7.5px;color:var(--ink-3);opacity:0;transition:opacity .15s;white-space:nowrap}
   .head-actions{display:flex;align-items:center;gap:6px}
 
-  /* BTG/BTB TOGGLE */
-  .btg-pill{display:flex;align-items:center;border:0.5px solid var(--rule);border-radius:20px;overflow:hidden;font-family:var(--mono);font-size:9px}
-  .btg-side{padding:4px 9px;cursor:pointer;transition:all .15s;color:var(--ink-3);background:transparent;border:none;font-family:inherit;font-size:inherit}
-  .btg-side.active{background:var(--green-mid);color:#fff}
-  .btg-side:not(.active):hover{background:var(--bg-2);color:var(--ink-2)}
+  /* BTG/BTB ROW PILL */
+  .btg-row-pill{display:flex;align-items:center;border:0.5px solid var(--rule);border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:7px;line-height:1}
+  .btg-r{padding:2px 6px;cursor:pointer;transition:all .12s;color:var(--ink-3);background:transparent;border:none;font-family:inherit;font-size:inherit}
+  .btg-r.active{background:var(--green-mid);color:#fff}
+  .btg-r:not(.active):hover{background:var(--bg-2);color:var(--ink-2)}
 
   /* COLLAPSE BAR */
   .collapse-bar{padding:9px 20px;border-top:0.5px solid var(--rule);display:flex;justify-content:center}
@@ -430,6 +430,7 @@
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb0" onclick="openSlider(0)">edit</button>
                     <div class="slider-wrap" id="sw0">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb0" onclick="setBtgMode(0,false)">Btl</button><button class="btg-r" id="btgg0" onclick="setBtgMode(0,true)">Glass</button></div>
                       <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f0" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(0,this.value)" id="rng0"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(0)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(0)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -450,6 +451,7 @@
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb1" onclick="openSlider(1)">edit</button>
                     <div class="slider-wrap" id="sw1">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb1" onclick="setBtgMode(1,false)">Btl</button><button class="btg-r" id="btgg1" onclick="setBtgMode(1,true)">Glass</button></div>
                       <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f1" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(1,this.value)" id="rng1"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(1)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(1)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -470,6 +472,7 @@
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb2" onclick="openSlider(2)">edit</button>
                     <div class="slider-wrap" id="sw2">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb2" onclick="setBtgMode(2,false)">Btl</button><button class="btg-r" id="btgg2" onclick="setBtgMode(2,true)">Glass</button></div>
                       <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f2" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(2,this.value)" id="rng2"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(2)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(2)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -492,6 +495,7 @@
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb3" onclick="openSlider(3)">edit</button>
                     <div class="slider-wrap" id="sw3">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb3" onclick="setBtgMode(3,false)">Btl</button><button class="btg-r" id="btgg3" onclick="setBtgMode(3,true)">Glass</button></div>
                       <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f3" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(3,this.value)" id="rng3"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(3)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(3)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -512,6 +516,7 @@
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb4" onclick="openSlider(4)">edit</button>
                     <div class="slider-wrap" id="sw4">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb4" onclick="setBtgMode(4,false)">Btl</button><button class="btg-r" id="btgg4" onclick="setBtgMode(4,true)">Glass</button></div>
                       <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f4" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(4,this.value)" id="rng4"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(4)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(4)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -531,10 +536,6 @@
           <div class="col-head">
             <div><div class="col-eyebrow">Output</div><div class="col-title">☰ Wine list</div></div>
             <div class="head-actions">
-              <div class="btg-pill">
-                <button class="btg-side active" id="btgBtl" onclick="setGlassMode(false)">Btl</button>
-                <button class="btg-side" id="btgGlass" onclick="setGlassMode(true)">Glass</button>
-              </div>
               <button class="btn btn-sm sync-btn" onclick="syncBtn(this)" title="Re-sync formatting from Drive">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
                 sync
@@ -621,7 +622,10 @@ const costs = [71, 12, 18, 15, 28];
 const committed = [4.0, 4.0, 4.0, 4.0, 4.0];
 const pending = [...committed];
 let displayMode = 'mult';
-let glassMode = false;
+
+// BTG state: per-row committed and pending glass mode
+const committedBtg = [false, false, false, false, false];
+const pendingBtg   = [false, false, false, false, false];
 
 // Maps inventory index → wine list price element ID
 // Order: Richard Leroy=wl2 (White), Paltrinieri=wl0 (Sparkling), La Ca'Nova=wl3 (Red), Aphros=wl1 (White), Dragonette=wl4 (Red)
@@ -637,26 +641,24 @@ function sliderToMult(val) { return 1.0 + (parseFloat(val) / 100) * 5.0; }
 
 function updateRowDisplay(i) {
   const mult = pending[i];
-  const sell = sellPrice(costs[i], mult);
-  document.getElementById('s' + i).textContent = '$' + sell;
+  const bottleSell = sellPrice(costs[i], mult);
+  const displaySell = pendingBtg[i] ? costs[i] : bottleSell;
+  document.getElementById('s' + i).textContent = '$' + displaySell;
   document.getElementById('m' + i).textContent = mgLabel(mult);
   document.getElementById('f' + i).style.width = multToFill(mult);
   if (document.getElementById('rng' + i)) document.getElementById('rng' + i).value = ((mult - 1.0) / 5.0 * 100).toFixed(0);
-  // sync wine list price live — respect BTG/BTB mode
   const wlEl = document.getElementById('wlp' + wlMap[i]);
   if (wlEl) {
-    wlEl.dataset.bottle = sell;
-    wlEl.textContent = glassMode ? wlEl.dataset.glass : sell;
+    wlEl.dataset.bottle = bottleSell;
+    wlEl.textContent = pendingBtg[i] ? wlEl.dataset.glass : bottleSell;
   }
 }
 
-function setGlassMode(glass) {
-  glassMode = glass;
-  document.getElementById('btgBtl').classList.toggle('active', !glass);
-  document.getElementById('btgGlass').classList.toggle('active', glass);
-  document.querySelectorAll('[id^="wlp"]').forEach(el => {
-    el.textContent = glass ? el.dataset.glass : el.dataset.bottle;
-  });
+function setBtgMode(i, glass) {
+  pendingBtg[i] = glass;
+  document.getElementById('btgb' + i).classList.toggle('active', !glass);
+  document.getElementById('btgg' + i).classList.toggle('active', glass);
+  updateRowDisplay(i);
 }
 
 function toggleDisplayMode() {
@@ -674,6 +676,9 @@ function openSlider(i) {
   document.getElementById('eb' + i).style.display = 'none';
   document.getElementById('sw' + i).classList.add('visible');
   pending[i] = committed[i];
+  pendingBtg[i] = committedBtg[i];
+  document.getElementById('btgb' + i).classList.toggle('active', !committedBtg[i]);
+  document.getElementById('btgg' + i).classList.toggle('active', committedBtg[i]);
   updateRowDisplay(i);
 }
 
@@ -682,18 +687,25 @@ function closeAllSliders() {
     const eb = document.getElementById('eb' + i);
     const sw = document.getElementById('sw' + i);
     if (eb) eb.style.display = '';
-    if (sw) { sw.classList.remove('visible'); pending[i] = committed[i]; updateRowDisplay(i); }
+    if (sw) {
+      sw.classList.remove('visible');
+      pendingBtg[i] = committedBtg[i];
+      pending[i] = committed[i];
+      updateRowDisplay(i);
+    }
   }
 }
 
 function confirmMg(i) {
   committed[i] = pending[i];
+  committedBtg[i] = pendingBtg[i];
   document.getElementById('eb' + i).style.display = '';
   document.getElementById('sw' + i).classList.remove('visible');
 }
 
 function cancelMg(i) {
   pending[i] = committed[i];
+  pendingBtg[i] = committedBtg[i];
   updateRowDisplay(i);
   document.getElementById('eb' + i).style.display = '';
   document.getElementById('sw' + i).classList.remove('visible');
