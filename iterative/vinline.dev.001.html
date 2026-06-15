@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>vinline.004</title>
+<title>vinline.dev.001</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
@@ -51,21 +51,41 @@
   .b-char{font-family:var(--mono);font-size:108px;font-weight:300;color:var(--bracket);line-height:1;user-select:none;flex-shrink:0}
   #bk-l{transform-origin:right center}
   #bk-r{transform-origin:left center}
-  .b-info{display:flex;flex-direction:column;gap:3px;width:64px;cursor:pointer;padding:4px 0}
+
+  /* CONNECTED bracket zone — option 2: hover reveals change */
+  .b-info{display:flex;flex-direction:column;gap:2px;width:68px;cursor:pointer;padding:4px;border-radius:4px;transition:background .12s}
+  .b-info:hover{background:var(--bg-2)}
   .b-info-l{align-items:flex-end;padding-right:5px}
   .b-info-r{align-items:flex-start;padding-left:5px}
-  .b-info:hover .b-label{color:var(--ink-2)}
-  .b-info:hover .b-val{color:var(--ink)}
-  .b-label{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);transition:color .15s}
-  .b-val{font-family:var(--mono);font-size:9.5px;font-weight:400;color:var(--ink-2);line-height:1.3;transition:color .15s}
+  .b-label{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .b-val{font-family:var(--mono);font-size:9.5px;font-weight:400;color:var(--ink-2);line-height:1.3}
   .b-val.right{text-align:right}
   .b-status{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:8px;color:var(--green-mid)}
   .b-status.right{flex-direction:row-reverse}
   .b-dot{width:4px;height:4px;border-radius:50%;background:var(--green-mid);flex-shrink:0}
+  .b-change{font-family:var(--mono);font-size:7px;color:var(--ink-3);opacity:0;transition:opacity .15s;margin-top:1px}
+  .b-change.right{text-align:right}
+  .b-info:hover .b-change{opacity:1}
+
+  /* UNCONNECTED bracket zone — option 3: tap to connect, red dot */
+  .b-empty{display:flex;flex-direction:column;gap:2px;width:68px;cursor:pointer;padding:4px;border-radius:4px;transition:background .12s}
+  .b-empty:hover{background:var(--bg-2)}
+  .b-empty-l{align-items:flex-end;padding-right:5px}
+  .b-empty-r{align-items:flex-start;padding-left:5px}
+  .b-empty-val{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);font-style:italic;line-height:1.3}
+  .b-empty-val.right{text-align:right}
+  .b-empty-status{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:8px;color:#C0392B}
+  .b-empty-status.right{flex-direction:row-reverse}
+  .b-red-dot{width:4px;height:4px;border-radius:50%;background:#C0392B;flex-shrink:0}
+  .b-empty-hint{font-family:var(--mono);font-size:7px;color:var(--ink-3);opacity:0;transition:opacity .15s;margin-top:1px}
+  .b-empty-hint.right{text-align:right}
+  .b-empty:hover .b-empty-hint{opacity:1}
+
   .shelf-center{display:flex;flex-direction:column;gap:4.5px;width:68px;flex-shrink:0;padding:0 2px}
   .s-line{height:2.5px;border-radius:1.5px}
   .s-hi{background:#A8A6A0}
   .s-lo{background:var(--rule)}
+  .s-empty{background:var(--rule);opacity:.35}
   .open-hint{font-family:var(--mono);font-size:10px;color:var(--ink-3);display:flex;align-items:center;gap:5px;letter-spacing:.03em;transition:color .15s;user-select:none}
   #collapsed:hover .open-hint{color:var(--ink-2)}
   .conn-modal{display:none;position:absolute;z-index:30;background:var(--bg);border:0.5px solid var(--rule);border-radius:8px;padding:12px;width:188px;top:calc(100% + 10px);box-shadow:0 4px 20px rgba(0,0,0,.06)}
@@ -158,16 +178,14 @@
   .ir-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex-shrink:0}
   .ir-cost{font-family:var(--mono);font-size:7.5px;color:var(--ink-3)}
   .ir-sell{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink)}
-  .ir-mg{font-family:var(--mono);font-size:8px;color:var(--green-mid)}
+  .ir-mg{font-family:var(--mono);font-size:8px;color:var(--green-mid);cursor:pointer;user-select:none;transition:opacity .12s}
+  .ir-mg:hover{opacity:.7}
+  .ir-mg:active{opacity:.5}
   .ir-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:8px}
   .ir-meta-left{display:flex;gap:4px;font-family:var(--mono);font-size:7.5px;color:var(--ink-3);flex-shrink:0}
   .ir-controls{display:flex;align-items:center;justify-content:flex-end;gap:4px}
-
-  /* EDIT BUTTON */
   .edit-btn{font-family:var(--mono);font-size:6.5px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:2px;padding:0px 3px;cursor:pointer;line-height:1.6;letter-spacing:.01em;transition:all .15s}
   .edit-btn:hover{border-color:var(--ink-3);color:var(--ink-2);background:var(--bg-2)}
-
-  /* INLINE SLIDER */
   .slider-wrap{display:none;align-items:center;gap:3px}
   .slider-wrap.visible{display:flex}
   .mg-track{position:relative;width:72px;height:14px;display:flex;align-items:center;flex-shrink:0}
@@ -238,7 +256,7 @@
         <div class="logo-lines"><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div></div>
         <span class="logo-bk">[</span>
       </div>
-      <div><div class="logo-name">vinline</div><div class="logo-build">build 004</div></div>
+      <div><div class="logo-name">vinline</div><div class="logo-build">dev.001</div></div>
     </div>
     <div class="topbar-right">
       <div class="sync-badge"><span class="sync-dot"></span>synced 4m ago</div>
@@ -251,14 +269,18 @@
     <!-- COLLAPSED -->
     <div id="collapsed">
       <div class="scene" id="scene" style="position:relative">
+
+        <!-- LEFT BRACKET — connected state -->
         <div class="bracket-unit">
-          <div class="b-info b-info-l" onclick="event.stopPropagation();openModal('modal-l')" title="Change email source">
+          <div class="b-info b-info-l" onclick="event.stopPropagation();openModal('modal-l')">
             <span class="b-label">Email</span>
             <span class="b-val right">marco@<br>cellarios.com</span>
             <span class="b-status right"><span class="b-dot"></span>Gmail</span>
+            <span class="b-change right">change →</span>
           </div>
           <span class="b-char" id="bk-l">]</span>
         </div>
+
         <div class="shelf-center" id="shelfWrap">
           <div class="s-line s-hi" id="sl0"></div><div class="s-line s-hi" id="sl1"></div>
           <div class="s-line s-lo" id="sl2"></div><div class="s-line s-hi" id="sl3"></div>
@@ -266,27 +288,35 @@
           <div class="s-line s-hi" id="sl6"></div><div class="s-line s-hi" id="sl7"></div>
           <div class="s-line s-lo" id="sl8"></div><div class="s-line s-lo" id="sl9"></div>
         </div>
+
+        <!-- RIGHT BRACKET — unconnected state (demo) — swap .b-empty for .b-info when connected -->
         <div class="bracket-unit">
-          <span class="b-char" id="bk-r">[</span>
-          <div class="b-info b-info-r" onclick="event.stopPropagation();openModal('modal-r')" title="Change output destination">
+          <span class="b-char" id="bk-r" style="color:#D0CEC6">[</span>
+          <div class="b-empty b-empty-r" onclick="event.stopPropagation();openModal('modal-r')">
             <span class="b-label">Output</span>
-            <span class="b-val">Marco's_<br>WineList<br>_2026.pdf</span>
-            <span class="b-status"><span class="b-dot"></span>Drive</span>
+            <span class="b-empty-val">tap to<br>connect</span>
+            <span class="b-empty-status"><span class="b-red-dot"></span>none</span>
+            <span class="b-empty-hint">open setup →</span>
           </div>
         </div>
+
+        <!-- EMAIL MODAL -->
         <div class="conn-modal" id="modal-l" onclick="event.stopPropagation()">
           <div class="modal-head">Email source</div>
           <div class="modal-opt"><div><div class="mo-name">Gmail</div><div class="mo-sub">marco@cellarios.com</div></div><div class="mo-check"></div></div>
           <div class="modal-opt"><div><div class="mo-name">Outlook</div><div class="mo-sub">Connect account →</div></div></div>
           <button class="modal-close" onclick="closeModal('modal-l')">Cancel</button>
         </div>
+
+        <!-- OUTPUT MODAL -->
         <div class="conn-modal" id="modal-r" style="right:0;left:auto" onclick="event.stopPropagation()">
           <div class="modal-head">Output destination</div>
-          <div class="modal-opt"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Marco's_WineList_2026.pdf</div></div><div class="mo-check"></div></div>
+          <div class="modal-opt"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Select a file →</div></div></div>
           <div class="modal-opt"><div><div class="mo-name">PDF download</div><div class="mo-sub">Export on demand</div></div></div>
-          <div class="modal-opt"><div><div class="mo-name">Google Sheets</div><div class="mo-sub">Live spreadsheet</div></div></div>
+          <div class="modal-opt"><div><div class="mo-name">Google Sheets</div><div class="mo-sub">Connect account →</div></div></div>
           <button class="modal-close" onclick="closeModal('modal-r')">Cancel</button>
         </div>
+
       </div>
       <div class="open-hint" id="openHint">↓ tap to open</div>
     </div>
@@ -299,10 +329,20 @@
         <div class="col" id="colLeft">
           <div class="col-head">
             <div><div class="col-eyebrow">Input</div><div class="col-title">✉ Inbox</div></div>
-            <button class="btn btn-sm sync-btn" onclick="syncBtn(this)" title="Sync inbox">
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-              sync
-            </button>
+            <div style="display:flex;align-items:center;gap:5px">
+              <button class="btn btn-sm sync-btn" onclick="triggerPhotoUpload()" title="Upload invoice photo" style="gap:4px">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
+                  <rect x="1" y="2.5" width="10" height="7.5" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/>
+                  <circle cx="6" cy="6.2" r="1.8" stroke="currentColor" stroke-width="1.0" fill="none"/>
+                  <path d="M4 2.5 L4.6 1 L7.4 1 L8 2.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                photo
+              </button>
+              <button class="btn btn-sm sync-btn" onclick="syncBtn(this)" title="Sync inbox">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                sync
+              </button>
+            </div>
           </div>
           <div class="col-body">
             <div class="ecard sel" id="ec0" style="z-index:10">
@@ -377,14 +417,14 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$112</span><span class="ir-mg" id="m0">+58%</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$284</span><span class="ir-mg" id="m0" onclick="toggleDisplayMode(0)" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>3 btl</span><span>·</span><span>Loire</span></div>
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb0" onclick="openSlider(0)">edit</button>
                     <div class="slider-wrap" id="sw0">
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f0" style="width:calc((58 - 25)/60*100%)"></div><input class="mg-slider" type="range" min="25" max="85" value="58" step="1" oninput="liveMg(0,this.value,71)" id="rng0"></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f0" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(0,this.value)" id="rng0"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(0)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(0)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
@@ -397,14 +437,14 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$18</span><span class="ir-mg" id="m1">+50%</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$48</span><span class="ir-mg" id="m1" onclick="toggleDisplayMode(1)" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>Emilia-Romagna</span></div>
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb1" onclick="openSlider(1)">edit</button>
                     <div class="slider-wrap" id="sw1">
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f1" style="width:calc((50 - 25)/60*100%)"></div><input class="mg-slider" type="range" min="25" max="85" value="50" step="1" oninput="liveMg(1,this.value,12)" id="rng1"></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f1" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(1,this.value)" id="rng1"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(1)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(1)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
@@ -417,14 +457,14 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$28</span><span class="ir-mg" id="m2">+56%</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$72</span><span class="ir-mg" id="m2" onclick="toggleDisplayMode(2)" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>84 btl</span><span>·</span><span>Piedmont</span></div>
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb2" onclick="openSlider(2)">edit</button>
                     <div class="slider-wrap" id="sw2">
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f2" style="width:calc((56 - 25)/60*100%)"></div><input class="mg-slider" type="range" min="25" max="85" value="56" step="1" oninput="liveMg(2,this.value,18)" id="rng2"></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f2" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(2,this.value)" id="rng2"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(2)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(2)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
@@ -439,14 +479,14 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
-                  <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$24</span><span class="ir-mg" id="m3">+60%</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$60</span><span class="ir-mg" id="m3" onclick="toggleDisplayMode(3)" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>24 btl</span><span>·</span><span>Portugal</span></div>
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb3" onclick="openSlider(3)">edit</button>
                     <div class="slider-wrap" id="sw3">
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f3" style="width:calc((60 - 25)/60*100%)"></div><input class="mg-slider" type="range" min="25" max="85" value="60" step="1" oninput="liveMg(3,this.value,15)" id="rng3"></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f3" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(3,this.value)" id="rng3"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(3)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(3)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
@@ -459,14 +499,14 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
-                  <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$44</span><span class="ir-mg" id="m4">+57%</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$112</span><span class="ir-mg" id="m4" onclick="toggleDisplayMode(4)" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>California</span></div>
                   <div class="ir-controls">
                     <button class="edit-btn" id="eb4" onclick="openSlider(4)">edit</button>
                     <div class="slider-wrap" id="sw4">
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f4" style="width:calc((57 - 25)/60*100%)"></div><input class="mg-slider" type="range" min="25" max="85" value="57" step="1" oninput="liveMg(4,this.value,28)" id="rng4"></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f4" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(4,this.value)" id="rng4"></div>
                       <button class="icon-btn cancel" onclick="cancelMg(4)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                       <button class="icon-btn confirm" onclick="confirmMg(4)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
@@ -560,40 +600,130 @@ const colLeft=document.getElementById('colLeft');
 const colRight=document.getElementById('colRight');
 const divL=document.getElementById('divL');
 const divR=document.getElementById('divR');
-const bInfos=document.querySelectorAll('.b-info');
+const bInfos=document.querySelectorAll('.b-info, .b-empty');
 const shelves=Array.from({length:10},(_,i)=>document.getElementById('sl'+i));
 const ecards=[...document.querySelectorAll('.ecard')];
 const invRows=[...document.querySelectorAll('.inv-row')];
 let isExpanded=false;
 
-// MARGIN
-const costs=[71,12,18,15,28];
-const committed=[58,50,56,60,57];
-const pending=[...committed];
-function liveMg(i,pct,cost){
-  const p=parseInt(pct); pending[i]=p;
-  const sell=Math.round(cost*(1+p/100));
-  document.getElementById('s'+i).textContent='$'+sell;
-  document.getElementById('m'+i).textContent='+'+p+'%';
-  document.getElementById('f'+i).style.width=((p-25)/60*100).toFixed(1)+'%';
+// MARGIN SYSTEM
+// costs[i] = wholesale bottle cost
+// multipliers[i] = sell price multiplier (e.g. 4.0 = 4× wholesale)
+// displayMode: 'mult' shows "×4.0", 'pct' shows "+300%"
+const costs = [71, 12, 18, 15, 28];
+const committed = [4.0, 4.0, 4.0, 4.0, 4.0]; // default 4× wholesale
+const pending = [...committed];
+let displayMode = 'mult'; // global toggle, shared across all rows
+
+function sellPrice(cost, mult) {
+  return Math.round(cost * mult);
 }
-function openSlider(i){
-  closeAllSliders();
-  document.getElementById('eb'+i).style.display='none';
-  document.getElementById('sw'+i).classList.add('visible');
-  document.getElementById('rng'+i).value=committed[i];
-  liveMg(i,committed[i],costs[i]);
-}
-function closeAllSliders(){
-  for(let i=0;i<5;i++){
-    const eb=document.getElementById('eb'+i);
-    const sw=document.getElementById('sw'+i);
-    if(eb)eb.style.display='';
-    if(sw){sw.classList.remove('visible'); pending[i]=committed[i]; liveMg(i,committed[i],costs[i]);}
+
+function mgLabel(mult) {
+  if (displayMode === 'mult') {
+    return '×' + mult.toFixed(1);
+  } else {
+    return '+' + Math.round((mult - 1) * 100) + '%';
   }
 }
-function confirmMg(i){committed[i]=pending[i];document.getElementById('eb'+i).style.display='';document.getElementById('sw'+i).classList.remove('visible');}
-function cancelMg(i){pending[i]=committed[i];liveMg(i,committed[i],costs[i]);document.getElementById('eb'+i).style.display='';document.getElementById('sw'+i).classList.remove('visible');}
+
+function multToSlider(mult) {
+  // slider range: 1.0–6.0, map to 0–100
+  return ((mult - 1.0) / 5.0 * 100).toFixed(1);
+}
+function sliderToMult(val) {
+  return 1.0 + (parseFloat(val) / 100) * 5.0;
+}
+function multToFill(mult) {
+  return ((mult - 1.0) / 5.0 * 100).toFixed(1) + '%';
+}
+
+function updateRowDisplay(i) {
+  const mult = pending[i];
+  const cost = costs[i];
+  document.getElementById('s' + i).textContent = '$' + sellPrice(cost, mult);
+  document.getElementById('m' + i).textContent = mgLabel(mult);
+  document.getElementById('f' + i).style.width = multToFill(mult);
+  if (document.getElementById('rng' + i)) {
+    document.getElementById('rng' + i).value = multToSlider(mult);
+  }
+}
+
+function toggleDisplayMode(i) {
+  displayMode = displayMode === 'mult' ? 'pct' : 'mult';
+  // update all rows
+  for (let j = 0; j < 5; j++) {
+    document.getElementById('m' + j).textContent = mgLabel(pending[j]);
+  }
+}
+
+function liveMg(i, sliderVal) {
+  pending[i] = parseFloat(sliderToMult(sliderVal).toFixed(1));
+  updateRowDisplay(i);
+}
+
+function openSlider(i) {
+  closeAllSliders();
+  document.getElementById('eb' + i).style.display = 'none';
+  document.getElementById('sw' + i).classList.add('visible');
+  pending[i] = committed[i];
+  updateRowDisplay(i);
+}
+
+function closeAllSliders() {
+  for (let i = 0; i < 5; i++) {
+    const eb = document.getElementById('eb' + i);
+    const sw = document.getElementById('sw' + i);
+    if (eb) eb.style.display = '';
+    if (sw) {
+      sw.classList.remove('visible');
+      pending[i] = committed[i];
+      updateRowDisplay(i);
+    }
+  }
+}
+
+function confirmMg(i) {
+  committed[i] = pending[i];
+  document.getElementById('eb' + i).style.display = '';
+  document.getElementById('sw' + i).classList.remove('visible');
+}
+
+function cancelMg(i) {
+  pending[i] = committed[i];
+  updateRowDisplay(i);
+  document.getElementById('eb' + i).style.display = '';
+  document.getElementById('sw' + i).classList.remove('visible');
+}
+
+// PHOTO UPLOAD
+function triggerPhotoUpload() {
+  document.getElementById('photoInput').click();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.id = 'photoInput';
+  inp.accept = 'image/*,.pdf'; inp.multiple = true;
+  inp.style.display = 'none';
+  inp.addEventListener('change', function() {
+    if (!this.files.length) return;
+    const col = document.querySelector('#colLeft .col-body');
+    Array.from(this.files).forEach(file => {
+      const card = document.createElement('div');
+      card.className = 'ecard';
+      card.style.zIndex = '6';
+      card.innerHTML = `
+        <div class="ec-from">${file.name.replace(/\.[^/.]+$/,'')}</div>
+        <div class="ec-subj">Photo invoice — pending parse</div>
+        <div class="ec-foot"><span class="ec-date">Just now</span><span class="badge" style="background:var(--bg-3);color:var(--ink-3)">Photo</span></div>`;
+      col.insertBefore(card, col.firstChild);
+    });
+    this.value = '';
+  });
+  document.body.appendChild(inp);
+  // init margin display
+  for (let i = 0; i < 5; i++) updateRowDisplay(i);
+});
 
 // MODALS
 function openModal(id){document.querySelectorAll('.conn-modal').forEach(m=>m.style.display='none');document.getElementById(id).style.display='block';}
