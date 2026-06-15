@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vinline.003</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+  :root {
+    --ink:       #1C1B18;
+    --ink-2:     #4A4843;
+    --ink-3:     #8A8880;
+    --rule:      #E4E2DC;
+    --rule-2:    #F0EEE8;
+    --bg:        #FAF9F6;
+    --bg-2:      #F4F2EC;
+    --bg-3:      #EEECEA;
+    --green:     #1A6B50;
+    --green-dim: #E6F0EB;
+    --green-mid: #2E9B74;
+    --amber:     #8A5C1A;
+    --amber-dim: #F5EDDF;
+    --blue:      #1A4A7A;
+    --blue-dim:  #E6EDF5;
+    --bracket:   #C4C2BA;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* ── SHELL ── */
+  .shell {
+    max-width: 900px;
+    margin: 0 auto;
+    border: 0.5px solid var(--rule);
+    border-top: none;
+    border-bottom: none;
+    min-height: 100vh;
+    background: var(--bg);
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 0.5px solid var(--rule);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .logo-unit { display: flex; align-items: center; gap: 9px; cursor: default; }
+  .logo-mark { display: flex; align-items: center; gap: 2px; }
+  .logo-bk { font-family: var(--mono); font-size: 17px; font-weight: 300; color: var(--bracket); line-height: 1; letter-spacing: -1px; }
+  .logo-lines { display: flex; flex-direction: column; gap: 2px; width: 9px; }
+  .logo-line { height: 1.5px; background: var(--bracket); border-radius: 1px; }
+  .logo-name { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--ink); letter-spacing: 0.04em; }
+  .logo-build { font-family: var(--mono); font-size: 9px; color: var(--ink-3); letter-spacing: 0.06em; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .sync-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-3); font-family: var(--mono); }
+  .sync-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green-mid); }
+  .nav-btn {
+    font-size: 11px; font-family: var(--sans);
+    padding: 5px 12px; border-radius: 20px;
+    border: 0.5px solid var(--rule);
+    cursor: pointer; background: transparent;
+    color: var(--ink-2); transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--bg-2); color: var(--ink); }
+  .nav-btn.active { background: var(--bg-3); color: var(--ink); border-color: var(--ink-3); }
+
+  /* ── STAGE ── */
+  #stage { overflow: visible; }
+  #expanded { display: none; opacity: 0; }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1px 1.6fr 1px 1fr;
+    overflow: visible;
+  }
+  .col-div { background: var(--rule); }
+  .col { display: flex; flex-direction: column; background: var(--bg); position: relative; }
+  .col-mid { background: var(--bg-2); }
+  #colLeft { z-index: 10; }
+
+  /* ── COLLAPSED VIEW ── */
+  #collapsed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 52px 24px 40px;
+    gap: 22px;
+    cursor: pointer;
+    transition: background 0.15s;
+    min-height: 240px;
+  }
+  #collapsed:hover { background: var(--bg-2); }
+
+  .scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+  }
+
+  .bracket-unit { display: flex; align-items: center; }
+
+  .b-char {
+    font-family: var(--mono);
+    font-size: 108px;
+    font-weight: 300;
+    color: var(--bracket);
+    line-height: 1;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  #bk-l { transform-origin: right center; }
+  #bk-r { transform-origin: left center; }
+
+  .b-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 64px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .b-info-l { align-items: flex-end; padding-right: 5px; }
+  .b-info-r { align-items: flex-start; padding-left: 5px; }
+  .b-info:hover .b-label { color: var(--ink-2); }
+  .b-info:hover .b-val { color: var(--ink); }
+
+  .b-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    transition: color 0.15s;
+  }
+  .b-val {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 400;
+    color: var(--ink-2);
+    line-height: 1.3;
+    transition: color 0.15s;
+  }
+  .b-val.right { text-align: right; }
+  .b-status {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--green-mid);
+  }
+  .b-status.right { flex-direction: row-reverse; }
+  .b-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--green-mid); flex-shrink: 0; }
+
+  .shelf-center {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5px;
+    width: 68px;
+    flex-shrink: 0;
+    padding: 0 2px;
+  }
+  .s-line { height: 2.5px; border-radius: 1.5px; }
+  .s-hi { background: #A8A6A0; }
+  .s-lo { background: var(--rule); }
+
+  .open-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.03em;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  #collapsed:hover .open-hint { color: var(--ink-2); }
+  .hint-arrow { font-size: 10px; }
+
+  /* ── MODALS ── */
+  .conn-modal {
+    display: none;
+    position: absolute;
+    z-index: 30;
+    background: var(--bg);
+    border: 0.5px solid var(--rule);
+    border-radius: 8px;
+    padding: 12px;
+    width: 188px;
+    top: calc(100% + 10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  #modal-l { left: 0; }
+  #modal-r { right: 0; left: auto; }
+  .modal-head {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .modal-opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 8px;
+    border: 0.5px solid var(--rule);
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: background 0.12s;
+  }
+  .modal-opt:hover { background: var(--bg-2); }
+  .modal-opt:last-of-type { margin-bottom: 0; }
+  .mo-name { font-size: 11px; font-weight: 500; color: var(--ink); }
+  .mo-sub { font-size: 9px; color: var(--ink-3); margin-top: 1px; }
+  .mo-check {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--green-dim); border: 0.5px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .mo-check::after { content: '✓'; font-size: 8px; color: var(--green); }
+  .modal-close {
+    width: 100%; margin-top: 8px; font-size: 10px;
+    padding: 5px; border-radius: 5px;
+    border: 0.5px solid var(--rule);
+    cursor: pointer; background: transparent;
+    color: var(--ink-3); font-family: var(--sans);
+    transition: background 0.12s;
+  }
+  .modal-close:hover { background: var(--bg-2); }
+
+  /* ── EXPANDED VIEW ── */
+  #expanded { display: none; opacity: 0; }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1px 1.6fr 1px 1fr;
+  }
+  .col-div { background: var(--rule); }
+  .col { display: flex; flex-direction: column; background: var(--bg); }
+  .col-mid { background: var(--bg-2); }
+
+  .col-head {
+    padding: 12px 15px 10px;
+    border-bottom: 0.5px solid var(--rule);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .col-eyebrow {
+    font-family: var(--mono);
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    margin-bottom: 2px;
+  }
+  .col-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .col-icon { color: var(--ink-3); font-size: 13px; }
+
+  .col-body { flex: 1; padding: 11px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .col-foot {
+    padding: 10px 13px;
+    border-top: 0.5px solid var(--rule);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* email cards */
+  .ecard {
+    border: 0.5px solid var(--rule);
+    border-radius: 5px;
+    padding: 8px 10px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.12s;
+  }
+  .ecard:hover { border-color: var(--ink-3); }
+  .ecard.sel { border-color: var(--green); background: var(--green-dim); }
+  .ec-from { font-size: 11px; font-weight: 500; color: var(--ink); }
+  .ec-subj { font-size: 10px; color: var(--ink-2); margin-top: 1px; line-height: 1.35; }
+  .ec-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+  .ec-date { font-family: var(--mono); font-size: 9px; color: var(--ink-3); }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .b-inv { background: var(--blue-dim); color: var(--blue); }
+  .b-del { background: var(--green-dim); color: var(--green); }
+  .b-pend { background: var(--amber-dim); color: var(--amber); }
+
+  /* parse banner */
+  .parse-banner {
+    background: var(--green-dim);
+    border: 0.5px solid #9FD4BC;
+    border-radius: 5px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .pb-txt { font-size: 10px; color: var(--green); line-height: 1.4; }
+  .pb-btn {
+    font-size: 9px; padding: 3px 8px;
+    border-radius: 4px;
+    border: 0.5px solid var(--green);
+    background: var(--bg);
+    color: var(--green);
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--sans);
+    transition: background 0.12s;
+  }
+  .pb-btn:hover { background: var(--green-dim); }
+
+  /* section label */
+  .sec-lbl {
+    font-family: var(--mono);
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    padding-bottom: 4px;
+    border-bottom: 0.5px solid var(--rule);
+    margin-bottom: 2px;
+  }
+
+  /* inventory rows */
+  .inv-row {
+    border: 0.5px solid var(--rule);
+    border-radius: 5px;
+    padding: 8px 10px;
+    background: var(--bg);
+  }
+  .inv-row.new-entry {
+    border-left: 2px solid var(--green-mid);
+    border-radius: 0 5px 5px 0;
+  }
+  .ir-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .ir-name {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink);
+    flex: 1;
+    cursor: text;
+    outline: none;
+    line-height: 1.4;
+  }
+  .ir-name:focus { border-bottom: 0.5px solid var(--green); }
+  .ir-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+  .ir-cost { font-family: var(--mono); font-size: 7.5px; color: var(--ink-3); }
+  .ir-sell { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink); }
+  .ir-mg { font-family: var(--mono); font-size: 8px; color: var(--green-mid); }
+  .ir-meta {
+    font-family: var(--mono);
+    font-size: 7.5px;
+    color: var(--ink-3);
+    margin-top: 3px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .new-tag {
+    font-family: var(--mono);
+    font-size: 7.5px;
+    background: var(--green-dim);
+    color: var(--green);
+    border-radius: 3px;
+    padding: 1px 4px;
+    margin-left: 4px;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+
+  /* menu items */
+  .menu-block { margin-bottom: 10px; }
+  .mi {
+    padding: 6.5px 0;
+    border-bottom: 0.5px solid var(--rule-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .mi:last-child { border-bottom: none; }
+  .mi-name { font-size: 11px; font-weight: 500; color: var(--ink); line-height: 1.35; }
+  .mi-sub { font-family: var(--mono); font-size: 8.5px; color: var(--ink-3); display: block; margin-top: 1px; }
+  .mi-price { font-family: var(--mono); font-size: 11px; color: var(--ink); white-space: nowrap; }
+
+  /* buttons */
+  .btn {
+    font-family: var(--sans);
+    font-size: 10px;
+    padding: 5px 11px;
+    border-radius: 5px;
+    border: 0.5px solid var(--rule);
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-2);
+    transition: all 0.12s;
+  }
+  .btn:hover { background: var(--bg-2); color: var(--ink); }
+  .btn-primary { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn-primary:hover { background: var(--green-mid); border-color: var(--green-mid); }
+  .btn-sm { font-size: 9px; padding: 4px 9px; }
+
+  /* collapse bar */
+  .collapse-bar {
+    padding: 9px 20px;
+    border-top: 0.5px solid var(--rule);
+    display: flex;
+    justify-content: center;
+  }
+  .collapse-btn {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--ink-3);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.04em;
+    transition: color 0.12s;
+  }
+  .collapse-btn:hover { color: var(--ink-2); }
+
+  /* ── SETTINGS ── */
+  #settings { display: none; padding: 20px; flex-direction: column; gap: 14px; }
+  .scard {
+    background: var(--bg);
+    border: 0.5px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .scard-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .srow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 0.5px solid var(--rule-2);
+    gap: 10px;
+  }
+  .srow:last-child { border-bottom: none; padding-bottom: 0; }
+  .sr-l { font-size: 11px; color: var(--ink); }
+  .sr-sub { font-family: var(--mono); font-size: 9px; color: var(--ink-3); margin-top: 1px; }
+  .sr-r { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .conn-label { font-family: var(--mono); font-size: 9px; color: var(--green-mid); display: flex; align-items: center; gap: 3px; }
+  .conn-label::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--green-mid); display: block; }
+  .tog {
+    width: 30px; height: 17px; border-radius: 9px;
+    background: var(--green-mid); position: relative;
+    cursor: pointer; border: none; flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .tog::after {
+    content: ''; position: absolute;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #fff; top: 3px; right: 3px;
+    transition: right 0.2s;
+  }
+  .tog.off { background: var(--rule); }
+  .tog.off::after { right: auto; left: 3px; }
+  .mg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 4px; }
+  .mg-item { background: var(--bg-2); border-radius: 5px; padding: 9px 11px; }
+  .mg-lbl { font-family: var(--mono); font-size: 8.5px; color: var(--ink-3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .mg-row { display: flex; align-items: center; gap: 7px; }
+  .mg-row input[type=range] { flex: 1; accent-color: var(--green); }
+  .mg-num { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink); min-width: 30px; }
+
+  /* ── INVOICE HOVER POPUP ── */
+  .ecard { position: relative; }
+  .ecard:hover .inv-popup { display: block; }
+  .inv-popup { display:none; position:absolute; left:calc(100% + 8px); top:0; width:210px; background:var(--bg); border:0.5px solid var(--rule); border-radius:8px; z-index:200; pointer-events:none; }
+  .popup-head { padding:9px 11px 7px; border-bottom:0.5px solid var(--rule); }
+  .popup-from { font-size:11px; font-weight:500; color:var(--ink); }
+  .popup-inv { font-family:var(--mono); font-size:8px; color:var(--ink-3); margin-top:1px; display:flex; justify-content:space-between; }
+  .popup-body { padding:7px 11px; }
+  .popup-lbl { font-family:var(--mono); font-size:7.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-3); padding-bottom:4px; border-bottom:0.5px solid var(--rule); margin-bottom:3px; }
+  .popup-row { display:flex; justify-content:space-between; align-items:baseline; padding:3px 0; border-bottom:0.5px solid var(--rule-2); gap:6px; }
+  .popup-row:last-child { border-bottom:none; }
+  .popup-wine { font-size:9px; font-weight:500; color:var(--ink); flex:1; line-height:1.3; }
+  .popup-wine-sub { font-family:var(--mono); font-size:7.5px; color:var(--ink-3); display:block; margin-top:1px; }
+  .popup-right { display:flex; flex-direction:column; align-items:flex-end; gap:1px; flex-shrink:0; }
+  .popup-qty { font-family:var(--mono); font-size:8px; color:var(--ink-3); }
+  .popup-price { font-family:var(--mono); font-size:9px; color:var(--ink); }
+  .popup-foot { padding:6px 11px 8px; border-top:0.5px solid var(--rule); display:flex; justify-content:space-between; align-items:center; }
+  .popup-total-lbl { font-family:var(--mono); font-size:8px; color:var(--ink-3); }
+  .popup-total { font-family:var(--mono); font-size:11px; font-weight:500; color:var(--ink); }
+
+  /* ── MARGIN INDICATOR + EDITOR ── */
+  .ir-mg { font-family:var(--mono); font-size:8px; color:var(--green-mid); cursor:pointer; transition:opacity .12s; }
+  .ir-mg:hover { opacity:.7; }
+  .margin-editor { display:none; margin-top:5px; padding:6px 8px; background:var(--bg-2); border-radius:4px; border:0.5px solid var(--rule); }
+  .margin-editor.open { display:flex; flex-direction:column; gap:5px; }
+  .me-row { display:flex; align-items:center; gap:6px; }
+  .me-label { font-family:var(--mono); font-size:7.5px; color:var(--ink-3); white-space:nowrap; width:34px; }
+  .me-slider { flex:1; accent-color:var(--green); }
+  .me-val { font-family:var(--mono); font-size:9px; font-weight:500; color:var(--ink); min-width:28px; text-align:right; }
+  .me-result { font-family:var(--mono); font-size:8px; color:var(--ink-3); }
+  .me-actions { display:flex; justify-content:flex-end; }
+
+  /* ── EDIT BUTTON ── */
+  .ir-bottom { display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+  .ir-meta-left { display:flex; gap:4px; font-family:var(--mono); font-size:7.5px; color:var(--ink-3); }
+  .edit-btn { font-family:var(--mono); font-size:6.5px; color:var(--ink-3); background:none; border:0.5px solid var(--rule); border-radius:2px; padding:0px 3px; cursor:pointer; line-height:1.6; letter-spacing:.01em; transition:all .15s; }
+  .edit-btn:hover { border-color:var(--ink-3); color:var(--ink-2); background:var(--bg-2); }
+
+  /* ── WINE LIST ── */
+  .dollar { font-size:8px; color:var(--ink-3); margin-right:1px; vertical-align:1px; }
+  .wl-hint { display:flex; align-items:center; gap:4px; font-family:var(--mono); font-size:7.5px; color:var(--ink-3); margin-bottom:4px; }
+  .mi-edit-hint { font-family:var(--mono); font-size:7.5px; color:var(--ink-3); opacity:0; transition:opacity .15s; white-space:nowrap; }
+  .mi:hover .mi-edit-hint { opacity:1; }
+  .drive-link { font-family:var(--mono); font-size:9px; color:var(--ink-3); display:flex; align-items:center; gap:3px; text-decoration:none; padding:3px 7px; border-radius:20px; border:0.5px solid var(--rule); transition:all .15s; }
+  .drive-link:hover { color:var(--ink-2); border-color:var(--ink-3); background:var(--bg-2); }
+  .head-actions { display:flex; align-items:center; gap:6px; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .spinning svg { animation: spin 0.6s linear; }
+  .sec-head { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  .sec-rule { flex:1; height:0.5px; background:var(--rule); }
+  .sec-count { font-family:var(--mono); font-size:8px; color:var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo-unit">
+      <div class="logo-mark">
+        <span class="logo-bk">]</span>
+        <div class="logo-lines">
+          <div class="logo-line"></div><div class="logo-line"></div>
+          <div class="logo-line"></div><div class="logo-line"></div>
+          <div class="logo-line"></div><div class="logo-line"></div>
+        </div>
+        <span class="logo-bk">[</span>
+      </div>
+      <div>
+        <div class="logo-name">vinline</div>
+        <div class="logo-build">build 003</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-badge"><span class="sync-dot"></span>synced 4m ago</div>
+      <button class="nav-btn" id="settingsBtn" onclick="toggleSettings(event)">Settings</button>
+    </div>
+  </header>
+
+  <div id="stage">
+
+    <!-- ── COLLAPSED ── -->
+    <div id="collapsed">
+      <div class="scene" id="scene" style="position:relative">
+
+        <!-- LEFT BRACKET + EMAIL -->
+        <div class="bracket-unit">
+          <div class="b-info b-info-l" onclick="event.stopPropagation();openModal('modal-l')" title="Change email source">
+            <span class="b-label">Email</span>
+            <span class="b-val right">marco@<br>cellarios.com</span>
+            <span class="b-status right"><span class="b-dot"></span>Gmail</span>
+          </div>
+          <span class="b-char" id="bk-l">]</span>
+        </div>
+
+        <!-- SHELF -->
+        <div class="shelf-center" id="shelfWrap">
+          <div class="s-line s-hi" id="sl0"></div>
+          <div class="s-line s-hi" id="sl1"></div>
+          <div class="s-line s-lo" id="sl2"></div>
+          <div class="s-line s-hi" id="sl3"></div>
+          <div class="s-line s-hi" id="sl4"></div>
+          <div class="s-line s-lo" id="sl5"></div>
+          <div class="s-line s-hi" id="sl6"></div>
+          <div class="s-line s-hi" id="sl7"></div>
+          <div class="s-line s-lo" id="sl8"></div>
+          <div class="s-line s-lo" id="sl9"></div>
+        </div>
+
+        <!-- RIGHT BRACKET + DRIVE -->
+        <div class="bracket-unit">
+          <span class="b-char" id="bk-r">[</span>
+          <div class="b-info b-info-r" onclick="event.stopPropagation();openModal('modal-r')" title="Change output destination">
+            <span class="b-label">Output</span>
+            <span class="b-val">Marco's_<br>WineList<br>_2026.pdf</span>
+            <span class="b-status"><span class="b-dot"></span>Drive</span>
+          </div>
+        </div>
+
+        <!-- EMAIL MODAL -->
+        <div class="conn-modal" id="modal-l" onclick="event.stopPropagation()">
+          <div class="modal-head">Email source</div>
+          <div class="modal-opt">
+            <div><div class="mo-name">Gmail</div><div class="mo-sub">marco@cellarios.com</div></div>
+            <div class="mo-check"></div>
+          </div>
+          <div class="modal-opt">
+            <div><div class="mo-name">Outlook</div><div class="mo-sub">Connect account →</div></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-l')">Cancel</button>
+        </div>
+
+        <!-- OUTPUT MODAL -->
+        <div class="conn-modal" id="modal-r" onclick="event.stopPropagation()">
+          <div class="modal-head">Output destination</div>
+          <div class="modal-opt">
+            <div><div class="mo-name">Google Drive</div><div class="mo-sub">Marco's_WineList_2026.pdf</div></div>
+            <div class="mo-check"></div>
+          </div>
+          <div class="modal-opt">
+            <div><div class="mo-name">PDF download</div><div class="mo-sub">Export on demand</div></div>
+          </div>
+          <div class="modal-opt">
+            <div><div class="mo-name">Google Sheets</div><div class="mo-sub">Live spreadsheet</div></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-r')">Cancel</button>
+        </div>
+
+      </div>
+
+      <div class="open-hint" id="openHint">
+        <span class="hint-arrow">↓</span> tap to open
+      </div>
+    </div>
+
+    <!-- ── EXPANDED ── -->
+    <div id="expanded">
+      <div class="three-col">
+
+        <!-- LEFT: INBOX -->
+        <div class="col" id="colLeft">
+          <div class="col-head">
+            <div>
+              <div class="col-eyebrow">Input</div>
+              <div class="col-title"><span class="col-icon">✉</span> Inbox</div>
+            </div>
+            <button class="btn btn-sm" title="Sync inbox" onclick="syncWineList(this)" style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
+                  <path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+                  <polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                sync
+              </button>
+          </div>
+          <div class="col-body">
+            <div class="ecard sel" id="ec0" style="z-index:10">
+              <div class="ec-from">Southern Wine &amp; Spirits</div>
+              <div class="ec-subj">Invoice #8821 — June delivery confirmed</div>
+              <div class="ec-foot"><span class="ec-date">Today 9:14</span><span class="badge b-inv">Invoice</span></div>
+              <div class="inv-popup">
+                <div class="popup-head"><div class="popup-from">Southern Wine &amp; Spirits</div><div class="popup-inv"><span>Invoice #8821</span><span>12 Dec 2024</span></div></div>
+                <div class="popup-body"><div class="popup-lbl">Contents</div>
+                  <div class="popup-row"><div><div class="popup-wine">Richard Leroy, Anjou</div><span class="popup-wine-sub">"Les Noëls de Montbenault" 2020</span></div><div class="popup-right"><span class="popup-qty">3 btl</span><span class="popup-price">$71/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">La Ca'Nova, Barbera d'Alba</div><span class="popup-wine-sub">"Loreto" 2021</span></div><div class="popup-right"><span class="popup-qty">84 btl</span><span class="popup-price">$18/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Champagne Herbert Beaufort</div><span class="popup-wine-sub">"Carte d'Or" Grand Cru NV</span></div><div class="popup-right"><span class="popup-qty">12 btl</span><span class="popup-price">$36/btl</span></div></div>
+                </div>
+                <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$1,763.00</span></div>
+              </div>
+            </div>
+            <div class="ecard" id="ec1" style="z-index:9">
+              <div class="ec-from">Grapevine Wine Brokers</div>
+              <div class="ec-subj">Invoice #22197 — December order</div>
+              <div class="ec-foot"><span class="ec-date">Today 8:02</span><span class="badge b-inv">Invoice</span></div>
+              <div class="inv-popup">
+                <div class="popup-head"><div class="popup-from">Grapevine Wine Brokers</div><div class="popup-inv"><span>Invoice #22197</span><span>27 Dec 2024</span></div></div>
+                <div class="popup-body"><div class="popup-lbl">Contents</div>
+                  <div class="popup-row"><div><div class="popup-wine">Joward Bourgogne Aligoté</div><span class="popup-wine-sub">2021</span></div><div class="popup-right"><span class="popup-qty">24 btl</span><span class="popup-price">$17/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Schoffit Gewurztraminer</div><span class="popup-wine-sub">"Harth - Cuvée Caroline" 2019</span></div><div class="popup-right"><span class="popup-qty">46 btl</span><span class="popup-price">$16/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Plouzeau Chinon</div><span class="popup-wine-sub">"La Bonnelière" 2019</span></div><div class="popup-right"><span class="popup-qty">120 btl</span><span class="popup-price">$15/btl</span></div></div>
+                </div>
+                <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$2,389.20</span></div>
+              </div>
+            </div>
+            <div class="ecard" id="ec2" style="z-index:8">
+              <div class="ec-from">Skurnik Wines West</div>
+              <div class="ec-subj">Bill of Lading #0215104</div>
+              <div class="ec-foot"><span class="ec-date">Yesterday</span><span class="badge b-del">Delivery</span></div>
+              <div class="inv-popup">
+                <div class="popup-head"><div class="popup-from">Skurnik Wines West</div><div class="popup-inv"><span>BOL #0215104</span><span>28 May 2025</span></div></div>
+                <div class="popup-body"><div class="popup-lbl">Contents</div>
+                  <div class="popup-row"><div><div class="popup-wine">Bierzo Encinas, Raúl Pérez</div><span class="popup-wine-sub">2020</span></div><div class="popup-right"><span class="popup-qty">52 btl</span><span class="popup-price">$15/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Loureiro Amphora Phaunus</div><span class="popup-wine-sub">2022</span></div><div class="popup-right"><span class="popup-qty">36 btl</span><span class="popup-price">$20/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Sauvignon Blanc Collio, Sturm</div><span class="popup-wine-sub">2021</span></div><div class="popup-right"><span class="popup-qty">30 btl</span><span class="popup-price">$15/btl</span></div></div>
+                </div>
+                <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$2,471.24</span></div>
+              </div>
+            </div>
+            <div class="ecard" id="ec3" style="z-index:7">
+              <div class="ec-from">Lyra Fine Wine Importers</div>
+              <div class="ec-subj">Invoice #36327 — Feb delivery</div>
+              <div class="ec-foot"><span class="ec-date">Feb 21</span><span class="badge b-pend">Pending</span></div>
+              <div class="inv-popup">
+                <div class="popup-head"><div class="popup-from">Lyra Fine Wine Importers</div><div class="popup-inv"><span>Invoice #36327</span><span>21 Feb 2025</span></div></div>
+                <div class="popup-body"><div class="popup-lbl">Contents</div>
+                  <div class="popup-row"><div><div class="popup-wine">Paltrinieri, Lambrusco di Sorbara</div><span class="popup-wine-sub">"Piria" 2023</span></div><div class="popup-right"><span class="popup-qty">36 btl</span><span class="popup-price">$12/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Ronchi di Cialla, RiNera</div><span class="popup-wine-sub">Schioppettino 2021</span></div><div class="popup-right"><span class="popup-qty">36 btl</span><span class="popup-price">$15/btl</span></div></div>
+                </div>
+                <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$979.20</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm">Parse invoice</button>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3)">5 items</span>
+          </div>
+        </div>
+
+        <div class="col-div" id="divL"></div>
+
+        <!-- CENTER: INVENTORY -->
+        <div class="col col-mid">
+          <div class="col-head">
+            <div>
+              <div class="col-eyebrow">Processing</div>
+              <div class="col-title"><span class="col-icon">≡</span> Inventory</div>
+            </div>
+          </div>
+          <div class="col-body">
+            <div class="parse-banner">
+              <span class="pb-txt">Raw parse · Invoice #8821 — review before confirming</span>
+              <button class="pb-btn">Confirm all</button>
+            </div>
+            <div class="sec-lbl">Parsed · 3 new</div>
+
+            <div class="inv-row new-entry" id="ir0">
+              <div class="ir-top">
+                <div class="ir-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
+                <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell">$112</span><span class="ir-mg" onclick="toggleMg(0)" id="mg0">+58%</span></div>
+              </div>
+              <div class="ir-bottom">
+                <div class="ir-meta-left"><span>750ml</span><span>·</span><span>3 btl</span><span>·</span><span>Loire</span></div>
+                <button class="edit-btn" aria-label="edit entry">edit</button>
+              </div>
+              <div class="margin-editor" id="me0">
+                <div class="me-row"><span class="me-label">Margin</span><input type="range" class="me-slider" min="10" max="150" value="58" step="1" oninput="upMg(0,this.value)"><span class="me-val" id="mv0">58%</span></div>
+                <div class="me-result" id="mr0">$71 cost → <strong>$112</strong> sell</div>
+                <div class="me-actions"><button class="btn btn-sm" style="font-size:9px;padding:3px 8px" onclick="toggleMg(0)">Done</button></div>
+              </div>
+            </div>
+
+            <div class="inv-row new-entry" id="ir1">
+              <div class="ir-top">
+                <div class="ir-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
+                <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell">$18</span><span class="ir-mg" onclick="toggleMg(1)" id="mg1">+50%</span></div>
+              </div>
+              <div class="ir-bottom">
+                <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>Emilia-Romagna</span></div>
+                <button class="edit-btn" aria-label="edit entry">edit</button>
+              </div>
+              <div class="margin-editor" id="me1">
+                <div class="me-row"><span class="me-label">Margin</span><input type="range" class="me-slider" min="10" max="150" value="50" step="1" oninput="upMg(1,this.value)"><span class="me-val" id="mv1">50%</span></div>
+                <div class="me-result" id="mr1">$12 cost → <strong>$18</strong> sell</div>
+                <div class="me-actions"><button class="btn btn-sm" style="font-size:9px;padding:3px 8px" onclick="toggleMg(1)">Done</button></div>
+              </div>
+            </div>
+
+            <div class="inv-row new-entry" id="ir2">
+              <div class="ir-top">
+                <div class="ir-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
+                <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell">$28</span><span class="ir-mg" onclick="toggleMg(2)" id="mg2">+56%</span></div>
+              </div>
+              <div class="ir-bottom">
+                <div class="ir-meta-left"><span>750ml</span><span>·</span><span>84 btl</span><span>·</span><span>Piedmont</span></div>
+                <button class="edit-btn" aria-label="edit entry">edit</button>
+              </div>
+              <div class="margin-editor" id="me2">
+                <div class="me-row"><span class="me-label">Margin</span><input type="range" class="me-slider" min="10" max="150" value="56" step="1" oninput="upMg(2,this.value)"><span class="me-val" id="mv2">56%</span></div>
+                <div class="me-result" id="mr2">$18 cost → <strong>$28</strong> sell</div>
+                <div class="me-actions"><button class="btn btn-sm" style="font-size:9px;padding:3px 8px" onclick="toggleMg(2)">Done</button></div>
+              </div>
+            </div>
+
+            <div class="sec-lbl" style="margin-top:4px">Existing inventory</div>
+
+            <div class="inv-row" id="ir3">
+              <div class="ir-top">
+                <div class="ir-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
+                <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell">$24</span><span class="ir-mg" onclick="toggleMg(3)" id="mg3">+60%</span></div>
+              </div>
+              <div class="ir-bottom">
+                <div class="ir-meta-left"><span>750ml</span><span>·</span><span>24 btl</span><span>·</span><span>Portugal</span></div>
+                <button class="edit-btn" aria-label="edit entry">edit</button>
+              </div>
+              <div class="margin-editor" id="me3">
+                <div class="me-row"><span class="me-label">Margin</span><input type="range" class="me-slider" min="10" max="150" value="60" step="1" oninput="upMg(3,this.value)"><span class="me-val" id="mv3">60%</span></div>
+                <div class="me-result" id="mr3">$15 cost → <strong>$24</strong> sell</div>
+                <div class="me-actions"><button class="btn btn-sm" style="font-size:9px;padding:3px 8px" onclick="toggleMg(3)">Done</button></div>
+              </div>
+            </div>
+
+            <div class="inv-row" id="ir4">
+              <div class="ir-top">
+                <div class="ir-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
+                <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell">$44</span><span class="ir-mg" onclick="toggleMg(4)" id="mg4">+57%</span></div>
+              </div>
+              <div class="ir-bottom">
+                <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>California</span></div>
+                <button class="edit-btn" aria-label="edit entry">edit</button>
+              </div>
+              <div class="margin-editor" id="me4">
+                <div class="me-row"><span class="me-label">Margin</span><input type="range" class="me-slider" min="10" max="150" value="57" step="1" oninput="upMg(4,this.value)"><span class="me-val" id="mv4">57%</span></div>
+                <div class="me-result" id="mr4">$28 cost → <strong>$44</strong> sell</div>
+                <div class="me-actions"><button class="btn btn-sm" style="font-size:9px;padding:3px 8px" onclick="toggleMg(4)">Done</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm">Push to wine list</button>
+            <button class="btn btn-sm">Discard</button>
+          </div>
+        </div>
+
+        <div class="col-div" id="divR"></div>
+
+        <!-- RIGHT: WINE LIST -->
+        <div class="col" id="colRight">
+          <div class="col-head">
+            <div>
+              <div class="col-eyebrow">Output</div>
+              <div class="col-title"><span class="col-icon">☰</span> Wine list</div>
+            </div>
+            <div class="head-actions">
+              <button class="btn btn-sm" title="Re-sync formatting from Drive" onclick="syncWineList(this)" style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
+                  <path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+                  <polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                sync
+              </button>
+              <button class="btn btn-sm">Preview</button>
+            </div>
+          </div>
+          <div class="col-body">
+            <div class="wl-hint">✎ hover any entry to edit</div>
+            <div class="menu-block">
+              <div class="sec-head"><span class="sec-lbl">Sparkling</span><span class="sec-rule"></span><span class="sec-count">1</span></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2023 · Emilia-Romagna, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span>18</div><span class="mi-edit-hint">edit</span></div></div>
+            </div>
+            <div class="menu-block">
+              <div class="sec-head"><span class="sec-lbl">White</span><span class="sec-rule"></span><span class="sec-count">2</span></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde</div><span class="mi-sub" contenteditable="true" spellcheck="false">2022 · Lima, Portugal</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span>24</div><span class="mi-edit-hint">edit</span></div></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2020 · Loire Valley, France</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span>112</div><span class="mi-edit-hint">edit</span></div></div>
+            </div>
+            <div class="menu-block">
+              <div class="sec-head"><span class="sec-lbl">Red</span><span class="sec-rule"></span><span class="sec-count">2</span></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2021 · Piedmont, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span>28</div><span class="mi-edit-hint">edit</span></div></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills</div><span class="mi-sub" contenteditable="true" spellcheck="false">2022 · California, USA</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span>44</div><span class="mi-edit-hint">edit</span></div></div>
+            </div>
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm">↓ PDF</button>
+            <button class="btn btn-sm">Drive</button>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto">5 items</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="collapse-bar">
+        <button class="collapse-btn" onclick="collapse()">↑ collapse</button>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div id="settings">
+      <div class="scard">
+        <div class="scard-title">✉ Email connection</div>
+        <div class="srow">
+          <div><div class="sr-l">Gmail</div><div class="sr-sub">marco@cellarios.com</div></div>
+          <div class="sr-r"><span class="conn-label">connected</span><button class="btn btn-sm">Change</button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub">Not connected</div></div>
+          <div class="sr-r"><button class="btn btn-sm">Connect →</button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Every 30 minutes</div></div>
+          <div class="sr-r"><button class="tog" aria-label="toggle auto-scan"></button></div>
+        </div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">% Margins by category</div>
+        <div class="mg-grid">
+          <div class="mg-item"><div class="mg-lbl">Bottle — red</div><div class="mg-row"><input type="range" min="10" max="120" value="56" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">56%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — white</div><div class="mg-row"><input type="range" min="10" max="120" value="55" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">55%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">By the glass</div><div class="mg-row"><input type="range" min="10" max="200" value="120" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">120%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Sparkling</div><div class="mg-row"><input type="range" min="10" max="120" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">50%</span></div></div>
+        </div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">≡ Naming convention</div>
+        <div class="srow"><div class="sr-l">Include appellation</div><div class="sr-r"><button class="tog" aria-label="toggle appellation"></button></div></div>
+        <div class="srow"><div class="sr-l">Include vintage</div><div class="sr-r"><button class="tog" aria-label="toggle vintage"></button></div></div>
+        <div class="srow"><div class="sr-l">Include region / country</div><div class="sr-r"><button class="tog off" aria-label="toggle region"></button></div></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">↑ Output destinations</div>
+        <div class="srow">
+          <div><div class="sr-l">Google Drive</div><div class="sr-sub">Marco's_WineList_2026.pdf</div></div>
+          <div class="sr-r"><span class="conn-label">active</span></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">PDF download</div><div class="sr-sub">Export on demand</div></div>
+          <div class="sr-r"><button class="tog" aria-label="toggle PDF"></button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Google Sheets</div><div class="sr-sub">Not connected</div></div>
+          <div class="sr-r"><button class="btn btn-sm">Connect →</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+</div><!-- /shell -->
+
+<script>
+const stage      = document.getElementById('stage');
+const collapsed  = document.getElementById('collapsed');
+const expanded   = document.getElementById('expanded');
+const settings   = document.getElementById('settings');
+const bkL        = document.getElementById('bk-l');
+const bkR        = document.getElementById('bk-r');
+const colLeft    = document.getElementById('colLeft');
+const colRight   = document.getElementById('colRight');
+const divL       = document.getElementById('divL');
+const divR       = document.getElementById('divR');
+const openHint   = document.getElementById('openHint');
+const shelves    = Array.from({length:10},(_,i)=>document.getElementById('sl'+i));
+const ecards     = Array.from({length:4},(_,i)=>document.getElementById('ec'+i));
+const invRows    = Array.from({length:5},(_,i)=>document.getElementById('ir'+i));
+const bInfos     = document.querySelectorAll('.b-info');
+
+let isExpanded = false;
+
+function sI(el, s) { el.style.transition = 'none'; Object.assign(el.style, s); }
+
+function openModal(id) {
+  document.querySelectorAll('.conn-modal').forEach(m => m.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+}
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+document.getElementById('scene').addEventListener('click', e => {
+  document.querySelectorAll('.conn-modal').forEach(m => m.style.display = 'none');
+  if (!e.target.closest('.b-info') && !e.target.closest('.conn-modal')) expand();
+});
+document.getElementById('openHint').addEventListener('click', expand);
+document.addEventListener('click', () => {
+  document.querySelectorAll('.conn-modal').forEach(m => m.style.display = 'none');
+});
+
+function expand() {
+  if (isExpanded) return;
+  isExpanded = true;
+  collapsed.style.pointerEvents = 'none';
+
+  // fade bracket info + hint
+  [openHint, ...bInfos].forEach(el => {
+    el.style.transition = 'opacity 0.18s ease';
+    el.style.opacity = '0';
+  });
+
+  // ripple shelves out
+  shelves.forEach((sl, i) => {
+    setTimeout(() => {
+      sl.style.transition = 'all 0.3s ease';
+      sl.style.transform  = 'scaleX(1.5)';
+      sl.style.opacity    = '0.4';
+    }, i * 24);
+    setTimeout(() => {
+      sl.style.transition   = 'all 0.2s ease';
+      sl.style.transform    = 'scaleX(0)';
+      sl.style.opacity      = '0';
+      sl.style.height       = '0px';
+      sl.style.marginBottom = '0';
+    }, i * 24 + 200);
+  });
+
+  const shelfDone = 9 * 24 + 200 + 210;
+
+  // brackets thin & fade
+  setTimeout(() => {
+    bkL.style.transition = 'all 0.5s cubic-bezier(0.4,0,0.2,1)';
+    bkR.style.transition = 'all 0.5s cubic-bezier(0.4,0,0.2,1)';
+    bkL.style.transform  = 'scaleY(7) scaleX(0.13)';
+    bkL.style.opacity    = '0.1';
+    bkR.style.transform  = 'scaleY(7) scaleX(0.13)';
+    bkR.style.opacity    = '0.1';
+  }, shelfDone - 150);
+
+  const startH = stage.scrollHeight;
+  stage.style.height = startH + 'px';
+
+  setTimeout(() => {
+    collapsed.style.display = 'none';
+
+    // reset everything before showing expanded
+    sI(bkL, { transform: '', opacity: '1', transition: '' });
+    sI(bkR, { transform: '', opacity: '1', transition: '' });
+    shelves.forEach(sl => sI(sl, { transform: '', opacity: '1', height: '', marginBottom: '' }));
+    bInfos.forEach(el => { el.style.transition = 'none'; el.style.opacity = '1'; });
+    openHint.style.transition = 'none'; openHint.style.opacity = '1';
+    collapsed.style.pointerEvents = '';
+
+    expanded.style.display = 'block';
+
+    // set initial states for entrance
+    sI(divL,    { opacity: '0', transform: 'scaleY(0)', transformOrigin: 'top center' });
+    sI(divR,    { opacity: '0', transform: 'scaleY(0)', transformOrigin: 'top center' });
+    sI(colLeft, { opacity: '0', transform: 'translateX(-18px)' });
+    sI(colRight,{ opacity: '0', transform: 'translateX(18px)' });
+    ecards.forEach(e => sI(e, { opacity: '0', transform: 'translateX(-12px)' }));
+    invRows.forEach(e => sI(e, { opacity: '0', transform: 'translateY(8px)' }));
+    sI(expanded, { opacity: '0' });
+
+    const toH = expanded.scrollHeight;
+    stage.style.transition = 'height 0.44s cubic-bezier(0.4,0,0.2,1)';
+    stage.style.height = toH + 'px';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      expanded.style.transition = 'opacity 0.18s ease';
+      expanded.style.opacity = '1';
+
+      setTimeout(() => {
+        divL.style.transition = 'all 0.46s cubic-bezier(0.34,1.1,0.64,1)';
+        divL.style.transform  = 'scaleY(1)';
+        divL.style.opacity    = '1';
+      }, 80);
+      setTimeout(() => {
+        divR.style.transition = 'all 0.46s cubic-bezier(0.34,1.1,0.64,1)';
+        divR.style.transform  = 'scaleY(1)';
+        divR.style.opacity    = '1';
+      }, 130);
+
+      colLeft.style.transition  = 'opacity 0.38s ease 0.08s, transform 0.4s cubic-bezier(0.34,1.1,0.64,1) 0.08s';
+      colLeft.style.opacity     = '1';
+      colLeft.style.transform   = 'translateX(0)';
+      colRight.style.transition = 'opacity 0.38s ease 0.12s, transform 0.4s cubic-bezier(0.34,1.1,0.64,1) 0.12s';
+      colRight.style.opacity    = '1';
+      colRight.style.transform  = 'translateX(0)';
+
+      ecards.forEach((e, i) => setTimeout(() => {
+        e.style.transition = 'opacity 0.3s ease, transform 0.32s cubic-bezier(0.34,1.1,0.64,1)';
+        e.style.opacity    = '1';
+        e.style.transform  = 'translateX(0)';
+      }, 100 + i * 46));
+
+      invRows.forEach((e, i) => setTimeout(() => {
+        e.style.transition = 'opacity 0.3s ease, transform 0.32s cubic-bezier(0.34,1.1,0.64,1)';
+        e.style.opacity    = '1';
+        e.style.transform  = 'translateY(0)';
+      }, 140 + i * 42));
+
+      setTimeout(() => { stage.style.height = 'auto'; stage.style.transition = ''; }, 480);
+    }));
+  }, shelfDone + 160);
+}
+
+function collapse() {
+  if (!isExpanded) return;
+  isExpanded = false;
+
+  ecards.forEach((e, i) => setTimeout(() => {
+    e.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+    e.style.opacity    = '0';
+    e.style.transform  = 'translateX(-10px)';
+  }, i * 28));
+
+  invRows.forEach((e, i) => setTimeout(() => {
+    e.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+    e.style.opacity    = '0';
+    e.style.transform  = 'translateY(5px)';
+  }, i * 24));
+
+  setTimeout(() => {
+    divL.style.transition = 'all 0.26s ease'; divL.style.transform = 'scaleY(0)'; divL.style.opacity = '0';
+    divR.style.transition = 'all 0.26s ease'; divR.style.transform = 'scaleY(0)'; divR.style.opacity = '0';
+    colLeft.style.transition  = 'opacity 0.2s ease, transform 0.2s ease'; colLeft.style.opacity  = '0'; colLeft.style.transform  = 'translateX(-12px)';
+    colRight.style.transition = 'opacity 0.2s ease, transform 0.2s ease'; colRight.style.opacity = '0'; colRight.style.transform = 'translateX(12px)';
+  }, 60);
+
+  setTimeout(() => {
+    expanded.style.transition = 'opacity 0.16s ease';
+    expanded.style.opacity = '0';
+  }, 240);
+
+  const startH = stage.scrollHeight;
+  stage.style.height = startH + 'px';
+
+  setTimeout(() => {
+    expanded.style.display = 'none';
+    expanded.style.opacity = '1';
+
+    ecards.forEach(e => { e.style.transition = 'none'; e.style.opacity = '1'; e.style.transform = ''; });
+    invRows.forEach(e => { e.style.transition = 'none'; e.style.opacity = '1'; e.style.transform = ''; });
+    sI(divL, { transform: 'scaleY(1)', opacity: '1' });
+    sI(divR, { transform: 'scaleY(1)', opacity: '1' });
+    sI(colLeft, { opacity: '1', transform: '' });
+    sI(colRight, { opacity: '1', transform: '' });
+
+    // set bracket start state for spring-back
+    sI(bkL, { transformOrigin: 'center center', transform: 'scaleY(7) scaleX(0.13)', opacity: '0.08' });
+    sI(bkR, { transformOrigin: 'center center', transform: 'scaleY(7) scaleX(0.13)', opacity: '0.08' });
+    shelves.forEach(sl => sI(sl, { transform: 'scaleX(0)', opacity: '0', height: '0px' }));
+    bInfos.forEach(el => { el.style.transition = 'none'; el.style.opacity = '0'; });
+    openHint.style.transition = 'none'; openHint.style.opacity = '0';
+
+    collapsed.style.display = 'flex';
+
+    const toH = collapsed.scrollHeight;
+    stage.style.transition = 'height 0.4s cubic-bezier(0.4,0,0.2,1)';
+    stage.style.height = toH + 'px';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      bkL.style.transition = 'all 0.5s cubic-bezier(0.34,1.3,0.64,1)';
+      bkL.style.transform  = '';
+      bkL.style.opacity    = '1';
+      bkR.style.transition = 'all 0.5s cubic-bezier(0.34,1.3,0.64,1)';
+      bkR.style.transform  = '';
+      bkR.style.opacity    = '1';
+
+      shelves.forEach((sl, i) => setTimeout(() => {
+        sl.style.transition   = 'all 0.28s cubic-bezier(0.34,1.2,0.64,1)';
+        sl.style.transform    = '';
+        sl.style.opacity      = '1';
+        sl.style.height       = '2.5px';
+      }, 150 + i * 25));
+
+      setTimeout(() => {
+        bInfos.forEach(el => { el.style.transition = 'opacity 0.26s ease'; el.style.opacity = '1'; });
+        openHint.style.transition = 'opacity 0.26s ease'; openHint.style.opacity = '1';
+      }, 340);
+
+      setTimeout(() => { stage.style.height = 'auto'; stage.style.transition = ''; }, 470);
+    }));
+  }, 370);
+}
+
+const mgCosts = [71, 12, 18, 15, 28];
+function syncWineList(btn) {
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+  }, 700);
+}
+function toggleMg(i) {
+  const ed = document.getElementById('me' + i);
+  const open = ed.classList.contains('open');
+  document.querySelectorAll('.margin-editor').forEach(e => e.classList.remove('open'));
+  if (!open) ed.classList.add('open');
+}
+function upMg(i, pct) {
+  const c = mgCosts[i];
+  const sell = Math.round(c * (1 + parseInt(pct) / 100));
+  document.getElementById('mv' + i).textContent = pct + '%';
+  document.getElementById('mr' + i).innerHTML = '$' + c + ' cost → <strong>$' + sell + '</strong> sell';
+  document.getElementById('mg' + i).textContent = '+' + pct + '%';
+  const sellEl = document.getElementById('me' + i).closest('.inv-row').querySelector('.ir-sell');
+  if (sellEl) sellEl.textContent = '$' + sell;
+}
+
+function toggleSettings(e) {
+  e.stopPropagation();
+  const btn = document.getElementById('settingsBtn');
+  const open = settings.style.display === 'flex';
+  settings.style.display = open ? 'none' : 'flex';
+  btn.classList.toggle('active', !open);
+  if (!open) {
+    collapsed.style.display = 'none';
+    expanded.style.display  = 'none';
+  } else {
+    if (!isExpanded) collapsed.style.display = 'flex';
+    else expanded.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>
