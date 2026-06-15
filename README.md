@@ -23,6 +23,7 @@ Experimental builds for exploring new features. Reviewed and dripped into main w
 | Build | Description |
 |-------|-------------|
 | vinline.dev.001 | Base for iterative track — seeded from vinline.006 |
+| vinline.dev.002 | BTG/BTB global toggle on wine list output; rebased to vinline.007 baseline |
 
 ## Concept
 
