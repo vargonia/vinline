@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>vinline.dev.003</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
@@ -566,8 +567,8 @@
           </div>
         </div>
         <div class="srow">
-          <div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub">Not connected</div></div>
-          <div class="sr-r"><button class="btn btn-sm" onclick="openEmailConnect('Outlook')">Connect →</button></div>
+          <div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub" id="settingsOutlookSub">Not connected</div></div>
+          <div class="sr-r" id="settingsOutlookRight"><button class="btn btn-sm" onclick="openEmailConnect('Outlook')">Connect →</button></div>
         </div>
         <div class="srow">
           <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Every 30 minutes</div></div>
@@ -596,9 +597,16 @@
 
 <script>
 // ─── CREDENTIALS ─────────────────────────────────────────────────────────────
-// Replace with your OAuth client ID from Google Cloud Console.
-// Setup guide: Documents/vinline/vinline/features/email-connectivity.md
 const GOOGLE_CLIENT_ID = '672256171194-oas3lb6lkmrdgl7jbqemgmjm5rl9k7j2.apps.googleusercontent.com';
+const MICROSOFT_CLIENT_ID = 'YOUR_AZURE_CLIENT_ID'; // Azure App Registration → replace when ready
+const msalConfig = {
+  auth: {
+    clientId: MICROSOFT_CLIENT_ID,
+    authority: 'https://login.microsoftonline.com/common',
+    redirectUri: window.location.origin + window.location.pathname,
+  },
+  cache: { cacheLocation: 'sessionStorage' }
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 // EMAIL STATE
@@ -606,6 +614,8 @@ let emailConnected = false;
 let emailProvider = null;
 let emailAddress = '';
 let gmailToken = null;
+let outlookToken = null;
+let _msalInstance = null;
 
 // UI REFS
 const stage = document.getElementById('stage');
@@ -731,9 +741,36 @@ function connectGmail() {
   client.requestAccessToken();
 }
 
-function connectOutlook() {
-  // Outlook / MSAL.js — requires Azure App Registration client ID
-  setModalError('Outlook support coming soon. Use Gmail for now.');
+async function connectOutlook() {
+  if (!window.msal) {
+    setModalError('Microsoft sign-in is still loading. Please try again in a moment.');
+    return;
+  }
+  if (!MICROSOFT_CLIENT_ID || MICROSOFT_CLIENT_ID === 'YOUR_AZURE_CLIENT_ID') {
+    setModalError('Outlook not configured yet — Azure client ID needed. See Obsidian setup docs.');
+    return;
+  }
+  setModalLoading('Opening Microsoft sign-in…');
+  try {
+    if (!_msalInstance) {
+      _msalInstance = new msal.PublicClientApplication(msalConfig);
+      await _msalInstance.initialize();
+    }
+    const tokenResponse = await _msalInstance.acquireTokenPopup({
+      scopes: ['openid', 'profile', 'User.Read', 'Mail.Read'],
+      prompt: 'select_account'
+    });
+    outlookToken = tokenResponse.accessToken;
+    const account = _msalInstance.getAllAccounts()[0];
+    const email = account?.username || 'outlook account';
+    setEmailConnected('Outlook', email);
+  } catch (e) {
+    if (e.errorCode === 'user_cancelled' || e.name === 'BrowserAuthError') {
+      resetEmailModal();
+    } else {
+      setModalError('Sign-in failed: ' + (e.errorMessage || e.message || 'unknown error'));
+    }
+  }
 }
 
 function setEmailConnected(provider, email) {
@@ -752,16 +789,25 @@ function setEmailConnected(provider, email) {
   document.getElementById('topbarStatus').style.display = 'flex';
   document.getElementById('topbarStatusText').textContent = email.split('@')[0];
 
-  // Update settings panel
-  document.getElementById('settingsGmailSub').textContent = email;
-  document.getElementById('settingsGmailRight').innerHTML = '<span class="conn-label">connected</span><button class="btn btn-sm" onclick="disconnectGmail()">Disconnect</button>';
+  // Update settings panel for the correct provider
+  if (provider === 'Gmail') {
+    document.getElementById('settingsGmailSub').textContent = email;
+    document.getElementById('settingsGmailRight').innerHTML = '<span class="conn-label">connected</span><button class="btn btn-sm" onclick="disconnectGmail()">Disconnect</button>';
+  } else {
+    document.getElementById('settingsOutlookSub').textContent = email;
+    document.getElementById('settingsOutlookRight').innerHTML = '<span class="conn-label">connected</span><button class="btn btn-sm" onclick="disconnectOutlook()">Disconnect</button>';
+  }
 
   // Close modal, start scan
   document.getElementById('modal-l').style.display = 'none';
   resetEmailModal();
   setOpenHintScanning();
   showInboxScanning();
-  scanInbox(gmailToken);
+  if (provider === 'Gmail') {
+    scanInbox(gmailToken);
+  } else {
+    scanOutlookInbox(outlookToken);
+  }
 }
 
 function disconnectGmail() {
@@ -774,6 +820,21 @@ function disconnectGmail() {
   openHint.innerHTML = '↓ tap to open';
   showInboxEmpty();
   document.getElementById('inboxCount').textContent = '—';
+}
+
+function disconnectOutlook() {
+  outlookToken = null; _msalInstance = null;
+  if (emailProvider === 'Outlook') {
+    emailConnected = false; emailProvider = null; emailAddress = '';
+    document.getElementById('emailUnconnectedZone').style.display = '';
+    document.getElementById('emailConnectedZone').style.display = 'none';
+    document.getElementById('topbarStatus').style.display = 'none';
+    openHint.innerHTML = '↓ tap to open';
+    showInboxEmpty();
+    document.getElementById('inboxCount').textContent = '—';
+  }
+  document.getElementById('settingsOutlookSub').textContent = 'Not connected';
+  document.getElementById('settingsOutlookRight').innerHTML = '<button class="btn btn-sm" onclick="openEmailConnect(\'Outlook\')">Connect →</button>';
 }
 
 function openEmailConnect(provider) {
@@ -809,11 +870,54 @@ async function scanInbox(token) {
   }
 }
 
+async function scanOutlookInbox(token) {
+  try {
+    const res = await fetch(
+      'https://graph.microsoft.com/v1.0/me/messages?$search="invoice"&$top=8&$select=from,subject,receivedDateTime',
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    const data = await res.json();
+    const msgs = data.value || [];
+    if (!msgs.length) { showDemoCards(); return; }
+    populateOutlookCards(msgs.slice(0, 6));
+  } catch (e) {
+    showDemoCards();
+  }
+}
+
+function populateOutlookCards(msgs) {
+  const cards = msgs.map((msg, i) => {
+    const from = msg.from?.emailAddress;
+    const fromName = from?.name || from?.address?.split('@')[0] || 'Unknown sender';
+    const subj = msg.subject || '(no subject)';
+    const date = msg.receivedDateTime ? new Date(msg.receivedDateTime) : null;
+    const dateStr = date ? formatDate(date) : '';
+    const badgeClass = subj.toLowerCase().includes('invoice') ? 'b-inv' :
+                       subj.toLowerCase().includes('deliver') || subj.toLowerCase().includes('lading') ? 'b-del' : 'b-inv';
+    const badgeTxt = badgeClass === 'b-del' ? 'Delivery' : 'Invoice';
+    return { fromName: esc(fromName), subj: esc(subj), dateStr, badgeClass, badgeTxt, zIndex: 10-i };
+  });
+  inboxBody.innerHTML = cards.map(c =>
+    `<div class="ecard" style="z-index:${c.zIndex}">
+      <div class="ec-from">${c.fromName}</div>
+      <div class="ec-subj">${c.subj}</div>
+      <div class="ec-foot"><span class="ec-date">${c.dateStr}</span><span class="badge ${c.badgeClass}">${c.badgeTxt}</span></div>
+    </div>`
+  ).join('');
+  const n = cards.length;
+  document.getElementById('inboxCount').textContent = n + ' item' + (n!==1?'s':'');
+  setOpenHintReady(n);
+}
+
 async function reScan(btn) {
-  if (!gmailToken) return;
+  if (!emailConnected) return;
   btn.classList.add('spinning'); btn.disabled = true;
   setOpenHintScanning(); showInboxScanning();
-  await scanInbox(gmailToken);
+  if (emailProvider === 'Gmail') {
+    await scanInbox(gmailToken);
+  } else {
+    await scanOutlookInbox(outlookToken);
+  }
   btn.classList.remove('spinning'); btn.disabled = false;
 }
 
@@ -925,7 +1029,8 @@ function setModalLoading(msg) {
 function setModalError(msg) {
   document.getElementById('emailModalBody').innerHTML =
     '<div class="modal-error-msg">' + esc(msg) + '</div>' +
-    '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Try again →</div></div></div>';
+    '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Try again →</div></div></div>' +
+    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Try again →</div></div></div>';
   document.getElementById('emailModalClose').disabled = false;
 }
 
