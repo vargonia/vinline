@@ -184,7 +184,8 @@
   .inv-row.new-entry{border-left:2px solid var(--green-mid);border-radius:0 5px 5px 0}
   .ir-main{padding:7px 9px}
   .ir-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
-  .ir-name{font-size:10px;font-weight:500;color:var(--ink);flex:1;cursor:text;outline:none;line-height:1.4}
+  .ir-name{font-size:10px;font-weight:500;color:var(--ink);flex:1;cursor:default;outline:none;line-height:1.4}
+  .ir-name[contenteditable="true"]{cursor:text}
   .ir-name:focus{border-bottom:0.5px solid var(--green)}
   .new-tag{font-family:var(--mono);font-size:7.5px;background:var(--green-dim);color:var(--green);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle}
   .ir-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex-shrink:0}
@@ -226,7 +227,6 @@
   .mi{padding:6.5px 3px;border-bottom:0.5px solid var(--rule-2);display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 -3px;border-radius:0;transition:background .1s;cursor:text}
   .mi:last-child{border-bottom:none}
   .mi:hover{background:var(--bg-2);border-radius:4px}
-  .mi:hover .mi-edit-hint{opacity:1}
   .mi-left{flex:1;min-width:0}
   .mi-name{font-size:11px;font-weight:500;color:var(--ink);line-height:1.35}
   .mi-sub{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);display:block;margin-top:1px}
@@ -416,7 +416,7 @@
             <div class="inv-row new-entry">
               <div class="ir-main">
                 <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
+                  <div class="ir-name" contenteditable="false" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
                   <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$284</span><span class="ir-mg" id="m0" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
@@ -437,7 +437,7 @@
             <div class="inv-row new-entry">
               <div class="ir-main">
                 <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
+                  <div class="ir-name" contenteditable="false" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
                   <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$48</span><span class="ir-mg" id="m1" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
@@ -458,7 +458,7 @@
             <div class="inv-row new-entry">
               <div class="ir-main">
                 <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
+                  <div class="ir-name" contenteditable="false" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
                   <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$72</span><span class="ir-mg" id="m2" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
@@ -481,7 +481,7 @@
             <div class="inv-row">
               <div class="ir-main">
                 <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
+                  <div class="ir-name" contenteditable="false" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
                   <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$60</span><span class="ir-mg" id="m3" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
@@ -502,7 +502,7 @@
             <div class="inv-row">
               <div class="ir-main">
                 <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
+                  <div class="ir-name" contenteditable="false" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
                   <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$112</span><span class="ir-mg" id="m4" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
@@ -690,10 +690,15 @@ function liveMg(i, sliderVal) {
   updateRowDisplay(i);
 }
 
+function nameEl(i) {
+  return document.getElementById('eb'+i).closest('.inv-row').querySelector('.ir-name');
+}
+
 function openSlider(i) {
   closeAllSliders();
   document.getElementById('eb'+i).style.display = 'none';
   document.getElementById('sw'+i).classList.add('visible');
+  const n = nameEl(i); if (n) { n.contentEditable = 'true'; n.focus(); }
   pending[i] = committed[i];
   pendingBtg[i] = committedBtg[i];
   document.getElementById('btgb'+i).classList.toggle('active', !committedBtg[i]);
@@ -705,7 +710,11 @@ function closeAllSliders() {
   for (let i=0; i<5; i++) {
     const eb = document.getElementById('eb'+i);
     const sw = document.getElementById('sw'+i);
-    if (eb) eb.style.display = '';
+    if (eb) {
+      eb.style.display = '';
+      const n = eb.closest('.inv-row')?.querySelector('.ir-name');
+      if (n) { n.contentEditable = 'false'; n.blur(); }
+    }
     if (sw) { sw.classList.remove('visible'); pendingBtg[i]=committedBtg[i]; pending[i]=committed[i]; updateRowDisplay(i); }
   }
 }
@@ -714,6 +723,7 @@ function confirmMg(i) {
   committed[i] = pending[i]; committedBtg[i] = pendingBtg[i];
   document.getElementById('eb'+i).style.display = '';
   document.getElementById('sw'+i).classList.remove('visible');
+  const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
 }
 
 function cancelMg(i) {
@@ -721,6 +731,7 @@ function cancelMg(i) {
   updateRowDisplay(i);
   document.getElementById('eb'+i).style.display = '';
   document.getElementById('sw'+i).classList.remove('visible');
+  const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
 }
 
 // ─── EMAIL AUTH (mock) ────────────────────────────────────────────────────────
@@ -887,7 +898,7 @@ function showDemoCards() {
       <div class="ec-subj">Invoice #8821 — June delivery confirmed</div>
       <div class="ec-foot"><span class="ec-date">Today 9:14</span><span class="badge b-inv">Invoice</span></div>
       <div class="inv-popup">
-        <div class="popup-head"><div class="popup-from">Southern Wine &amp; Spirits</div><div class="popup-inv"><span>Invoice #8821</span><span>12 Dec 2024</span></div></div>
+        <div class="popup-head"><div class="popup-from">Southern Wine &amp; Spirits</div><div class="popup-inv"><span>Invoice #8821</span><span>Jun 16, 2026</span></div></div>
         <div class="popup-body"><div class="popup-lbl">Contents</div>
           <div class="popup-row"><div><div class="popup-wine">Richard Leroy, Anjou</div><span class="popup-wine-sub">"Les Noëls de Montbenault" 2020</span></div><div class="popup-right"><span class="popup-qty">3 btl</span><span class="popup-price">$71/btl</span></div></div>
           <div class="popup-row"><div><div class="popup-wine">La Ca'Nova, Barbera d'Alba</div><span class="popup-wine-sub">"Loreto" 2021</span></div><div class="popup-right"><span class="popup-qty">84 btl</span><span class="popup-price">$18/btl</span></div></div>
@@ -896,20 +907,44 @@ function showDemoCards() {
         <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$1,763.00</span></div>
       </div>
     </div>
-    <div class="ecard" style="z-index:9">
+    <div class="ecard" style="z-index:9;position:relative">
       <div class="ec-from">Grapevine Wine Brokers</div>
       <div class="ec-subj">Invoice #22197 — December order</div>
       <div class="ec-foot"><span class="ec-date">Today 8:02</span><span class="badge b-inv">Invoice</span></div>
+      <div class="inv-popup">
+        <div class="popup-head"><div class="popup-from">Grapevine Wine Brokers</div><div class="popup-inv"><span>Invoice #22197</span><span>Jun 16, 2026</span></div></div>
+        <div class="popup-body"><div class="popup-lbl">Contents</div>
+          <div class="popup-row"><div><div class="popup-wine">Domaine Leflaive, Mâcon-Verzé</div><span class="popup-wine-sub">2022 · Burgundy</span></div><div class="popup-right"><span class="popup-qty">12 btl</span><span class="popup-price">$38/btl</span></div></div>
+          <div class="popup-row"><div><div class="popup-wine">François Courtin, Champagne</div><span class="popup-wine-sub">Blanc de Noirs NV</span></div><div class="popup-right"><span class="popup-qty">6 btl</span><span class="popup-price">$64/btl</span></div></div>
+        </div>
+        <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$840.00</span></div>
+      </div>
     </div>
-    <div class="ecard" style="z-index:8">
+    <div class="ecard" style="z-index:8;position:relative">
       <div class="ec-from">Skurnik Wines West</div>
       <div class="ec-subj">Bill of Lading #0215104</div>
       <div class="ec-foot"><span class="ec-date">Yesterday</span><span class="badge b-del">Delivery</span></div>
+      <div class="inv-popup">
+        <div class="popup-head"><div class="popup-from">Skurnik Wines West</div><div class="popup-inv"><span>BOL #0215104</span><span>Jun 15, 2026</span></div></div>
+        <div class="popup-body"><div class="popup-lbl">Contents</div>
+          <div class="popup-row"><div><div class="popup-wine">Cornelissen, Rosso del Contadino</div><span class="popup-wine-sub">14 · 2022 · Sicily</span></div><div class="popup-right"><span class="popup-qty">12 btl</span><span class="popup-price">$28/btl</span></div></div>
+          <div class="popup-row"><div><div class="popup-wine">Arianna Occhipinti, SP68 Rosso</div><span class="popup-wine-sub">2022 · Sicily</span></div><div class="popup-right"><span class="popup-qty">24 btl</span><span class="popup-price">$22/btl</span></div></div>
+        </div>
+        <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$864.00</span></div>
+      </div>
     </div>
-    <div class="ecard" style="z-index:7">
+    <div class="ecard" style="z-index:7;position:relative">
       <div class="ec-from">Lyra Fine Wine Importers</div>
       <div class="ec-subj">Invoice #36327 — Feb delivery</div>
       <div class="ec-foot"><span class="ec-date">Feb 21</span><span class="badge b-pend">Pending</span></div>
+      <div class="inv-popup">
+        <div class="popup-head"><div class="popup-from">Lyra Fine Wine Importers</div><div class="popup-inv"><span>Invoice #36327</span><span>Feb 21, 2026</span></div></div>
+        <div class="popup-body"><div class="popup-lbl">Contents</div>
+          <div class="popup-row"><div><div class="popup-wine">Can Sumoi, Cava Ancestral</div><span class="popup-wine-sub">2021 · Penedès</span></div><div class="popup-right"><span class="popup-qty">18 btl</span><span class="popup-price">$22/btl</span></div></div>
+          <div class="popup-row"><div><div class="popup-wine">Envínate, Táganan Tinto</div><span class="popup-wine-sub">2022 · Tenerife</span></div><div class="popup-right"><span class="popup-qty">12 btl</span><span class="popup-price">$28/btl</span></div></div>
+        </div>
+        <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$732.00</span></div>
+      </div>
     </div>`;
   document.getElementById('inboxCount').textContent = '4 items';
   setOpenHintReady(4);
