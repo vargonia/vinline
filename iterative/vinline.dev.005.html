@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vinline.dev.005</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+  :root {
+    --ink:#1C1B18;--ink-2:#4A4843;--ink-3:#8A8880;
+    --rule:#E4E2DC;--rule-2:#F0EEE8;
+    --bg:#FAF9F6;--bg-2:#F4F2EC;--bg-3:#EEECEA;
+    --green:#1A6B50;--green-dim:#E6F0EB;--green-mid:#2E9B74;
+    --amber:#8A5C1A;--amber-dim:#F5EDDF;
+    --blue:#1A4A7A;--blue-dim:#E6EDF5;
+    --red:#C0392B;--red-dim:#FAEAE8;
+    --bracket:#C4C2BA;
+    --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:14px}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+  .shell{max-width:900px;margin:0 auto;border:0.5px solid var(--rule);border-top:none;border-bottom:none;min-height:100vh;background:var(--bg)}
+
+  /* TOPBAR */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--rule);position:sticky;top:0;background:var(--bg);z-index:100}
+  .logo-unit{display:flex;align-items:center;gap:9px}
+  .logo-mark{display:flex;align-items:center;gap:2px}
+  .logo-bk{font-family:var(--mono);font-size:17px;font-weight:300;color:var(--bracket);line-height:1;letter-spacing:-1px}
+  .logo-lines{display:flex;flex-direction:column;gap:2px;width:9px}
+  .logo-line{height:1.5px;background:var(--bracket);border-radius:1px}
+  .logo-name{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--ink);letter-spacing:.04em}
+  .logo-build{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.06em}
+  .topbar-right{display:flex;align-items:center;gap:12px}
+  .sync-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+  .sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green-mid)}
+  .nav-btn{font-size:11px;font-family:var(--sans);padding:5px 12px;border-radius:20px;border:0.5px solid var(--rule);cursor:pointer;background:transparent;color:var(--ink-2);transition:all .15s}
+  .nav-btn:hover{background:var(--bg-2);color:var(--ink)}
+  .nav-btn.active{background:var(--bg-3);color:var(--ink);border-color:var(--ink-3)}
+
+  /* STAGE */
+  #stage{overflow:visible}
+
+  /* COLLAPSED */
+  #collapsed{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 24px 40px;gap:22px;cursor:pointer;transition:background .15s;min-height:240px;position:relative}
+  #collapsed:hover{background:var(--bg-2)}
+  .scene{display:flex;align-items:center;justify-content:center;gap:0;position:relative}
+  .bracket-unit{display:flex;align-items:center}
+  .b-char{font-family:var(--mono);font-size:108px;font-weight:300;color:var(--bracket);line-height:1;user-select:none;flex-shrink:0}
+  #bk-l{transform-origin:right center}
+  #bk-r{transform-origin:left center}
+
+  /* CONNECTED bracket zone */
+  .b-info{display:flex;flex-direction:column;gap:2px;width:68px;cursor:pointer;padding:4px;border-radius:4px;transition:background .12s}
+  .b-info:hover{background:var(--bg-2)}
+  .b-info-l{align-items:flex-end;padding-right:5px}
+  .b-info-r{align-items:flex-start;padding-left:5px}
+  .b-label{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .b-val{font-family:var(--mono);font-size:9.5px;font-weight:400;color:var(--ink-2);line-height:1.3}
+  .b-val.right{text-align:right}
+  .b-status{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:8px;color:var(--green-mid)}
+  .b-status.right{flex-direction:row-reverse}
+  .b-dot{width:4px;height:4px;border-radius:50%;background:var(--green-mid);flex-shrink:0}
+  .b-change{font-family:var(--mono);font-size:7px;color:var(--ink-3);opacity:0;transition:opacity .15s;margin-top:1px}
+  .b-change.right{text-align:right}
+  .b-info:hover .b-change{opacity:1}
+
+  /* UNCONNECTED bracket zone */
+  .b-empty{display:flex;flex-direction:column;gap:2px;width:68px;cursor:pointer;padding:4px;border-radius:4px;transition:background .12s}
+  .b-empty:hover{background:var(--bg-2)}
+  .b-empty-l{align-items:flex-end;padding-right:5px}
+  .b-empty-r{align-items:flex-start;padding-left:5px}
+  .b-empty-val{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);font-style:italic;line-height:1.3}
+  .b-empty-val.right{text-align:right}
+  .b-empty-status{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:8px;color:var(--red)}
+  .b-empty-status.right{flex-direction:row-reverse}
+  .b-red-dot{width:4px;height:4px;border-radius:50%;background:var(--red);flex-shrink:0}
+  .b-empty-hint{font-family:var(--mono);font-size:7px;color:var(--ink-3);opacity:0;transition:opacity .15s;margin-top:1px}
+  .b-empty-hint.right{text-align:right}
+  .b-empty:hover .b-empty-hint{opacity:1}
+
+  .shelf-center{display:flex;flex-direction:column;gap:4.5px;width:68px;flex-shrink:0;padding:0 2px}
+  .s-line{height:2.5px;border-radius:1.5px}
+  .s-hi{background:#A8A6A0}
+  .s-lo{background:var(--rule)}
+  .s-empty{background:var(--rule);opacity:.35}
+  .open-hint{font-family:var(--mono);font-size:10px;color:var(--ink-3);display:flex;align-items:center;gap:5px;letter-spacing:.03em;transition:color .15s;user-select:none}
+  #collapsed:hover .open-hint{color:var(--ink-2)}
+
+  /* CONNECTION MODALS */
+  .conn-modal{display:none;position:absolute;z-index:30;background:var(--bg);border:0.5px solid var(--rule);border-radius:8px;padding:12px;width:200px;top:calc(100% + 10px);box-shadow:0 4px 20px rgba(0,0,0,.06)}
+  #modal-l{left:0}
+  #modal-r{right:0;left:auto}
+  .modal-head{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:8px}
+  .modal-opt{display:flex;align-items:center;justify-content:space-between;padding:7px 8px;border:0.5px solid var(--rule);border-radius:5px;cursor:pointer;margin-bottom:4px;transition:background .12s}
+  .modal-opt:hover{background:var(--bg-2)}
+  .modal-opt:last-of-type{margin-bottom:0}
+  .mo-name{font-size:11px;font-weight:500;color:var(--ink)}
+  .mo-sub{font-size:9px;color:var(--ink-3);margin-top:1px}
+  .mo-check{width:14px;height:14px;border-radius:50%;background:var(--green-dim);border:0.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .mo-check::after{content:'✓';font-size:8px;color:var(--green)}
+  .modal-close{width:100%;margin-top:8px;font-size:10px;padding:5px;border-radius:5px;border:0.5px solid var(--rule);cursor:pointer;background:transparent;color:var(--ink-3);font-family:var(--sans);transition:background .12s}
+  .modal-close:hover{background:var(--bg-2)}
+  .modal-close:disabled{opacity:.4;cursor:not-allowed}
+
+  /* AUTH FLOW STATES */
+  .modal-status{display:flex;align-items:center;gap:7px;padding:9px 8px;font-family:var(--mono);font-size:9px;color:var(--ink-3);border:0.5px solid var(--rule);border-radius:5px;margin-bottom:4px}
+  .modal-error-msg{font-family:var(--mono);font-size:9px;color:var(--red);padding:7px 8px;border:0.5px solid #EEC8C4;border-radius:5px;background:var(--red-dim);margin-bottom:4px;line-height:1.4}
+  .auth-spinner{width:10px;height:10px;border:1.5px solid var(--rule);border-top-color:var(--green-mid);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  /* SCAN PULSE in open-hint */
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .scan-pulse{width:4px;height:4px;border-radius:50%;background:var(--green-mid);animation:pulse 1.3s ease-in-out infinite;flex-shrink:0}
+
+  /* EXPANDED */
+  #expanded{display:none;opacity:0}
+  .three-col{display:grid;grid-template-columns:1fr 1px 1.6fr 1px 1fr;overflow:visible}
+  .col-div{background:var(--rule)}
+  .col{display:flex;flex-direction:column;background:var(--bg);position:relative}
+  .col-mid{background:var(--bg-2)}
+  #colLeft{z-index:10}
+  .col-head{padding:11px 15px 9px;border-bottom:0.5px solid var(--rule);display:flex;align-items:flex-end;justify-content:space-between}
+  .col-eyebrow{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);margin-bottom:2px}
+  .col-title{font-size:13px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:5px}
+  .col-icon{color:var(--ink-3);font-size:13px}
+  .col-body{flex:1;padding:11px 12px;display:flex;flex-direction:column;gap:6px}
+  .col-foot{padding:9px 13px;border-top:0.5px solid var(--rule);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+  /* BUTTONS */
+  .btn{font-size:10px;padding:5px 11px;border-radius:5px;border:0.5px solid var(--rule);cursor:pointer;background:transparent;color:var(--ink-2);font-family:var(--sans);transition:all .12s}
+  .btn:hover{background:var(--bg-2);color:var(--ink)}
+  .btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
+  .btn-primary:hover{background:var(--green-mid);border-color:var(--green-mid)}
+  .btn-sm{font-size:9px;padding:4px 9px}
+  .sync-btn{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px}
+
+  /* EMAIL CARDS */
+  .ecard{border:0.5px solid var(--rule);border-radius:5px;padding:8px 10px;background:var(--bg);cursor:pointer;transition:border-color .12s;position:relative}
+  .ecard:hover{border-color:var(--ink-3)}
+  .ecard.sel{border-color:var(--green);background:var(--green-dim)}
+  .ecard:hover .inv-popup{display:block}
+  .ec-from{font-size:11px;font-weight:500;color:var(--ink)}
+  .ec-subj{font-size:10px;color:var(--ink-2);margin-top:1px;line-height:1.35}
+  .ec-foot{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+  .ec-date{font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+  .badge{font-family:var(--mono);font-size:8.5px;padding:2px 6px;border-radius:10px;font-weight:500;letter-spacing:.02em}
+  .b-inv{background:var(--blue-dim);color:var(--blue)}
+  .b-del{background:var(--green-dim);color:var(--green)}
+  .b-pend{background:var(--amber-dim);color:var(--amber)}
+
+  /* INVOICE POPUP */
+  .inv-popup{display:none;position:absolute;left:calc(100% + 8px);top:0;width:210px;background:var(--bg);border:0.5px solid var(--rule);border-radius:8px;z-index:200;pointer-events:none}
+  .popup-head{padding:9px 11px 7px;border-bottom:0.5px solid var(--rule)}
+  .popup-from{font-size:11px;font-weight:500;color:var(--ink)}
+  .popup-inv{font-family:var(--mono);font-size:8px;color:var(--ink-3);margin-top:1px;display:flex;justify-content:space-between}
+  .popup-body{padding:7px 11px}
+  .popup-lbl{font-family:var(--mono);font-size:7.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);padding-bottom:4px;border-bottom:0.5px solid var(--rule);margin-bottom:3px}
+  .popup-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:0.5px solid var(--rule-2);gap:6px}
+  .popup-row:last-child{border-bottom:none}
+  .popup-wine{font-size:9px;font-weight:500;color:var(--ink);flex:1;line-height:1.3}
+  .popup-wine-sub{font-family:var(--mono);font-size:7.5px;color:var(--ink-3);display:block;margin-top:1px}
+  .popup-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex-shrink:0}
+  .popup-qty{font-family:var(--mono);font-size:8px;color:var(--ink-3)}
+  .popup-price{font-family:var(--mono);font-size:9px;color:var(--ink)}
+  .popup-foot{padding:6px 11px 8px;border-top:0.5px solid var(--rule);display:flex;justify-content:space-between;align-items:center}
+  .popup-total-lbl{font-family:var(--mono);font-size:8px;color:var(--ink-3)}
+  .popup-total{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink)}
+
+  /* PARSE BANNER */
+  .parse-banner{background:var(--green-dim);border:0.5px solid #9FD4BC;border-radius:5px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .pb-txt{font-size:10px;color:var(--green);line-height:1.4}
+  .pb-btn{font-size:9px;padding:3px 8px;border-radius:4px;border:0.5px solid var(--green);background:var(--bg);color:var(--green);cursor:pointer;font-family:var(--sans);transition:background .12s}
+  .pb-btn:hover{background:var(--green-dim)}
+
+  /* SEC LABEL */
+  .sec-lbl{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);padding-bottom:4px;border-bottom:0.5px solid var(--rule);margin-bottom:2px}
+
+  /* INVENTORY ROWS */
+  .inv-row{border:0.5px solid var(--rule);border-radius:5px;background:var(--bg);overflow:hidden}
+  .inv-row.new-entry{border-left:2px solid var(--green-mid);border-radius:0 5px 5px 0}
+  .ir-main{padding:7px 9px}
+  .ir-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+  .ir-name{font-size:10px;font-weight:500;color:var(--ink);flex:1;cursor:text;outline:none;line-height:1.4}
+  .ir-name:focus{border-bottom:0.5px solid var(--green)}
+  .new-tag{font-family:var(--mono);font-size:7.5px;background:var(--green-dim);color:var(--green);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle}
+  .ir-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex-shrink:0}
+  .ir-cost{font-family:var(--mono);font-size:7.5px;color:var(--ink-3)}
+  .ir-sell{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink)}
+  .ir-mg{font-family:var(--mono);font-size:8px;color:var(--green-mid);cursor:pointer;user-select:none;transition:opacity .12s}
+  .ir-mg:hover{opacity:.7}
+  .ir-mg:active{opacity:.5}
+  .ir-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:8px}
+  .ir-meta-left{display:flex;gap:4px;font-family:var(--mono);font-size:7.5px;color:var(--ink-3);flex-shrink:0}
+  .ir-controls{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+  .edit-btn{font-family:var(--mono);font-size:6.5px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:2px;padding:0px 3px;cursor:pointer;line-height:1.6;letter-spacing:.01em;transition:all .15s}
+  .edit-btn:hover{border-color:var(--ink-3);color:var(--ink-2);background:var(--bg-2)}
+  .slider-wrap{display:none;align-items:center;gap:4px}
+  .slider-wrap.visible{display:flex}
+  .mg-track{position:relative;width:72px;height:14px;display:flex;align-items:center;flex-shrink:0}
+  .mg-track-bg{position:absolute;left:0;right:0;height:1.5px;background:var(--rule);border-radius:1px}
+  .mg-track-fill{position:absolute;left:0;height:1.5px;background:var(--green-mid);border-radius:1px}
+  input.mg-slider{position:relative;width:100%;-webkit-appearance:none;appearance:none;height:1.5px;background:transparent;outline:none;cursor:pointer;z-index:1}
+  input.mg-slider::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--bg);border:1.5px solid var(--green-mid);cursor:pointer}
+  input.mg-slider::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:var(--bg);border:1.5px solid var(--green-mid);cursor:pointer;border-style:solid}
+  .icon-btn{background:none;border:none;cursor:pointer;padding:1px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);transition:color .12s;flex-shrink:0}
+  .icon-btn.confirm{color:var(--green-mid)}
+  .icon-btn.confirm:hover{opacity:.7}
+  .icon-btn.cancel:hover{color:#c0392b}
+
+  /* BTG/BTB ROW PILL */
+  .btg-row-pill{display:flex;align-items:center;border:0.5px solid var(--rule);border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:7px;line-height:1}
+  .btg-r{padding:2px 6px;cursor:pointer;transition:all .12s;color:var(--ink-3);background:transparent;border:none;font-family:inherit;font-size:inherit}
+  .btg-r.active{background:var(--green-mid);color:#fff}
+  .btg-r:not(.active):hover{background:var(--bg-2);color:var(--ink-2)}
+
+  /* WINE LIST */
+  .wl-hint{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;color:var(--ink-3);margin-bottom:2px}
+  .sec-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .sec-rule{flex:1;height:0.5px;background:var(--rule)}
+  .sec-count{font-family:var(--mono);font-size:8px;color:var(--ink-3)}
+  .menu-block{margin-bottom:10px}
+  .mi{padding:6.5px 3px;border-bottom:0.5px solid var(--rule-2);display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 -3px;border-radius:0;transition:background .1s;cursor:text}
+  .mi:last-child{border-bottom:none}
+  .mi:hover{background:var(--bg-2);border-radius:4px}
+  .mi:hover .mi-edit-hint{opacity:1}
+  .mi-left{flex:1;min-width:0}
+  .mi-name{font-size:11px;font-weight:500;color:var(--ink);line-height:1.35}
+  .mi-sub{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);display:block;margin-top:1px}
+  .mi-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+  .mi-price{font-family:var(--mono);font-size:11px;color:var(--ink);white-space:nowrap}
+  .dollar{font-size:9px;color:var(--ink-3);margin-right:1px;vertical-align:1px}
+  .mi-edit-hint{font-family:var(--mono);font-size:7.5px;color:var(--ink-3);opacity:0;transition:opacity .15px;white-space:nowrap}
+  .head-actions{display:flex;align-items:center;gap:6px}
+
+  /* COLLAPSE BAR */
+  .collapse-bar{padding:9px 20px;border-top:0.5px solid var(--rule);display:flex;justify-content:center}
+  .collapse-btn{font-family:var(--mono);font-size:9px;color:var(--ink-3);cursor:pointer;background:transparent;border:none;display:flex;align-items:center;gap:5px;letter-spacing:.04em;transition:color .12s}
+  .collapse-btn:hover{color:var(--ink-2)}
+
+  /* SETTINGS */
+  #settings{display:none;padding:20px;flex-direction:column;gap:14px}
+  .scard{background:var(--bg);border:0.5px solid var(--rule);border-radius:8px;padding:14px 16px}
+  .scard-title{font-size:12px;font-weight:500;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .srow{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--rule-2);gap:10px}
+  .srow:last-child{border-bottom:none;padding-bottom:0}
+  .sr-l{font-size:11px;color:var(--ink)}
+  .sr-sub{font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-top:1px}
+  .sr-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .conn-label{font-family:var(--mono);font-size:9px;color:var(--green-mid);display:flex;align-items:center;gap:3px}
+  .conn-label::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green-mid);display:block}
+  .tog{width:30px;height:17px;border-radius:9px;background:var(--green-mid);position:relative;cursor:pointer;border:none;transition:background .2s}
+  .tog::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;top:3px;right:3px;transition:right .2s}
+  .tog.off{background:var(--rule)}
+  .tog.off::after{right:auto;left:3px}
+  .mg-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px}
+  .mg-item{background:var(--bg-2);border-radius:5px;padding:9px 11px}
+  .mg-lbl{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+  .mg-row{display:flex;align-items:center;gap:7px}
+  .mg-row input[type=range]{flex:1;accent-color:var(--green)}
+  .mg-num{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink);min-width:30px}
+
+  /* INBOX EMPTY / SCANNING STATES */
+  .inbox-state{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:28px 16px;gap:10px;text-align:center}
+  .inbox-state-lbl{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3)}
+  .inbox-state-sub{font-size:11px;color:var(--ink-2);line-height:1.55;max-width:155px}
+  .inbox-scanning{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <div class="logo-unit">
+      <div class="logo-mark">
+        <span class="logo-bk">]</span>
+        <div class="logo-lines"><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div></div>
+        <span class="logo-bk">[</span>
+      </div>
+      <div><div class="logo-name">vinline</div><div class="logo-build">dev.005 · mock</div></div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-badge" id="topbarStatus" style="display:none">
+        <span class="sync-dot"></span><span id="topbarStatusText"></span>
+      </div>
+      <button class="nav-btn" id="settingsBtn" onclick="toggleSettings(event)">Settings</button>
+    </div>
+  </header>
+
+  <div id="stage">
+
+    <!-- COLLAPSED -->
+    <div id="collapsed">
+      <div class="scene" id="scene" style="position:relative">
+
+        <!-- LEFT BRACKET: email — starts unconnected -->
+        <div class="bracket-unit">
+          <!-- Connected state (hidden until auth succeeds) -->
+          <div class="b-info b-info-l" id="emailConnectedZone" style="display:none" onclick="event.stopPropagation();openModal('modal-l')">
+            <span class="b-label">Email</span>
+            <span class="b-val right" id="emailDisplayName">—</span>
+            <span class="b-status right"><span class="b-dot"></span><span id="emailProviderLabel">Gmail</span></span>
+            <span class="b-change right">change →</span>
+          </div>
+          <!-- Unconnected state (shown on first launch) -->
+          <div class="b-empty b-empty-l" id="emailUnconnectedZone" onclick="event.stopPropagation();openModal('modal-l')">
+            <span class="b-label">Email</span>
+            <span class="b-empty-val right">tap to<br>connect</span>
+            <span class="b-empty-status right"><span class="b-red-dot"></span>none</span>
+            <span class="b-empty-hint right">open setup →</span>
+          </div>
+          <span class="b-char" id="bk-l">]</span>
+        </div>
+
+        <div class="shelf-center" id="shelfWrap">
+          <div class="s-line s-hi" id="sl0"></div><div class="s-line s-hi" id="sl1"></div>
+          <div class="s-line s-lo" id="sl2"></div><div class="s-line s-hi" id="sl3"></div>
+          <div class="s-line s-hi" id="sl4"></div><div class="s-line s-lo" id="sl5"></div>
+          <div class="s-line s-hi" id="sl6"></div><div class="s-line s-hi" id="sl7"></div>
+          <div class="s-line s-lo" id="sl8"></div><div class="s-line s-lo" id="sl9"></div>
+        </div>
+
+        <!-- RIGHT BRACKET: output -->
+        <div class="bracket-unit">
+          <span class="b-char" id="bk-r" style="color:#D0CEC6">[</span>
+          <!-- Connected state (hidden until Drive file is selected) -->
+          <div class="b-info b-info-r" id="driveConnectedZone" style="display:none" onclick="event.stopPropagation();openModal('modal-r')">
+            <span class="b-label">Output</span>
+            <span class="b-val" id="driveFileName">—</span>
+            <span class="b-status"><span class="b-dot"></span><span>Drive</span></span>
+            <span class="b-change">change →</span>
+          </div>
+          <!-- Unconnected state -->
+          <div class="b-empty b-empty-r" id="driveUnconnectedZone" onclick="event.stopPropagation();openModal('modal-r')">
+            <span class="b-label">Output</span>
+            <span class="b-empty-val">tap to<br>connect</span>
+            <span class="b-empty-status"><span class="b-red-dot"></span>none</span>
+            <span class="b-empty-hint">open setup →</span>
+          </div>
+        </div>
+
+        <!-- EMAIL CONNECT MODAL -->
+        <div class="conn-modal" id="modal-l" onclick="event.stopPropagation()">
+          <div class="modal-head" id="emailModalHead">Connect inbox</div>
+          <div id="emailModalBody">
+            <div class="modal-opt" onclick="connectGmail()">
+              <div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div>
+            </div>
+            <div class="modal-opt" onclick="connectOutlook()">
+              <div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div>
+            </div>
+          </div>
+          <button class="modal-close" id="emailModalClose" onclick="closeModal('modal-l')">Cancel</button>
+        </div>
+
+        <!-- OUTPUT MODAL -->
+        <div class="conn-modal" id="modal-r" onclick="event.stopPropagation()">
+          <div class="modal-head" id="driveModalHead">Output destination</div>
+          <div id="driveModalBody">
+            <div class="modal-opt" onclick="connectDrive()">
+              <div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div>
+            </div>
+            <div class="modal-opt"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand</div></div></div>
+          </div>
+          <button class="modal-close" id="driveModalClose" onclick="closeModal('modal-r')">Cancel</button>
+        </div>
+
+      </div>
+      <div class="open-hint" id="openHint">↓ tap to open</div>
+    </div>
+
+    <!-- EXPANDED -->
+    <div id="expanded">
+      <div class="three-col">
+
+        <!-- LEFT: INBOX -->
+        <div class="col" id="colLeft">
+          <div class="col-head">
+            <div><div class="col-eyebrow">Input</div><div class="col-title">✉ Inbox</div></div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <button class="btn btn-sm sync-btn" onclick="triggerPhotoUpload()" title="Upload invoice photo" style="gap:4px">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
+                  <rect x="1" y="2.5" width="10" height="7.5" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/>
+                  <circle cx="6" cy="6.2" r="1.8" stroke="currentColor" stroke-width="1.0" fill="none"/>
+                  <path d="M4 2.5 L4.6 1 L7.4 1 L8 2.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                photo
+              </button>
+              <button class="btn btn-sm sync-btn" id="inboxSyncBtn" onclick="reScan(this)" title="Re-scan inbox">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                sync
+              </button>
+            </div>
+          </div>
+          <div class="col-body" id="inboxBody">
+            <!-- Populated by JS: empty-state → scanning → email cards -->
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm">Parse invoice</button>
+            <span id="inboxCount" style="font-family:var(--mono);font-size:9px;color:var(--ink-3)">—</span>
+          </div>
+        </div>
+
+        <div class="col-div" id="divL"></div>
+
+        <!-- CENTER: INVENTORY -->
+        <div class="col col-mid">
+          <div class="col-head"><div><div class="col-eyebrow">Processing</div><div class="col-title">≡ Inventory</div></div></div>
+          <div class="col-body">
+            <div class="parse-banner"><span class="pb-txt">Raw parse · Invoice #8821 — review before confirming</span><button class="pb-btn">Confirm all</button></div>
+            <div class="sec-lbl">Parsed · 3 new</div>
+
+            <div class="inv-row new-entry">
+              <div class="ir-main">
+                <div class="ir-top">
+                  <div class="ir-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$284</span><span class="ir-mg" id="m0" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
+                </div>
+                <div class="ir-bottom">
+                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>3 btl</span><span>·</span><span>Loire</span></div>
+                  <div class="ir-controls">
+                    <button class="edit-btn" id="eb0" onclick="openSlider(0)">edit</button>
+                    <div class="slider-wrap" id="sw0">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb0" onclick="setBtgMode(0,false)">Btl</button><button class="btg-r" id="btgg0" onclick="setBtgMode(0,true)">Glass</button></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f0" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(0,this.value)" id="rng0"></div>
+                      <button class="icon-btn cancel" onclick="cancelMg(0)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                      <button class="icon-btn confirm" onclick="confirmMg(0)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inv-row new-entry">
+              <div class="ir-main">
+                <div class="ir-top">
+                  <div class="ir-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$48</span><span class="ir-mg" id="m1" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
+                </div>
+                <div class="ir-bottom">
+                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>Emilia-Romagna</span></div>
+                  <div class="ir-controls">
+                    <button class="edit-btn" id="eb1" onclick="openSlider(1)">edit</button>
+                    <div class="slider-wrap" id="sw1">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb1" onclick="setBtgMode(1,false)">Btl</button><button class="btg-r" id="btgg1" onclick="setBtgMode(1,true)">Glass</button></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f1" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(1,this.value)" id="rng1"></div>
+                      <button class="icon-btn cancel" onclick="cancelMg(1)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                      <button class="icon-btn confirm" onclick="confirmMg(1)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inv-row new-entry">
+              <div class="ir-main">
+                <div class="ir-top">
+                  <div class="ir-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$72</span><span class="ir-mg" id="m2" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
+                </div>
+                <div class="ir-bottom">
+                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>84 btl</span><span>·</span><span>Piedmont</span></div>
+                  <div class="ir-controls">
+                    <button class="edit-btn" id="eb2" onclick="openSlider(2)">edit</button>
+                    <div class="slider-wrap" id="sw2">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb2" onclick="setBtgMode(2,false)">Btl</button><button class="btg-r" id="btgg2" onclick="setBtgMode(2,true)">Glass</button></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f2" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(2,this.value)" id="rng2"></div>
+                      <button class="icon-btn cancel" onclick="cancelMg(2)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                      <button class="icon-btn confirm" onclick="confirmMg(2)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec-lbl" style="margin-top:4px">Existing inventory</div>
+
+            <div class="inv-row">
+              <div class="ir-main">
+                <div class="ir-top">
+                  <div class="ir-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
+                  <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$60</span><span class="ir-mg" id="m3" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
+                </div>
+                <div class="ir-bottom">
+                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>24 btl</span><span>·</span><span>Portugal</span></div>
+                  <div class="ir-controls">
+                    <button class="edit-btn" id="eb3" onclick="openSlider(3)">edit</button>
+                    <div class="slider-wrap" id="sw3">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb3" onclick="setBtgMode(3,false)">Btl</button><button class="btg-r" id="btgg3" onclick="setBtgMode(3,true)">Glass</button></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f3" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(3,this.value)" id="rng3"></div>
+                      <button class="icon-btn cancel" onclick="cancelMg(3)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                      <button class="icon-btn confirm" onclick="confirmMg(3)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inv-row">
+              <div class="ir-main">
+                <div class="ir-top">
+                  <div class="ir-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
+                  <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$112</span><span class="ir-mg" id="m4" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
+                </div>
+                <div class="ir-bottom">
+                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>California</span></div>
+                  <div class="ir-controls">
+                    <button class="edit-btn" id="eb4" onclick="openSlider(4)">edit</button>
+                    <div class="slider-wrap" id="sw4">
+                      <div class="btg-row-pill"><button class="btg-r active" id="btgb4" onclick="setBtgMode(4,false)">Btl</button><button class="btg-r" id="btgg4" onclick="setBtgMode(4,true)">Glass</button></div>
+                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f4" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(4,this.value)" id="rng4"></div>
+                      <button class="icon-btn cancel" onclick="cancelMg(4)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                      <button class="icon-btn confirm" onclick="confirmMg(4)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-foot" style="background:var(--bg-2)"><button class="btn btn-primary btn-sm">Push to wine list</button><button class="btn btn-sm">Discard</button></div>
+        </div>
+
+        <div class="col-div" id="divR"></div>
+
+        <!-- RIGHT: WINE LIST -->
+        <div class="col" id="colRight">
+          <div class="col-head">
+            <div><div class="col-eyebrow">Output</div><div class="col-title">☰ Wine list</div></div>
+            <div class="head-actions">
+              <button class="btn btn-sm sync-btn" onclick="syncBtn(this)" title="Re-sync formatting from Drive">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                sync
+              </button>
+              <button class="btn btn-sm">Preview</button>
+            </div>
+          </div>
+          <div class="col-body">
+            <div class="wl-hint">✎ hover any entry to edit</div>
+            <div class="menu-block">
+              <div class="sec-head"><span class="sec-lbl">Sparkling</span><span class="sec-rule"></span><span class="sec-count">1</span></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2023 · Emilia-Romagna, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp0" data-bottle="48" data-glass="12">48</span></div><span class="mi-edit-hint">edit</span></div></div>
+            </div>
+            <div class="menu-block">
+              <div class="sec-head"><span class="sec-lbl">White</span><span class="sec-rule"></span><span class="sec-count">2</span></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde</div><span class="mi-sub" contenteditable="true" spellcheck="false">2022 · Lima, Portugal</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp1" data-bottle="60" data-glass="15">60</span></div><span class="mi-edit-hint">edit</span></div></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2020 · Loire Valley, France</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp2" data-bottle="284" data-glass="71">284</span></div><span class="mi-edit-hint">edit</span></div></div>
+            </div>
+            <div class="menu-block">
+              <div class="sec-head"><span class="sec-lbl">Red</span><span class="sec-rule"></span><span class="sec-count">2</span></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2021 · Piedmont, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp3" data-bottle="72" data-glass="18">72</span></div><span class="mi-edit-hint">edit</span></div></div>
+              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills</div><span class="mi-sub" contenteditable="true" spellcheck="false">2022 · California, USA</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp4" data-bottle="112" data-glass="28">112</span></div><span class="mi-edit-hint">edit</span></div></div>
+            </div>
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm">↓ PDF</button>
+            <button class="btn btn-sm" id="driveFootBtn" onclick="openDriveConnect()">Drive</button>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto">5 items</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="collapse-bar"><button class="collapse-btn" onclick="collapse()">↑ collapse</button></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings">
+      <div class="scard">
+        <div class="scard-title">✉ Email connection</div>
+        <div class="srow" id="settingsGmailRow">
+          <div><div class="sr-l">Gmail</div><div class="sr-sub" id="settingsGmailSub">Not connected</div></div>
+          <div class="sr-r" id="settingsGmailRight">
+            <button class="btn btn-sm" onclick="openEmailConnect('Gmail')">Connect →</button>
+          </div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub" id="settingsOutlookSub">Not connected</div></div>
+          <div class="sr-r" id="settingsOutlookRight"><button class="btn btn-sm" onclick="openEmailConnect('Outlook')">Connect →</button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Every 30 minutes</div></div>
+          <div class="sr-r"><button class="tog" aria-label="toggle auto-scan"></button></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">☁ Google Drive</div>
+        <div class="srow">
+          <div><div class="sr-l">Output file</div><div class="sr-sub" id="settingsDriveSub">Not connected</div></div>
+          <div class="sr-r" id="settingsDriveRight"><button class="btn btn-sm" onclick="openDriveConnect()">Connect →</button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Auto-sync on change</div><div class="sr-sub">Update file when wine list changes</div></div>
+          <div class="sr-r"><button class="tog off" aria-label="toggle auto-sync Drive"></button></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">% Margins by category</div>
+        <div class="mg-grid">
+          <div class="mg-item"><div class="mg-lbl">Bottle — red</div><div class="mg-row"><input type="range" min="25" max="85" value="56" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">56%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — white</div><div class="mg-row"><input type="range" min="25" max="85" value="55" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">55%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">By the glass</div><div class="mg-row"><input type="range" min="25" max="150" value="120" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">120%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Sparkling</div><div class="mg-row"><input type="range" min="25" max="85" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">50%</span></div></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">≡ Naming convention</div>
+        <div class="srow"><div class="sr-l">Include appellation</div><div class="sr-r"><button class="tog" aria-label="toggle appellation"></button></div></div>
+        <div class="srow"><div class="sr-l">Include vintage</div><div class="sr-r"><button class="tog" aria-label="toggle vintage"></button></div></div>
+        <div class="srow"><div class="sr-l">Include region / country</div><div class="sr-r"><button class="tog off" aria-label="toggle region"></button></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── MOCK BUILD (dev.005) ─────────────────────────────────────────────────────
+// UI-only sandbox. No real OAuth or API calls. Auth flows are instant stubs.
+// Use dev.004 for the real wired build.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// EMAIL STATE
+let emailConnected = false;
+let emailProvider = null;
+let emailAddress = '';
+
+// DRIVE STATE
+let driveConnected = false;
+let driveToken = null;
+let driveFile = null; // { id, name, mimeType }
+
+// UI REFS
+const stage = document.getElementById('stage');
+const collapsed = document.getElementById('collapsed');
+const expanded = document.getElementById('expanded');
+const settings = document.getElementById('settings');
+const bkL = document.getElementById('bk-l');
+const bkR = document.getElementById('bk-r');
+const openHint = document.getElementById('openHint');
+const colLeft = document.getElementById('colLeft');
+const colRight = document.getElementById('colRight');
+const divL = document.getElementById('divL');
+const divR = document.getElementById('divR');
+const shelves = Array.from({length:10}, (_,i) => document.getElementById('sl'+i));
+const inboxBody = document.getElementById('inboxBody');
+let isExpanded = false;
+
+// MARGIN SYSTEM
+const costs = [71, 12, 18, 15, 28];
+const committed = [4.0, 4.0, 4.0, 4.0, 4.0];
+const pending = [...committed];
+let displayMode = 'mult';
+const committedBtg = [false, false, false, false, false];
+const pendingBtg   = [false, false, false, false, false];
+const wlMap = [2, 0, 3, 1, 4];
+
+function sellPrice(cost, mult) { return Math.round(cost * mult); }
+function mgLabel(mult) { return displayMode==='mult' ? '×'+mult.toFixed(1) : '+'+Math.round((mult-1)*100)+'%'; }
+function multToFill(mult) { return ((mult-1.0)/5.0*100).toFixed(1)+'%'; }
+function sliderToMult(val) { return 1.0+(parseFloat(val)/100)*5.0; }
+
+function updateRowDisplay(i) {
+  const mult = pending[i];
+  const bottleSell = sellPrice(costs[i], mult);
+  const displaySell = pendingBtg[i] ? costs[i] : bottleSell;
+  document.getElementById('s'+i).textContent = '$'+displaySell;
+  document.getElementById('m'+i).textContent = mgLabel(mult);
+  document.getElementById('f'+i).style.width = multToFill(mult);
+  if (document.getElementById('rng'+i)) document.getElementById('rng'+i).value = ((mult-1.0)/5.0*100).toFixed(0);
+  const wlEl = document.getElementById('wlp'+wlMap[i]);
+  if (wlEl) { wlEl.dataset.bottle = bottleSell; wlEl.textContent = pendingBtg[i] ? wlEl.dataset.glass : bottleSell; }
+}
+
+function setBtgMode(i, glass) {
+  pendingBtg[i] = glass;
+  document.getElementById('btgb'+i).classList.toggle('active', !glass);
+  document.getElementById('btgg'+i).classList.toggle('active', glass);
+  updateRowDisplay(i);
+}
+
+function toggleDisplayMode() {
+  displayMode = displayMode==='mult' ? 'pct' : 'mult';
+  for (let j=0; j<5; j++) document.getElementById('m'+j).textContent = mgLabel(pending[j]);
+}
+
+function liveMg(i, sliderVal) {
+  pending[i] = parseFloat(sliderToMult(sliderVal).toFixed(1));
+  updateRowDisplay(i);
+}
+
+function openSlider(i) {
+  closeAllSliders();
+  document.getElementById('eb'+i).style.display = 'none';
+  document.getElementById('sw'+i).classList.add('visible');
+  pending[i] = committed[i];
+  pendingBtg[i] = committedBtg[i];
+  document.getElementById('btgb'+i).classList.toggle('active', !committedBtg[i]);
+  document.getElementById('btgg'+i).classList.toggle('active', committedBtg[i]);
+  updateRowDisplay(i);
+}
+
+function closeAllSliders() {
+  for (let i=0; i<5; i++) {
+    const eb = document.getElementById('eb'+i);
+    const sw = document.getElementById('sw'+i);
+    if (eb) eb.style.display = '';
+    if (sw) { sw.classList.remove('visible'); pendingBtg[i]=committedBtg[i]; pending[i]=committed[i]; updateRowDisplay(i); }
+  }
+}
+
+function confirmMg(i) {
+  committed[i] = pending[i]; committedBtg[i] = pendingBtg[i];
+  document.getElementById('eb'+i).style.display = '';
+  document.getElementById('sw'+i).classList.remove('visible');
+}
+
+function cancelMg(i) {
+  pending[i] = committed[i]; pendingBtg[i] = committedBtg[i];
+  updateRowDisplay(i);
+  document.getElementById('eb'+i).style.display = '';
+  document.getElementById('sw'+i).classList.remove('visible');
+}
+
+// ─── EMAIL AUTH (mock) ────────────────────────────────────────────────────────
+
+function connectGmail() {
+  setModalLoading('Connecting…');
+  setTimeout(() => setEmailConnected('Gmail', 'buyer@restaurant.com'), 600);
+}
+
+function connectOutlook() {
+  setModalLoading('Connecting…');
+  setTimeout(() => setEmailConnected('Outlook', 'buyer@restaurant.com'), 600);
+}
+
+function setEmailConnected(provider, email) {
+  emailConnected = true;
+  emailProvider = provider;
+  emailAddress = email;
+
+  // Update left bracket: hide unconnected, show connected
+  document.getElementById('emailUnconnectedZone').style.display = 'none';
+  document.getElementById('emailConnectedZone').style.display = '';
+  const shortEmail = email.length > 16 ? email.split('@')[0] + '\n@' + email.split('@')[1] : email;
+  document.getElementById('emailDisplayName').textContent = shortEmail;
+  document.getElementById('emailProviderLabel').textContent = provider;
+
+  // Update topbar badge
+  document.getElementById('topbarStatus').style.display = 'flex';
+  document.getElementById('topbarStatusText').textContent = email.split('@')[0];
+
+  // Update settings panel for the correct provider
+  if (provider === 'Gmail') {
+    document.getElementById('settingsGmailSub').textContent = email;
+    document.getElementById('settingsGmailRight').innerHTML = '<span class="conn-label">connected</span><button class="btn btn-sm" onclick="disconnectGmail()">Disconnect</button>';
+  } else {
+    document.getElementById('settingsOutlookSub').textContent = email;
+    document.getElementById('settingsOutlookRight').innerHTML = '<span class="conn-label">connected</span><button class="btn btn-sm" onclick="disconnectOutlook()">Disconnect</button>';
+  }
+
+  // Close modal, show mock inbox data
+  document.getElementById('modal-l').style.display = 'none';
+  resetEmailModal();
+  setOpenHintScanning();
+  showInboxScanning();
+  setTimeout(showDemoCards, 700);
+}
+
+function disconnectGmail() {
+  emailConnected = false; emailProvider = null; emailAddress = '';
+  document.getElementById('emailUnconnectedZone').style.display = '';
+  document.getElementById('emailConnectedZone').style.display = 'none';
+  document.getElementById('topbarStatus').style.display = 'none';
+  document.getElementById('settingsGmailSub').textContent = 'Not connected';
+  document.getElementById('settingsGmailRight').innerHTML = '<button class="btn btn-sm" onclick="openEmailConnect(\'Gmail\')">Connect →</button>';
+  openHint.innerHTML = '↓ tap to open';
+  showInboxEmpty();
+  document.getElementById('inboxCount').textContent = '—';
+}
+
+function disconnectOutlook() {
+  if (emailProvider === 'Outlook') {
+    emailConnected = false; emailProvider = null; emailAddress = '';
+    document.getElementById('emailUnconnectedZone').style.display = '';
+    document.getElementById('emailConnectedZone').style.display = 'none';
+    document.getElementById('topbarStatus').style.display = 'none';
+    openHint.innerHTML = '↓ tap to open';
+    showInboxEmpty();
+    document.getElementById('inboxCount').textContent = '—';
+  }
+  document.getElementById('settingsOutlookSub').textContent = 'Not connected';
+  document.getElementById('settingsOutlookRight').innerHTML = '<button class="btn btn-sm" onclick="openEmailConnect(\'Outlook\')">Connect →</button>';
+}
+
+function openEmailConnect(provider) {
+  // From settings: collapse back and open the email modal
+  settings.style.display = 'none';
+  document.getElementById('settingsBtn').classList.remove('active');
+  if (!isExpanded) collapsed.style.display = 'flex'; else expanded.style.display = 'block';
+  openModal('modal-l');
+}
+
+// ─── DRIVE (mock) ────────────────────────────────────────────────────────────
+
+function connectDrive() {
+  setDriveModalLoading('Connecting…');
+  setTimeout(() => {
+    driveToken = 'MOCK';
+    driveFile = { id: 'mock', name: 'Wine List · Spring 2026', mimeType: 'application/vnd.google-apps.spreadsheet' };
+    setDriveConnected();
+  }, 600);
+}
+
+function setDriveConnected() {
+  driveConnected = true;
+  document.getElementById('driveUnconnectedZone').style.display = 'none';
+  document.getElementById('driveConnectedZone').style.display = '';
+  document.getElementById('bk-r').style.color = '';
+  const shortName = driveFile.name.length > 18 ? driveFile.name.slice(0, 16) + '…' : driveFile.name;
+  document.getElementById('driveFileName').textContent = shortName;
+  document.getElementById('settingsDriveSub').textContent = driveFile.name;
+  document.getElementById('settingsDriveRight').innerHTML =
+    '<span class="conn-label">connected</span><button class="btn btn-sm" onclick="disconnectDrive()">Disconnect</button>';
+  const footBtn = document.getElementById('driveFootBtn');
+  footBtn.textContent = '↑ Drive'; footBtn.onclick = syncToDrive;
+  document.getElementById('modal-r').style.display = 'none';
+  resetDriveModal();
+}
+
+function disconnectDrive() {
+  driveConnected = false; driveToken = null; driveFile = null;
+  document.getElementById('driveConnectedZone').style.display = 'none';
+  document.getElementById('driveUnconnectedZone').style.display = '';
+  document.getElementById('bk-r').style.color = '#D0CEC6';
+  document.getElementById('settingsDriveSub').textContent = 'Not connected';
+  document.getElementById('settingsDriveRight').innerHTML = '<button class="btn btn-sm" onclick="openDriveConnect()">Connect →</button>';
+  const footBtn = document.getElementById('driveFootBtn');
+  footBtn.textContent = 'Drive'; footBtn.onclick = openDriveConnect;
+}
+
+function openDriveConnect() {
+  settings.style.display = 'none';
+  document.getElementById('settingsBtn').classList.remove('active');
+  if (!isExpanded) collapsed.style.display = 'flex'; else expanded.style.display = 'block';
+  openModal('modal-r');
+}
+
+async function syncToDrive() {
+  const btn = document.getElementById('driveFootBtn');
+  btn.disabled = true; btn.textContent = 'syncing…';
+  await new Promise(r => setTimeout(r, 1100));
+  btn.textContent = '✓ synced';
+  setTimeout(() => { btn.textContent = '↑ Drive'; btn.disabled = false; }, 2500);
+}
+
+function setDriveModalLoading(msg) {
+  document.getElementById('driveModalBody').innerHTML =
+    '<div class="modal-status"><span class="auth-spinner"></span>' + esc(msg) + '</div>';
+  document.getElementById('driveModalClose').disabled = true;
+}
+
+function resetDriveModal() {
+  document.getElementById('driveModalHead').textContent = 'Output destination';
+  document.getElementById('driveModalBody').innerHTML =
+    '<div class="modal-opt" onclick="connectDrive()"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div></div>' +
+    '<div class="modal-opt"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand</div></div></div>';
+  document.getElementById('driveModalClose').disabled = false;
+  document.getElementById('driveModalClose').textContent = 'Cancel';
+}
+
+// ─── INBOX SCANNING (mock) ────────────────────────────────────────────────────
+
+async function reScan(btn) {
+  btn.classList.add('spinning'); btn.disabled = true;
+  setOpenHintScanning(); showInboxScanning();
+  await new Promise(r => setTimeout(r, 800));
+  showDemoCards();
+  btn.classList.remove('spinning'); btn.disabled = false;
+}
+
+function showDemoCards() {
+  inboxBody.innerHTML = `
+    <div class="ecard sel" style="z-index:10;position:relative">
+      <div class="ec-from">Southern Wine &amp; Spirits</div>
+      <div class="ec-subj">Invoice #8821 — June delivery confirmed</div>
+      <div class="ec-foot"><span class="ec-date">Today 9:14</span><span class="badge b-inv">Invoice</span></div>
+      <div class="inv-popup">
+        <div class="popup-head"><div class="popup-from">Southern Wine &amp; Spirits</div><div class="popup-inv"><span>Invoice #8821</span><span>12 Dec 2024</span></div></div>
+        <div class="popup-body"><div class="popup-lbl">Contents</div>
+          <div class="popup-row"><div><div class="popup-wine">Richard Leroy, Anjou</div><span class="popup-wine-sub">"Les Noëls de Montbenault" 2020</span></div><div class="popup-right"><span class="popup-qty">3 btl</span><span class="popup-price">$71/btl</span></div></div>
+          <div class="popup-row"><div><div class="popup-wine">La Ca'Nova, Barbera d'Alba</div><span class="popup-wine-sub">"Loreto" 2021</span></div><div class="popup-right"><span class="popup-qty">84 btl</span><span class="popup-price">$18/btl</span></div></div>
+          <div class="popup-row"><div><div class="popup-wine">Champagne Herbert Beaufort</div><span class="popup-wine-sub">"Carte d'Or" Grand Cru NV</span></div><div class="popup-right"><span class="popup-qty">12 btl</span><span class="popup-price">$36/btl</span></div></div>
+        </div>
+        <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$1,763.00</span></div>
+      </div>
+    </div>
+    <div class="ecard" style="z-index:9">
+      <div class="ec-from">Grapevine Wine Brokers</div>
+      <div class="ec-subj">Invoice #22197 — December order</div>
+      <div class="ec-foot"><span class="ec-date">Today 8:02</span><span class="badge b-inv">Invoice</span></div>
+    </div>
+    <div class="ecard" style="z-index:8">
+      <div class="ec-from">Skurnik Wines West</div>
+      <div class="ec-subj">Bill of Lading #0215104</div>
+      <div class="ec-foot"><span class="ec-date">Yesterday</span><span class="badge b-del">Delivery</span></div>
+    </div>
+    <div class="ecard" style="z-index:7">
+      <div class="ec-from">Lyra Fine Wine Importers</div>
+      <div class="ec-subj">Invoice #36327 — Feb delivery</div>
+      <div class="ec-foot"><span class="ec-date">Feb 21</span><span class="badge b-pend">Pending</span></div>
+    </div>`;
+  document.getElementById('inboxCount').textContent = '4 items';
+  setOpenHintReady(4);
+}
+
+function showInboxEmpty() {
+  inboxBody.innerHTML = `
+    <div class="inbox-state">
+      <div class="inbox-state-lbl">Inbox not connected</div>
+      <div class="inbox-state-sub">Connect your Gmail or Outlook from the collapsed view to scan for invoices</div>
+      <button class="btn btn-sm" style="margin-top:4px" onclick="collapseAndConnect()">Connect inbox →</button>
+    </div>`;
+}
+
+function showInboxScanning() {
+  inboxBody.innerHTML = `
+    <div class="inbox-state">
+      <div class="inbox-scanning">
+        <span class="scan-pulse"></span>scanning inbox…
+      </div>
+    </div>`;
+}
+
+function collapseAndConnect() {
+  if (isExpanded) collapse();
+  setTimeout(() => openModal('modal-l'), isExpanded ? 420 : 0);
+}
+
+// ─── OPEN HINT STATES ─────────────────────────────────────────────────────────
+
+function setOpenHintScanning() {
+  openHint.innerHTML = '<span class="scan-pulse"></span><span>scanning inbox…</span>';
+}
+
+function setOpenHintReady(n) {
+  openHint.innerHTML =
+    '<span style="color:var(--green-mid);font-weight:500">' + n + ' invoice' + (n!==1?'s':'') + ' found</span>' +
+    '<span style="color:var(--rule)"> · </span><span>↓ tap to open</span>';
+}
+
+// ─── EMAIL MODAL STATES ───────────────────────────────────────────────────────
+
+function setModalLoading(msg) {
+  document.getElementById('emailModalBody').innerHTML =
+    '<div class="modal-status"><span class="auth-spinner"></span>' + esc(msg) + '</div>';
+  document.getElementById('emailModalClose').disabled = true;
+}
+
+function setModalError(msg) {
+  document.getElementById('emailModalBody').innerHTML =
+    '<div class="modal-error-msg">' + esc(msg) + '</div>' +
+    '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Try again →</div></div></div>' +
+    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Try again →</div></div></div>';
+  document.getElementById('emailModalClose').disabled = false;
+}
+
+function resetEmailModal() {
+  document.getElementById('emailModalHead').textContent = 'Connect inbox';
+  document.getElementById('emailModalBody').innerHTML =
+    '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div></div>' +
+    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div></div>';
+  document.getElementById('emailModalClose').disabled = false;
+  document.getElementById('emailModalClose').textContent = 'Cancel';
+}
+
+// ─── MODALS ───────────────────────────────────────────────────────────────────
+
+function openModal(id) {
+  document.querySelectorAll('.conn-modal').forEach(m => m.style.display='none');
+  document.getElementById(id).style.display = 'block';
+}
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  if (id === 'modal-l') resetEmailModal();
+  if (id === 'modal-r') resetDriveModal();
+}
+
+// Scene click: close modals, expand if clicking the center shelf area
+document.getElementById('scene').addEventListener('click', e => {
+  document.querySelectorAll('.conn-modal').forEach(m => m.style.display='none');
+  if (!e.target.closest('.b-info') && !e.target.closest('.b-empty') && !e.target.closest('.conn-modal')) expand();
+});
+document.getElementById('openHint').addEventListener('click', expand);
+
+// ─── PHOTO UPLOAD ─────────────────────────────────────────────────────────────
+
+function triggerPhotoUpload() { document.getElementById('photoInput').click(); }
+
+// ─── SYNC BUTTON ──────────────────────────────────────────────────────────────
+
+function syncBtn(btn) { btn.classList.add('spinning'); btn.disabled=true; setTimeout(()=>{btn.classList.remove('spinning');btn.disabled=false;},700); }
+
+// ─── ANIMATION HELPERS ────────────────────────────────────────────────────────
+
+function sI(el, s) { el.style.transition='none'; Object.assign(el.style, s); }
+
+function visibleBInfos() {
+  return [...document.querySelectorAll('.b-info, .b-empty')].filter(el => el.style.display !== 'none');
+}
+
+function expand() {
+  if (isExpanded) return; isExpanded = true;
+  collapsed.style.pointerEvents = 'none';
+  document.querySelectorAll('.conn-modal').forEach(m => m.style.display='none');
+  const bInfos = visibleBInfos();
+  bInfos.forEach(el => { el.style.transition='opacity 0.18s ease'; el.style.opacity='0'; });
+  openHint.style.transition='opacity 0.15s ease'; openHint.style.opacity='0';
+  shelves.forEach((sl,i) => {
+    setTimeout(() => { sl.style.transition='all 0.3s ease'; sl.style.transform='scaleX(1.5)'; sl.style.opacity='0.4'; }, i*24);
+    setTimeout(() => { sl.style.transition='all 0.2s ease'; sl.style.transform='scaleX(0)'; sl.style.opacity='0'; sl.style.height='0px'; sl.style.marginBottom='0'; }, i*24+200);
+  });
+  const shelfDone = 9*24+200+210;
+  setTimeout(() => {
+    bkL.style.transition='all 0.48s cubic-bezier(0.4,0,0.2,1)'; bkR.style.transition='all 0.48s cubic-bezier(0.4,0,0.2,1)';
+    bkL.style.transform='scaleY(7) scaleX(0.13)'; bkL.style.opacity='0.1';
+    bkR.style.transform='scaleY(7) scaleX(0.13)'; bkR.style.opacity='0.1';
+  }, shelfDone-140);
+  const startH = stage.scrollHeight; stage.style.height = startH+'px';
+  setTimeout(() => {
+    const ecards = [...document.querySelectorAll('.ecard')];
+    const invRows = [...document.querySelectorAll('.inv-row')];
+    collapsed.style.display = 'none';
+    sI(bkL,{transform:'',opacity:'1',transition:''}); sI(bkR,{transform:'',opacity:'1',transition:''});
+    shelves.forEach(sl => sI(sl,{transform:'',opacity:'1',height:'',marginBottom:''}));
+    bInfos.forEach(el => { el.style.transition='none'; el.style.opacity='1'; });
+    openHint.style.transition='none'; openHint.style.opacity='1';
+    collapsed.style.pointerEvents = '';
+    expanded.style.display = 'block';
+    sI(divL,{opacity:'0',transform:'scaleY(0)',transformOrigin:'top center'});
+    sI(divR,{opacity:'0',transform:'scaleY(0)',transformOrigin:'top center'});
+    sI(colLeft,{opacity:'0',transform:'translateX(-18px)'});
+    sI(colRight,{opacity:'0',transform:'translateX(18px)'});
+    ecards.forEach(e => sI(e,{opacity:'0',transform:'translateX(-12px)'}));
+    invRows.forEach(e => sI(e,{opacity:'0',transform:'translateY(8px)'}));
+    sI(expanded,{opacity:'0'});
+    const toH = expanded.scrollHeight; stage.style.transition='height 0.44s cubic-bezier(0.4,0,0.2,1)'; stage.style.height=toH+'px';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      expanded.style.transition='opacity 0.18s ease'; expanded.style.opacity='1';
+      setTimeout(() => { divL.style.transition='all 0.46s cubic-bezier(0.34,1.1,0.64,1)'; divL.style.transform='scaleY(1)'; divL.style.opacity='1'; }, 80);
+      setTimeout(() => { divR.style.transition='all 0.46s cubic-bezier(0.34,1.1,0.64,1)'; divR.style.transform='scaleY(1)'; divR.style.opacity='1'; }, 130);
+      colLeft.style.transition='opacity 0.38s ease 0.08s,transform 0.4s cubic-bezier(0.34,1.1,0.64,1) 0.08s'; colLeft.style.opacity='1'; colLeft.style.transform='translateX(0)';
+      colRight.style.transition='opacity 0.38s ease 0.12s,transform 0.4s cubic-bezier(0.34,1.1,0.64,1) 0.12s'; colRight.style.opacity='1'; colRight.style.transform='translateX(0)';
+      ecards.forEach((e,i) => setTimeout(() => { e.style.transition='opacity 0.3s ease,transform 0.32s cubic-bezier(0.34,1.1,0.64,1)'; e.style.opacity='1'; e.style.transform='translateX(0)'; }, 100+i*48));
+      invRows.forEach((e,i) => setTimeout(() => { e.style.transition='opacity 0.3s ease,transform 0.32s cubic-bezier(0.34,1.1,0.64,1)'; e.style.opacity='1'; e.style.transform='translateY(0)'; }, 140+i*42));
+      setTimeout(() => { stage.style.height='auto'; stage.style.transition=''; }, 460);
+    }));
+  }, shelfDone+160);
+}
+
+function collapse() {
+  if (!isExpanded) return; isExpanded = false;
+  const ecards = [...document.querySelectorAll('.ecard')];
+  const invRows = [...document.querySelectorAll('.inv-row')];
+  ecards.forEach((e,i) => setTimeout(() => { e.style.transition='opacity 0.18s ease,transform 0.18s ease'; e.style.opacity='0'; e.style.transform='translateX(-10px)'; }, i*28));
+  invRows.forEach((e,i) => setTimeout(() => { e.style.transition='opacity 0.18s ease,transform 0.18s ease'; e.style.opacity='0'; e.style.transform='translateY(5px)'; }, i*24));
+  setTimeout(() => {
+    divL.style.transition='all 0.26s ease'; divL.style.transform='scaleY(0)'; divL.style.opacity='0';
+    divR.style.transition='all 0.26s ease'; divR.style.transform='scaleY(0)'; divR.style.opacity='0';
+    colLeft.style.transition='opacity 0.2s ease,transform 0.2s ease'; colLeft.style.opacity='0'; colLeft.style.transform='translateX(-12px)';
+    colRight.style.transition='opacity 0.2s ease,transform 0.2s ease'; colRight.style.opacity='0'; colRight.style.transform='translateX(12px)';
+  }, 60);
+  setTimeout(() => { expanded.style.transition='opacity 0.16s ease'; expanded.style.opacity='0'; }, 240);
+  const startH = stage.scrollHeight; stage.style.height=startH+'px';
+  setTimeout(() => {
+    expanded.style.display='none'; expanded.style.opacity='1';
+    ecards.forEach(e => { e.style.transition='none'; e.style.opacity='1'; e.style.transform=''; });
+    invRows.forEach(e => { e.style.transition='none'; e.style.opacity='1'; e.style.transform=''; });
+    sI(divL,{transform:'scaleY(1)',opacity:'1'}); sI(divR,{transform:'scaleY(1)',opacity:'1'});
+    sI(colLeft,{opacity:'1',transform:''}); sI(colRight,{opacity:'1',transform:''});
+    sI(bkL,{transformOrigin:'center center',transform:'scaleY(7) scaleX(0.13)',opacity:'0.08'});
+    sI(bkR,{transformOrigin:'center center',transform:'scaleY(7) scaleX(0.13)',opacity:'0.08'});
+    shelves.forEach(sl => sI(sl,{transform:'scaleX(0)',opacity:'0',height:'0px'}));
+    const bInfos = visibleBInfos();
+    bInfos.forEach(el => { el.style.transition='none'; el.style.opacity='0'; });
+    openHint.style.transition='none'; openHint.style.opacity='0';
+    collapsed.style.display='flex';
+    const toH = collapsed.scrollHeight; stage.style.transition='height 0.4s cubic-bezier(0.4,0,0.2,1)'; stage.style.height=toH+'px';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      bkL.style.transition='all 0.48s cubic-bezier(0.34,1.3,0.64,1)'; bkL.style.transform=''; bkL.style.opacity='1';
+      bkR.style.transition='all 0.48s cubic-bezier(0.34,1.3,0.64,1)'; bkR.style.transform=''; bkR.style.opacity='1';
+      shelves.forEach((sl,i) => setTimeout(() => { sl.style.transition='all 0.28s cubic-bezier(0.34,1.2,0.64,1)'; sl.style.transform=''; sl.style.opacity='1'; sl.style.height='2.5px'; }, 140+i*25));
+      setTimeout(() => {
+        bInfos.forEach(el => { el.style.transition='opacity 0.26s ease'; el.style.opacity='1'; });
+        openHint.style.transition='opacity 0.26s ease'; openHint.style.opacity='1';
+      }, 340);
+      setTimeout(() => { stage.style.height='auto'; stage.style.transition=''; }, 470);
+    }));
+  }, 360);
+}
+
+function toggleSettings(e) {
+  e.stopPropagation();
+  const btn = document.getElementById('settingsBtn');
+  const open = settings.style.display==='flex';
+  settings.style.display = open ? 'none' : 'flex';
+  btn.classList.toggle('active', !open);
+  if (!open) { collapsed.style.display='none'; expanded.style.display='none'; }
+  else { if (!isExpanded) collapsed.style.display='flex'; else expanded.style.display='block'; }
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function formatDate(d) {
+  if (isNaN(d.getTime())) return '';
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 86400000 && now.getDate()===d.getDate()) return 'Today ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if (diff < 172800000) return 'Yesterday';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Photo upload input
+  const inp = document.createElement('input');
+  inp.type='file'; inp.id='photoInput'; inp.accept='image/*,.pdf'; inp.multiple=true; inp.style.display='none';
+  inp.addEventListener('change', function() {
+    if (!this.files.length) return;
+    Array.from(this.files).forEach(file => {
+      const card = document.createElement('div');
+      card.className='ecard'; card.style.zIndex='6';
+      card.innerHTML = `<div class="ec-from">${esc(file.name.replace(/\.[^/.]+$/,''))}</div><div class="ec-subj">Photo invoice — pending parse</div><div class="ec-foot"><span class="ec-date">Just now</span><span class="badge" style="background:var(--bg-3);color:var(--ink-3)">Photo</span></div>`;
+      inboxBody.insertBefore(card, inboxBody.firstChild);
+    });
+    this.value = '';
+  });
+  document.body.appendChild(inp);
+
+  // Init margin displays
+  for (let i=0; i<5; i++) updateRowDisplay(i);
+
+  // Mock: boot pre-connected with demo data
+  setEmailConnected('Gmail', 'buyer@restaurant.com');
+  driveToken = 'MOCK';
+  driveFile = { id: 'mock', name: 'Wine List · Spring 2026', mimeType: 'application/vnd.google-apps.spreadsheet' };
+  setDriveConnected();
+});
+</script>
+</body>
+</html>
