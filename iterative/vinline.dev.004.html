@@ -513,7 +513,7 @@
 const GOOGLE_CLIENT_ID = '389113702208-oikpagdsaqp1on4c87liosfl9tm044jv.apps.googleusercontent.com';
 const GOOGLE_API_KEY = 'AIzaSyDg4N-4bOs9HVLel6dLfnYzfErIT50It3c';
 const MICROSOFT_CLIENT_ID = 'YOUR_AZURE_CLIENT_ID'; // Azure App Registration → replace when ready
-const ANTHROPIC_API_KEY = ''; // console.anthropic.com → replace before use
+const ANTHROPIC_API_KEY = ''; // set via serve.ps1 -AnthropicKey flag or browser prompt — never commit the real key
 // When opened as file://, relative URLs break — point at the local proxy server instead
 const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:8080' : '';
 const msalConfig = {
