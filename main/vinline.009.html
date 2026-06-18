@@ -424,7 +424,7 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="false" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$284</span><span class="ir-mg" id="m0" onclick="toggleDisplayMode()" title="tap to switch display">Ã—4.0</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$284</span><span class="ir-mg" id="m0" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>3 btl</span><span>·</span><span>Loire</span></div>
@@ -445,7 +445,7 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="false" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$48</span><span class="ir-mg" id="m1" onclick="toggleDisplayMode()" title="tap to switch display">Ã—4.0</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$48</span><span class="ir-mg" id="m1" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>Emilia-Romagna</span></div>
@@ -466,7 +466,7 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="false" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$72</span><span class="ir-mg" id="m2" onclick="toggleDisplayMode()" title="tap to switch display">Ã—4.0</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$72</span><span class="ir-mg" id="m2" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>84 btl</span><span>·</span><span>Piedmont</span></div>
@@ -489,7 +489,7 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="false" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
-                  <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$60</span><span class="ir-mg" id="m3" onclick="toggleDisplayMode()" title="tap to switch display">Ã—4.0</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$60</span><span class="ir-mg" id="m3" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>24 btl</span><span>·</span><span>Portugal</span></div>
@@ -510,7 +510,7 @@
               <div class="ir-main">
                 <div class="ir-top">
                   <div class="ir-name" contenteditable="false" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
-                  <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$112</span><span class="ir-mg" id="m4" onclick="toggleDisplayMode()" title="tap to switch display">Ã—4.0</span></div>
+                  <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$112</span><span class="ir-mg" id="m4" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
                 </div>
                 <div class="ir-bottom">
                   <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>California</span></div>
@@ -635,7 +635,7 @@ const wlMap = [2, 0, 3, 1, 4];
 function sellPrice(cost, mult) { return Math.round(cost * mult); }
 
 function mgLabel(mult) {
-  return displayMode === 'mult' ? 'Ã—' + mult.toFixed(1) : '+' + Math.round((mult - 1) * 100) + '%';
+  return displayMode === 'mult' ? '×' + mult.toFixed(1) : '+' + Math.round((mult - 1) * 100) + '%';
 }
 function multToFill(mult) { return ((mult - 1.0) / 5.0 * 100).toFixed(1) + '%'; }
 function sliderToMult(val) { return 1.0 + (parseFloat(val) / 100) * 5.0; }
