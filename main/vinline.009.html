@@ -52,7 +52,7 @@
   #bk-l{transform-origin:right center}
   #bk-r{transform-origin:left center}
 
-  /* CONNECTED bracket zone â€” option 2: hover reveals change */
+  /* CONNECTED bracket zone — option 2: hover reveals change */
   .b-info{display:flex;flex-direction:column;gap:2px;width:68px;cursor:pointer;padding:4px;border-radius:4px;transition:background .12s}
   .b-info:hover{background:var(--bg-2)}
   .b-info-l{align-items:flex-end;padding-right:5px}
@@ -67,7 +67,7 @@
   .b-change.right{text-align:right}
   .b-info:hover .b-change{opacity:1}
 
-  /* UNCONNECTED bracket zone â€” option 3: tap to connect, red dot */
+  /* UNCONNECTED bracket zone — option 3: tap to connect, red dot */
   .b-empty{display:flex;flex-direction:column;gap:2px;width:68px;cursor:pointer;padding:4px;border-radius:4px;transition:background .12s}
   .b-empty:hover{background:var(--bg-2)}
   .b-empty-l{align-items:flex-end;padding-right:5px}
@@ -98,7 +98,7 @@
   .mo-name{font-size:11px;font-weight:500;color:var(--ink)}
   .mo-sub{font-size:9px;color:var(--ink-3);margin-top:1px}
   .mo-check{width:14px;height:14px;border-radius:50%;background:var(--green-dim);border:0.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .mo-check::after{content:'âœ“';font-size:8px;color:var(--green)}
+  .mo-check::after{content:'✓';font-size:8px;color:var(--green)}
   .modal-close{width:100%;margin-top:8px;font-size:10px;padding:5px;border-radius:5px;border:0.5px solid var(--rule);cursor:pointer;background:transparent;color:var(--ink-3);font-family:var(--sans);transition:background .12s}
   .modal-close:hover{background:var(--bg-2)}
 
@@ -277,13 +277,13 @@
     <div id="collapsed">
       <div class="scene" id="scene" style="position:relative">
 
-        <!-- LEFT BRACKET â€” connected state -->
+        <!-- LEFT BRACKET — connected state -->
         <div class="bracket-unit">
           <div class="b-info b-info-l" onclick="event.stopPropagation();openModal('modal-l')">
             <span class="b-label">Email</span>
             <span class="b-val right">marco@<br>cellarios.com</span>
             <span class="b-status right"><span class="b-dot"></span>Gmail</span>
-            <span class="b-change right">change â†’</span>
+            <span class="b-change right">change →</span>
           </div>
           <span class="b-char" id="bk-l">]</span>
         </div>
@@ -296,14 +296,14 @@
           <div class="s-line s-lo" id="sl8"></div><div class="s-line s-lo" id="sl9"></div>
         </div>
 
-        <!-- RIGHT BRACKET â€” unconnected state (demo) â€” swap .b-empty for .b-info when connected -->
+        <!-- RIGHT BRACKET — unconnected state (demo) — swap .b-empty for .b-info when connected -->
         <div class="bracket-unit">
           <span class="b-char" id="bk-r" style="color:#D0CEC6">[</span>
           <div class="b-empty b-empty-r" onclick="event.stopPropagation();openModal('modal-r')">
             <span class="b-label">Output</span>
             <span class="b-empty-val">tap to<br>connect</span>
             <span class="b-empty-status"><span class="b-red-dot"></span>none</span>
-            <span class="b-empty-hint">open setup â†’</span>
+            <span class="b-empty-hint">open setup →</span>
           </div>
         </div>
 
@@ -311,21 +311,21 @@
         <div class="conn-modal" id="modal-l" onclick="event.stopPropagation()">
           <div class="modal-head">Email source</div>
           <div class="modal-opt"><div><div class="mo-name">Gmail</div><div class="mo-sub">marco@cellarios.com</div></div><div class="mo-check"></div></div>
-          <div class="modal-opt"><div><div class="mo-name">Outlook</div><div class="mo-sub">Connect account â†’</div></div></div>
+          <div class="modal-opt"><div><div class="mo-name">Outlook</div><div class="mo-sub">Connect account →</div></div></div>
           <button class="modal-close" onclick="closeModal('modal-l')">Cancel</button>
         </div>
 
         <!-- OUTPUT MODAL -->
         <div class="conn-modal" id="modal-r" style="right:0;left:auto" onclick="event.stopPropagation()">
           <div class="modal-head">Output destination</div>
-          <div class="modal-opt"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Select a file â†’</div></div></div>
+          <div class="modal-opt"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Select a file →</div></div></div>
           <div class="modal-opt"><div><div class="mo-name">PDF download</div><div class="mo-sub">Export on demand</div></div></div>
-          <div class="modal-opt"><div><div class="mo-name">Google Sheets</div><div class="mo-sub">Connect account â†’</div></div></div>
+          <div class="modal-opt"><div><div class="mo-name">Google Sheets</div><div class="mo-sub">Connect account →</div></div></div>
           <button class="modal-close" onclick="closeModal('modal-r')">Cancel</button>
         </div>
 
       </div>
-      <div class="open-hint" id="openHint">â†“ tap to open</div>
+      <div class="open-hint" id="openHint">↓ tap to open</div>
     </div>
 
     <!-- EXPANDED -->
@@ -335,7 +335,7 @@
         <!-- LEFT: INBOX -->
         <div class="col" id="colLeft">
           <div class="col-head">
-            <div><div class="col-eyebrow">Input</div><div class="col-title">âœ‰ Inbox</div></div>
+            <div><div class="col-eyebrow">Input</div><div class="col-title">✉ Inbox</div></div>
             <div style="display:flex;align-items:center;gap:5px">
               <button class="btn btn-sm sync-btn" onclick="triggerPhotoUpload()" title="Upload invoice photo" style="gap:4px">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
@@ -354,7 +354,7 @@
           <div class="col-body">
             <div class="ecard sel" id="ec0" style="z-index:10">
               <div class="ec-from">Southern Wine &amp; Spirits</div>
-              <div class="ec-subj">Invoice #8821 â€” June delivery confirmed</div>
+              <div class="ec-subj">Invoice #8821 — June delivery confirmed</div>
               <div class="ec-foot"><span class="ec-date">Today 9:14</span><span class="badge b-inv">Invoice</span></div>
               <div class="inv-popup">
                 <div class="popup-head"><div class="popup-from">Southern Wine &amp; Spirits</div><div class="popup-inv"><span>Invoice #8821</span><span>12 Dec 2024</span></div></div>
@@ -368,13 +368,13 @@
             </div>
             <div class="ecard" style="z-index:9">
               <div class="ec-from">Grapevine Wine Brokers</div>
-              <div class="ec-subj">Invoice #22197 â€” December order</div>
+              <div class="ec-subj">Invoice #22197 — December order</div>
               <div class="ec-foot"><span class="ec-date">Today 8:02</span><span class="badge b-inv">Invoice</span></div>
               <div class="inv-popup">
                 <div class="popup-head"><div class="popup-from">Grapevine Wine Brokers</div><div class="popup-inv"><span>Invoice #22197</span><span>27 Dec 2024</span></div></div>
                 <div class="popup-body"><div class="popup-lbl">Contents</div>
                   <div class="popup-row"><div><div class="popup-wine">Joward Bourgogne Aligoté</div><span class="popup-wine-sub">2021</span></div><div class="popup-right"><span class="popup-qty">24 btl</span><span class="popup-price">$17/btl</span></div></div>
-                  <div class="popup-row"><div><div class="popup-wine">Schoffit Gewurztraminer</div><span class="popup-wine-sub">"Harth â€” Cuvée Caroline" 2019</span></div><div class="popup-right"><span class="popup-qty">46 btl</span><span class="popup-price">$16/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Schoffit Gewurztraminer</div><span class="popup-wine-sub">"Harth — Cuvée Caroline" 2019</span></div><div class="popup-right"><span class="popup-qty">46 btl</span><span class="popup-price">$16/btl</span></div></div>
                   <div class="popup-row"><div><div class="popup-wine">Plouzeau Chinon</div><span class="popup-wine-sub">"La Bonnelière" 2019</span></div><div class="popup-right"><span class="popup-qty">120 btl</span><span class="popup-price">$15/btl</span></div></div>
                 </div>
                 <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$2,389.20</span></div>
@@ -387,7 +387,7 @@
               <div class="inv-popup">
                 <div class="popup-head"><div class="popup-from">Skurnik Wines West</div><div class="popup-inv"><span>BOL #0215104</span><span>28 May 2025</span></div></div>
                 <div class="popup-body"><div class="popup-lbl">Contents</div>
-                  <div class="popup-row"><div><div class="popup-wine">Bierzo Encinas, RaÃºl Pérez</div><span class="popup-wine-sub">2020</span></div><div class="popup-right"><span class="popup-qty">52 btl</span><span class="popup-price">$15/btl</span></div></div>
+                  <div class="popup-row"><div><div class="popup-wine">Bierzo Encinas, Raúl Pérez</div><span class="popup-wine-sub">2020</span></div><div class="popup-right"><span class="popup-qty">52 btl</span><span class="popup-price">$15/btl</span></div></div>
                   <div class="popup-row"><div><div class="popup-wine">Loureiro Amphora Phaunus</div><span class="popup-wine-sub">2022</span></div><div class="popup-right"><span class="popup-qty">36 btl</span><span class="popup-price">$20/btl</span></div></div>
                   <div class="popup-row"><div><div class="popup-wine">Sauvignon Blanc Collio, Sturm</div><span class="popup-wine-sub">2021</span></div><div class="popup-right"><span class="popup-qty">30 btl</span><span class="popup-price">$15/btl</span></div></div>
                 </div>
@@ -396,7 +396,7 @@
             </div>
             <div class="ecard" style="z-index:7">
               <div class="ec-from">Lyra Fine Wine Importers</div>
-              <div class="ec-subj">Invoice #36327 â€” Feb delivery</div>
+              <div class="ec-subj">Invoice #36327 — Feb delivery</div>
               <div class="ec-foot"><span class="ec-date">Feb 21</span><span class="badge b-pend">Pending</span></div>
               <div class="inv-popup">
                 <div class="popup-head"><div class="popup-from">Lyra Fine Wine Importers</div><div class="popup-inv"><span>Invoice #36327</span><span>21 Feb 2025</span></div></div>
@@ -415,9 +415,9 @@
 
         <!-- CENTER: INVENTORY -->
         <div class="col col-mid">
-          <div class="col-head"><div><div class="col-eyebrow">Processing</div><div class="col-title">â‰¡ Inventory</div></div></div>
+          <div class="col-head"><div><div class="col-eyebrow">Processing</div><div class="col-title">≡ Inventory</div></div></div>
           <div class="col-body">
-            <div class="parse-banner"><span class="pb-txt">Raw parse · Invoice #8821 â€” review before confirming</span><button class="pb-btn">Confirm all</button></div>
+            <div class="parse-banner"><span class="pb-txt">Raw parse · Invoice #8821 — review before confirming</span><button class="pb-btn">Confirm all</button></div>
             <div class="sec-lbl">Parsed · 3 new</div>
 
             <div class="inv-row new-entry">
@@ -535,7 +535,7 @@
         <!-- RIGHT: WINE LIST -->
         <div class="col" id="colRight">
           <div class="col-head">
-            <div><div class="col-eyebrow">Output</div><div class="col-title">â˜° Wine list</div></div>
+            <div><div class="col-eyebrow">Output</div><div class="col-title">☰ Wine list</div></div>
             <div class="head-actions">
               <button class="btn btn-sm sync-btn" onclick="syncBtn(this)" title="Re-sync formatting from Drive">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
@@ -545,7 +545,7 @@
             </div>
           </div>
           <div class="col-body">
-            <div class="wl-hint">âœŽ hover any entry to edit</div>
+            <div class="wl-hint">✎ hover any entry to edit</div>
             <div class="menu-block">
               <div class="sec-head"><span class="sec-lbl">Sparkling</span><span class="sec-rule"></span><span class="sec-count">1</span></div>
               <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2023 · Emilia-Romagna, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp0" data-bottle="48" data-glass="12">48</span></div><span class="mi-edit-hint">edit</span></div></div>
@@ -562,35 +562,35 @@
             </div>
           </div>
           <div class="col-foot">
-            <button class="btn btn-primary btn-sm">â†“ PDF</button>
+            <button class="btn btn-primary btn-sm">↓ PDF</button>
             <button class="btn btn-sm">Drive</button>
             <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto">5 items</span>
           </div>
         </div>
 
       </div>
-      <div class="collapse-bar"><button class="collapse-btn" onclick="collapse()">â†‘ collapse</button></div>
+      <div class="collapse-bar"><button class="collapse-btn" onclick="collapse()">↑ collapse</button></div>
     </div>
 
     <!-- SETTINGS -->
     <div id="settings">
       <div class="scard">
-        <div class="scard-title">âœ‰ Email connection</div>
+        <div class="scard-title">✉ Email connection</div>
         <div class="srow"><div><div class="sr-l">Gmail</div><div class="sr-sub">marco@cellarios.com</div></div><div class="sr-r"><span class="conn-label">connected</span><button class="btn btn-sm">Change</button></div></div>
-        <div class="srow"><div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub">Not connected</div></div><div class="sr-r"><button class="btn btn-sm">Connect â†’</button></div></div>
+        <div class="srow"><div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub">Not connected</div></div><div class="sr-r"><button class="btn btn-sm">Connect →</button></div></div>
         <div class="srow"><div><div class="sr-l">Auto-scan</div><div class="sr-sub">Every 30 minutes</div></div><div class="sr-r"><button class="tog" aria-label="toggle auto-scan"></button></div></div>
       </div>
       <div class="scard">
         <div class="scard-title">% Margins by category</div>
         <div class="mg-grid">
-          <div class="mg-item"><div class="mg-lbl">Bottle â€” red</div><div class="mg-row"><input type="range" min="25" max="85" value="56" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">56%</span></div></div>
-          <div class="mg-item"><div class="mg-lbl">Bottle â€” white</div><div class="mg-row"><input type="range" min="25" max="85" value="55" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">55%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — red</div><div class="mg-row"><input type="range" min="25" max="85" value="56" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">56%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — white</div><div class="mg-row"><input type="range" min="25" max="85" value="55" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">55%</span></div></div>
           <div class="mg-item"><div class="mg-lbl">By the glass</div><div class="mg-row"><input type="range" min="25" max="150" value="120" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">120%</span></div></div>
           <div class="mg-item"><div class="mg-lbl">Sparkling</div><div class="mg-row"><input type="range" min="25" max="85" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">50%</span></div></div>
         </div>
       </div>
       <div class="scard">
-        <div class="scard-title">â‰¡ Naming convention</div>
+        <div class="scard-title">≡ Naming convention</div>
         <div class="srow"><div class="sr-l">Include appellation</div><div class="sr-r"><button class="tog" aria-label="toggle appellation"></button></div></div>
         <div class="srow"><div class="sr-l">Include vintage</div><div class="sr-r"><button class="tog" aria-label="toggle vintage"></button></div></div>
         <div class="srow"><div class="sr-l">Include region / country</div><div class="sr-r"><button class="tog off" aria-label="toggle region"></button></div></div>
@@ -628,7 +628,7 @@ let displayMode = 'mult';
 const committedBtg = [false, false, false, false, false];
 const pendingBtg   = [false, false, false, false, false];
 
-// Maps inventory index â†’ wine list price element ID
+// Maps inventory index → wine list price element ID
 // Order: Richard Leroy=wl2 (White), Paltrinieri=wl0 (Sparkling), La Ca'Nova=wl3 (Red), Aphros=wl1 (White), Dragonette=wl4 (Red)
 const wlMap = [2, 0, 3, 1, 4];
 
@@ -673,14 +673,14 @@ function liveMg(i, sliderVal) {
 }
 
 function nameEl(i) {
-  return document.getElementById('eb'+i).closest('.inv-row').querySelector('.ir-name');
+  const eb = document.getElementById('eb'+i);
+  return eb ? eb.closest('.inv-row')?.querySelector('.ir-name') : null;
 }
 
 function openSlider(i) {
   closeAllSliders();
   document.getElementById('eb' + i).style.display = 'none';
   document.getElementById('sw' + i).classList.add('visible');
-  const n = nameEl(i); if (n) { n.contentEditable = 'true'; n.focus(); }
   pending[i] = committed[i];
   pendingBtg[i] = committedBtg[i];
   document.getElementById('btgb' + i).classList.toggle('active', !committedBtg[i]);
@@ -692,11 +692,7 @@ function closeAllSliders() {
   for (let i = 0; i < 5; i++) {
     const eb = document.getElementById('eb' + i);
     const sw = document.getElementById('sw' + i);
-    if (eb) {
-      eb.style.display = '';
-      const n = eb.closest('.inv-row')?.querySelector('.ir-name');
-      if (n) { n.contentEditable = 'false'; n.blur(); }
-    }
+    if (eb) eb.style.display = '';
     if (sw) {
       sw.classList.remove('visible');
       pendingBtg[i] = committedBtg[i];
@@ -711,7 +707,6 @@ function confirmMg(i) {
   committedBtg[i] = pendingBtg[i];
   document.getElementById('eb' + i).style.display = '';
   document.getElementById('sw' + i).classList.remove('visible');
-  const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
 }
 
 function cancelMg(i) {
@@ -720,7 +715,6 @@ function cancelMg(i) {
   updateRowDisplay(i);
   document.getElementById('eb' + i).style.display = '';
   document.getElementById('sw' + i).classList.remove('visible');
-  const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
 }
 
 // PHOTO UPLOAD
@@ -741,7 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.zIndex = '6';
       card.innerHTML = `
         <div class="ec-from">${file.name.replace(/\.[^/.]+$/,'')}</div>
-        <div class="ec-subj">Photo invoice â€” pending parse</div>
+        <div class="ec-subj">Photo invoice — pending parse</div>
         <div class="ec-foot"><span class="ec-date">Just now</span><span class="badge" style="background:var(--bg-3);color:var(--ink-3)">Photo</span></div>`;
       col.insertBefore(card, col.firstChild);
     });
@@ -848,4 +842,3 @@ function toggleSettings(e){
 </script>
 </body>
 </html>
-
