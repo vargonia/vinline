@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -187,7 +187,8 @@
   .inv-row.new-entry{border-left:2px solid var(--green-mid);border-radius:0 5px 5px 0}
   .ir-main{padding:7px 9px}
   .ir-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
-  .ir-name{font-size:10px;font-weight:500;color:var(--ink);flex:1;cursor:text;outline:none;line-height:1.4}
+  .ir-name{font-size:10px;font-weight:500;color:var(--ink);flex:1;cursor:default;outline:none;line-height:1.4}
+  .ir-name[contenteditable="true"]{cursor:text}
   .ir-name:focus{border-bottom:0.5px solid var(--green)}
   .new-tag{font-family:var(--mono);font-size:7.5px;background:var(--green-dim);color:var(--green);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle}
   .ir-right{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex-shrink:0}
@@ -355,6 +356,9 @@
             <div class="modal-opt" onclick="connectOutlook()">
               <div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div>
             </div>
+            <div class="modal-opt" onclick="uploadInvoiceFile()">
+              <div><div class="mo-name">Invoice file</div><div class="mo-sub">Upload PDF or photo →</div></div>
+            </div>
           </div>
           <button class="modal-close" id="emailModalClose" onclick="closeModal('modal-l')">Cancel</button>
         </div>
@@ -402,7 +406,7 @@
             <!-- Populated by JS: empty-state → scanning → email cards -->
           </div>
           <div class="col-foot">
-            <button class="btn btn-primary btn-sm">Parse invoice</button>
+            <button class="btn btn-primary btn-sm" onclick="parseAllFiles()">Parse invoice</button>
             <span id="inboxCount" style="font-family:var(--mono);font-size:9px;color:var(--ink-3)">—</span>
           </div>
         </div>
@@ -412,118 +416,13 @@
         <!-- CENTER: INVENTORY -->
         <div class="col col-mid">
           <div class="col-head"><div><div class="col-eyebrow">Processing</div><div class="col-title">≡ Inventory</div></div></div>
-          <div class="col-body">
-            <div class="parse-banner"><span class="pb-txt">Raw parse · Invoice #8821 — review before confirming</span><button class="pb-btn">Confirm all</button></div>
-            <div class="sec-lbl">Parsed · 3 new</div>
-
-            <div class="inv-row new-entry">
-              <div class="ir-main">
-                <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault" 2020<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $71</span><span class="ir-sell" id="s0">$284</span><span class="ir-mg" id="m0" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
-                </div>
-                <div class="ir-bottom">
-                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>3 btl</span><span>·</span><span>Loire</span></div>
-                  <div class="ir-controls">
-                    <button class="edit-btn" id="eb0" onclick="openSlider(0)">edit</button>
-                    <div class="slider-wrap" id="sw0">
-                      <div class="btg-row-pill"><button class="btg-r active" id="btgb0" onclick="setBtgMode(0,false)">Btl</button><button class="btg-r" id="btgg0" onclick="setBtgMode(0,true)">Glass</button></div>
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f0" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(0,this.value)" id="rng0"></div>
-                      <button class="icon-btn cancel" onclick="cancelMg(0)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                      <button class="icon-btn confirm" onclick="confirmMg(0)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="inv-row new-entry">
-              <div class="ir-main">
-                <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria" 2023<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $12</span><span class="ir-sell" id="s1">$48</span><span class="ir-mg" id="m1" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
-                </div>
-                <div class="ir-bottom">
-                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>Emilia-Romagna</span></div>
-                  <div class="ir-controls">
-                    <button class="edit-btn" id="eb1" onclick="openSlider(1)">edit</button>
-                    <div class="slider-wrap" id="sw1">
-                      <div class="btg-row-pill"><button class="btg-r active" id="btgb1" onclick="setBtgMode(1,false)">Btl</button><button class="btg-r" id="btgg1" onclick="setBtgMode(1,true)">Glass</button></div>
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f1" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(1,this.value)" id="rng1"></div>
-                      <button class="icon-btn cancel" onclick="cancelMg(1)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                      <button class="icon-btn confirm" onclick="confirmMg(1)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="inv-row new-entry">
-              <div class="ir-main">
-                <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto" 2021<span class="new-tag">new</span></div>
-                  <div class="ir-right"><span class="ir-cost">cost $18</span><span class="ir-sell" id="s2">$72</span><span class="ir-mg" id="m2" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
-                </div>
-                <div class="ir-bottom">
-                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>84 btl</span><span>·</span><span>Piedmont</span></div>
-                  <div class="ir-controls">
-                    <button class="edit-btn" id="eb2" onclick="openSlider(2)">edit</button>
-                    <div class="slider-wrap" id="sw2">
-                      <div class="btg-row-pill"><button class="btg-r active" id="btgb2" onclick="setBtgMode(2,false)">Btl</button><button class="btg-r" id="btgg2" onclick="setBtgMode(2,true)">Glass</button></div>
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f2" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(2,this.value)" id="rng2"></div>
-                      <button class="icon-btn cancel" onclick="cancelMg(2)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                      <button class="icon-btn confirm" onclick="confirmMg(2)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="sec-lbl" style="margin-top:4px">Existing inventory</div>
-
-            <div class="inv-row">
-              <div class="ir-main">
-                <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde 2022</div>
-                  <div class="ir-right"><span class="ir-cost">cost $15</span><span class="ir-sell" id="s3">$60</span><span class="ir-mg" id="m3" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
-                </div>
-                <div class="ir-bottom">
-                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>24 btl</span><span>·</span><span>Portugal</span></div>
-                  <div class="ir-controls">
-                    <button class="edit-btn" id="eb3" onclick="openSlider(3)">edit</button>
-                    <div class="slider-wrap" id="sw3">
-                      <div class="btg-row-pill"><button class="btg-r active" id="btgb3" onclick="setBtgMode(3,false)">Btl</button><button class="btg-r" id="btgg3" onclick="setBtgMode(3,true)">Glass</button></div>
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f3" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(3,this.value)" id="rng3"></div>
-                      <button class="icon-btn cancel" onclick="cancelMg(3)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                      <button class="icon-btn confirm" onclick="confirmMg(3)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="inv-row">
-              <div class="ir-main">
-                <div class="ir-top">
-                  <div class="ir-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills 2022</div>
-                  <div class="ir-right"><span class="ir-cost">cost $28</span><span class="ir-sell" id="s4">$112</span><span class="ir-mg" id="m4" onclick="toggleDisplayMode()" title="tap to switch display">×4.0</span></div>
-                </div>
-                <div class="ir-bottom">
-                  <div class="ir-meta-left"><span>750ml</span><span>·</span><span>36 btl</span><span>·</span><span>California</span></div>
-                  <div class="ir-controls">
-                    <button class="edit-btn" id="eb4" onclick="openSlider(4)">edit</button>
-                    <div class="slider-wrap" id="sw4">
-                      <div class="btg-row-pill"><button class="btg-r active" id="btgb4" onclick="setBtgMode(4,false)">Btl</button><button class="btg-r" id="btgg4" onclick="setBtgMode(4,true)">Glass</button></div>
-                      <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f4" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(4,this.value)" id="rng4"></div>
-                      <button class="icon-btn cancel" onclick="cancelMg(4)" aria-label="cancel"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                      <button class="icon-btn confirm" onclick="confirmMg(4)" aria-label="confirm"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div class="col-body" id="invBody">
+            <div class="inbox-state">
+              <div class="inbox-state-lbl">No inventory</div>
+              <div class="inbox-state-sub">Connect an inbox and parse an invoice to populate inventory.</div>
             </div>
           </div>
-          <div class="col-foot" style="background:var(--bg-2)"><button class="btn btn-primary btn-sm">Push to wine list</button><button class="btn btn-sm">Discard</button></div>
+          <div class="col-foot" style="background:var(--bg-2);display:none" id="invFoot"></div>
         </div>
 
         <div class="col-div" id="divR"></div>
@@ -540,21 +439,10 @@
               <button class="btn btn-sm">Preview</button>
             </div>
           </div>
-          <div class="col-body">
-            <div class="wl-hint">✎ hover any entry to edit</div>
-            <div class="menu-block">
-              <div class="sec-head"><span class="sec-lbl">Sparkling</span><span class="sec-rule"></span><span class="sec-count">1</span></div>
-              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Paltrinieri, Lambrusco di Sorbara "Piria"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2023 · Emilia-Romagna, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp0" data-bottle="48" data-glass="12">48</span></div><span class="mi-edit-hint">edit</span></div></div>
-            </div>
-            <div class="menu-block">
-              <div class="sec-head"><span class="sec-lbl">White</span><span class="sec-rule"></span><span class="sec-count">2</span></div>
-              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Aphros, Loureiro, Vinho Verde</div><span class="mi-sub" contenteditable="true" spellcheck="false">2022 · Lima, Portugal</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp1" data-bottle="60" data-glass="15">60</span></div><span class="mi-edit-hint">edit</span></div></div>
-              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Richard Leroy, Anjou "Les Noëls de Montbenault"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2020 · Loire Valley, France</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp2" data-bottle="284" data-glass="71">284</span></div><span class="mi-edit-hint">edit</span></div></div>
-            </div>
-            <div class="menu-block">
-              <div class="sec-head"><span class="sec-lbl">Red</span><span class="sec-rule"></span><span class="sec-count">2</span></div>
-              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">La Ca'Nova, Barbera d'Alba "Loreto"</div><span class="mi-sub" contenteditable="true" spellcheck="false">2021 · Piedmont, Italy</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp3" data-bottle="72" data-glass="18">72</span></div><span class="mi-edit-hint">edit</span></div></div>
-              <div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">Dragonette Cellars, Pinot Noir, Sta. Rita Hills</div><span class="mi-sub" contenteditable="true" spellcheck="false">2022 · California, USA</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp4" data-bottle="112" data-glass="28">112</span></div><span class="mi-edit-hint">edit</span></div></div>
+          <div class="col-body" id="wineListBody">
+            <div class="inbox-state">
+              <div class="inbox-state-lbl">No wine list</div>
+              <div class="inbox-state-sub">Inventory items pushed from parsed invoices will appear here.</div>
             </div>
           </div>
           <div class="col-foot">
@@ -621,8 +509,9 @@
 <script>
 // ─── CREDENTIALS ─────────────────────────────────────────────────────────────
 const GOOGLE_CLIENT_ID = '389113702208-oikpagdsaqp1on4c87liosfl9tm044jv.apps.googleusercontent.com';
-const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY'; // GCC → APIs & Services → Enable "Google Picker API" → Credentials → Create API key
+const GOOGLE_API_KEY = 'AIzaSyDg4N-4bOs9HVLel6dLfnYzfErIT50It3c';
 const MICROSOFT_CLIENT_ID = 'YOUR_AZURE_CLIENT_ID'; // Azure App Registration → replace when ready
+const ANTHROPIC_API_KEY = ''; // console.anthropic.com → replace before use
 const msalConfig = {
   auth: {
     clientId: MICROSOFT_CLIENT_ID,
@@ -669,7 +558,50 @@ const pending = [...committed];
 let displayMode = 'mult';
 const committedBtg = [false, false, false, false, false];
 const pendingBtg   = [false, false, false, false, false];
-const wlMap = [2, 0, 3, 1, 4];
+const wlMap = [0, 1, 2, 3, 4];
+
+// file cards → File objects (set when card is created, read when parse is triggered)
+const fileCardMap = new Map();
+
+// ─── INVOICE PARSE PROMPT ────────────────────────────────────────────────────
+const INVOICE_PARSE_PROMPT = `You are an expert at reading wine distributor invoices. Extract every wine line item from this invoice image and return a JSON array.
+
+SKIP these line items entirely:
+- CRV / recycling deposits (any line with CRV, "recycling", "deposit", "CA-CRV", "FEESCRV" in the code or description)
+- Freight, carrier, or delivery fees
+- Non-wine items (beer cans, spirits, etc.)
+- Any $0.10 or similar per-unit deposit lines
+
+For each wine, return an object with exactly these fields:
+- "name": Formatted display name following this convention: "Producer, Appellation \\"Cuvée Name\\" Vintage"
+  • Producer and appellation separated by a comma-space
+  • Cuvée/label name in double quotes ONLY if it's a distinct named bottling (not just the grape or type)
+  • Vintage year at the end, or "NV" for non-vintage
+  • Use proper title-case capitalization; preserve Italian/French particles (d', di, de, del, les, etc.)
+  • Do NOT include alcohol%, DOC/IGT/AOC designations, bottle size, or SKU codes in the name
+  • Examples: "Paltrinieri, Lambrusco di Sorbara \\"Piria\\" 2023" / "Lafon, Milly-Lamartine 2024" / "Cirelli, Orange NV" / "Monte Santoccio, Rosso Ferdinando 2024" / "Ronchi di Cialla, Schioppettino di Cialla \\"RiNera\\" 2022" / "Pierre-Marie Chermette, Beaujolais Origine 2024"
+- "vintage": Year as string (e.g. "2024") or "NV". null if genuinely unknown.
+- "size": Bottle size string, e.g. "750ml", "1.5L", "500ml". Default "750ml" if not shown.
+- "qty_bottles": Total BOTTLES (integer). Convert from cases: multiply cases × bottles_per_case. Standard case = 12 × 750ml. Check pack column for actual size (e.g. 6/1.5L = 6 per case, 24/375ml = 24 per case).
+- "cost_per_bottle": Per-bottle wholesale cost in USD as a decimal number (no $ sign).
+  • If invoice shows a BTL PRICE column (Grapevine format) — use that directly.
+  • If invoice shows NET UNIT PRICE per case (Chambers & Chambers) — divide by bottles_per_case.
+  • If invoice shows UNIT PRICE per case (Beaune, Lyra, Danch & Granger, most others) — divide by bottles_per_case. Apply any DISC% discount first if the discounted price isn't shown separately.
+  • Round to 2 decimal places.
+- "region": Human-readable region string, e.g. "Loire Valley, France", "Beaujolais, France", "Lambrusco, Italy", "Etna, Sicily", "Sta. Rita Hills, California". Infer from appellation when not explicit.
+
+Distributor-specific parsing notes:
+- Beaune Imports: ITEM format is "SKU# – VINTAGE Appellation, Producer" — note the Producer comes AFTER the comma. Reverse to get "Producer, Appellation VINTAGE".
+- Lyra Fine Wine: ITEM is "Producer, CuveéLabel AppellationType DOC VINTAGE - alc%" — cuvée label is the word(s) between the comma and the appellation type.
+- Danch & Granger: ITEM is "VINTAGE Producer Description VINTAGE size/pack" — vintage often repeated, strip size/pack suffix.
+- Grapevine Wine Brokers: ITEM is all-caps "VINTAGE PRODUCER APPELLATION CUVÉE" — normalize capitalization. Use the BTL PRICE column for per-bottle cost.
+- Chambers & Chambers: PRODUCT DESCRIPTION is on two lines (code / name). SIZE column shows pack (e.g. 12x750). Use NET UNIT PRICE ÷ pack size for per-bottle cost. QUANTITY SHIPPED (CASES column) × pack size = qty_bottles.
+- Skurnik (BOL / Bill of Lading): DESCRIPTION column has multi-line text with producer and wine name. NET BTL column is per-bottle cost if visible; otherwise NET CASE ÷ pack.
+
+- "category": Exactly one of: "Sparkling", "White", "Rosé", "Orange", "Red", "Dessert". Infer from name/appellation/region. Champagne/Crémant/Cava/Prosecco/Pétillant Naturel = Sparkling. Typically white grapes or white appellations (Chardonnay, Sauvignon Blanc, Pinot Gris, Riesling, Burgundy Blanc, Mâcon, Muscadet, Sancerre, Grüner Veltliner, etc.) = White. Pink wines = Rosé. Skin-contact/amber/orange wines = Orange. Red grapes or red appellations = Red. Late harvest/Sauternes/Port/Sherry/Madeira/dessert = Dessert. If genuinely ambiguous, default to "Red".
+
+Return ONLY a valid JSON array with no other text, markdown, or explanation:
+[{"name":"...","vintage":"...","size":"750ml","qty_bottles":12,"cost_per_bottle":18.50,"region":"...","category":"Red"}]`;
 
 function sellPrice(cost, mult) { return Math.round(cost * mult); }
 function mgLabel(mult) { return displayMode==='mult' ? '×'+mult.toFixed(1) : '+'+Math.round((mult-1)*100)+'%'; }
@@ -697,7 +629,7 @@ function setBtgMode(i, glass) {
 
 function toggleDisplayMode() {
   displayMode = displayMode==='mult' ? 'pct' : 'mult';
-  for (let j=0; j<5; j++) document.getElementById('m'+j).textContent = mgLabel(pending[j]);
+  for (let j=0; j<5; j++) { const el = document.getElementById('m'+j); if (el) el.textContent = mgLabel(pending[j]); }
 }
 
 function liveMg(i, sliderVal) {
@@ -705,10 +637,16 @@ function liveMg(i, sliderVal) {
   updateRowDisplay(i);
 }
 
+function nameEl(i) {
+  const eb = document.getElementById('eb'+i);
+  return eb ? eb.closest('.inv-row')?.querySelector('.ir-name') : null;
+}
+
 function openSlider(i) {
   closeAllSliders();
   document.getElementById('eb'+i).style.display = 'none';
   document.getElementById('sw'+i).classList.add('visible');
+  const n = nameEl(i); if (n) { n.contentEditable = 'true'; n.focus(); }
   pending[i] = committed[i];
   pendingBtg[i] = committedBtg[i];
   document.getElementById('btgb'+i).classList.toggle('active', !committedBtg[i]);
@@ -717,10 +655,14 @@ function openSlider(i) {
 }
 
 function closeAllSliders() {
-  for (let i=0; i<5; i++) {
+  for (let i=0; i<committed.length; i++) {
     const eb = document.getElementById('eb'+i);
     const sw = document.getElementById('sw'+i);
-    if (eb) eb.style.display = '';
+    if (eb) {
+      eb.style.display = '';
+      const n = eb.closest('.inv-row')?.querySelector('.ir-name');
+      if (n) { n.contentEditable = 'false'; n.blur(); }
+    }
     if (sw) { sw.classList.remove('visible'); pendingBtg[i]=committedBtg[i]; pending[i]=committed[i]; updateRowDisplay(i); }
   }
 }
@@ -729,6 +671,7 @@ function confirmMg(i) {
   committed[i] = pending[i]; committedBtg[i] = pendingBtg[i];
   document.getElementById('eb'+i).style.display = '';
   document.getElementById('sw'+i).classList.remove('visible');
+  const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
 }
 
 function cancelMg(i) {
@@ -736,6 +679,7 @@ function cancelMg(i) {
   updateRowDisplay(i);
   document.getElementById('eb'+i).style.display = '';
   document.getElementById('sw'+i).classList.remove('visible');
+  const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
 }
 
 // ─── EMAIL AUTH ───────────────────────────────────────────────────────────────
@@ -1046,7 +990,7 @@ async function scanInbox(token) {
     const data = await res.json();
     const msgs = data.messages || [];
 
-    if (!msgs.length) { showDemoCards(); return; }
+    if (!msgs.length) { showInboxNoResults(); return; }
 
     const details = await Promise.all(msgs.slice(0, 6).map(m =>
       fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/' + m.id +
@@ -1055,7 +999,7 @@ async function scanInbox(token) {
     ));
     populateInboxCards(details);
   } catch (e) {
-    showDemoCards();
+    showInboxError(e);
   }
 }
 
@@ -1067,10 +1011,10 @@ async function scanOutlookInbox(token) {
     );
     const data = await res.json();
     const msgs = data.value || [];
-    if (!msgs.length) { showDemoCards(); return; }
+    if (!msgs.length) { showInboxNoResults(); return; }
     populateOutlookCards(msgs.slice(0, 6));
   } catch (e) {
-    showDemoCards();
+    showInboxError(e);
   }
 }
 
@@ -1121,14 +1065,14 @@ function populateInboxCards(messages) {
     const badgeClass = subj.toLowerCase().includes('invoice') ? 'b-inv' :
                        subj.toLowerCase().includes('deliver') || subj.toLowerCase().includes('lading') ? 'b-del' : 'b-inv';
     const badgeTxt = badgeClass === 'b-del' ? 'Delivery' : 'Invoice';
-    return { fromName: esc(fromName), subj: esc(subj), dateStr, badgeClass, badgeTxt, zIndex: 10-i };
+    return { msgId: msg.id, fromName: esc(fromName), subj: esc(subj), dateStr, badgeClass, badgeTxt, zIndex: 10-i };
   });
 
   inboxBody.innerHTML = cards.map(c =>
-    `<div class="ecard" style="z-index:${c.zIndex}">
+    `<div class="ecard" data-msg-id="${c.msgId}" style="z-index:${c.zIndex}">
       <div class="ec-from">${c.fromName}</div>
       <div class="ec-subj">${c.subj}</div>
-      <div class="ec-foot"><span class="ec-date">${c.dateStr}</span><span class="badge ${c.badgeClass}">${c.badgeTxt}</span></div>
+      <div class="ec-foot"><span class="ec-date">${c.dateStr}</span><span class="badge ${c.badgeClass}">${c.badgeTxt}</span><button class="btn btn-primary btn-sm" style="margin-left:auto;padding:2px 7px;font-size:9px" onclick="event.stopPropagation();parseEmailCard(this.closest('.ecard'))">Parse invoice</button></div>
     </div>`
   ).join('');
 
@@ -1190,6 +1134,25 @@ function showInboxScanning() {
     </div>`;
 }
 
+function showInboxNoResults() {
+  inboxBody.innerHTML = `
+    <div class="inbox-state">
+      <div class="inbox-state-lbl">No invoices found</div>
+      <div class="inbox-state-sub">No invoice or delivery emails in the last 180 days. Try again once new emails arrive.</div>
+    </div>`;
+  openHint.innerHTML = '<span style="color:var(--ink-3)">no invoices found</span>';
+}
+
+function showInboxError(e) {
+  inboxBody.innerHTML = `
+    <div class="inbox-state">
+      <div class="inbox-state-lbl">Scan failed</div>
+      <div class="inbox-state-sub">Could not read inbox. Check your connection and try reconnecting.</div>
+      <button class="btn btn-sm" style="margin-top:4px" onclick="collapseAndConnect()">Reconnect →</button>
+    </div>`;
+  openHint.innerHTML = '<span style="color:var(--red)">scan error</span>';
+}
+
 function collapseAndConnect() {
   if (isExpanded) collapse();
   setTimeout(() => openModal('modal-l'), isExpanded ? 420 : 0);
@@ -1227,7 +1190,8 @@ function resetEmailModal() {
   document.getElementById('emailModalHead').textContent = 'Connect inbox';
   document.getElementById('emailModalBody').innerHTML =
     '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div></div>' +
-    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div></div>';
+    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div></div>' +
+    '<div class="modal-opt" onclick="uploadInvoiceFile()"><div><div class="mo-name">Invoice file</div><div class="mo-sub">Upload PDF or photo →</div></div></div>';
   document.getElementById('emailModalClose').disabled = false;
   document.getElementById('emailModalClose').textContent = 'Cancel';
 }
@@ -1254,6 +1218,322 @@ document.getElementById('openHint').addEventListener('click', expand);
 // ─── PHOTO UPLOAD ─────────────────────────────────────────────────────────────
 
 function triggerPhotoUpload() { document.getElementById('photoInput').click(); }
+
+function uploadInvoiceFile() {
+  closeModal('modal-l');
+  document.getElementById('photoInput').click();
+}
+
+// ─── FILE PARSE FLOW ─────────────────────────────────────────────────────────
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function callClaudeWithInvoiceData(base64, mediaType) {
+  if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY') {
+    throw new Error('Anthropic API key not set. Add it to ANTHROPIC_API_KEY at the top of the script.');
+  }
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+        { type: 'text', text: INVOICE_PARSE_PROMPT }
+      ]}]
+    })
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error?.message || `API error ${res.status}`);
+  }
+  const data = await res.json();
+  const text = data.content?.[0]?.text || '';
+  const match = text.match(/\[[\s\S]*\]/);
+  if (!match) throw new Error('No JSON array found in Claude response');
+  return JSON.parse(match[0]);
+}
+
+async function parseInvoiceWithClaude(file) {
+  const base64 = await fileToBase64(file);
+  const mediaType = file.type === 'application/pdf' ? 'application/pdf'
+    : (file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg');
+  return callClaudeWithInvoiceData(base64, mediaType);
+}
+
+async function fetchAttachmentFromEmail(msgId) {
+  const res = await fetch(
+    'https://gmail.googleapis.com/gmail/v1/users/me/messages/' + msgId + '?format=full',
+    { headers: { Authorization: 'Bearer ' + gmailToken } }
+  );
+  if (!res.ok) throw new Error('Could not fetch email from Gmail.');
+  const msg = await res.json();
+
+  function findAttachment(parts) {
+    if (!parts) return null;
+    for (const part of parts) {
+      const mime = part.mimeType || '';
+      if ((mime.startsWith('image/') || mime === 'application/pdf') && part.body?.attachmentId) {
+        return { attachmentId: part.body.attachmentId, mediaType: mime };
+      }
+      const found = findAttachment(part.parts);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  const found = findAttachment(msg.payload?.parts);
+  if (!found) return null;
+
+  const attRes = await fetch(
+    'https://gmail.googleapis.com/gmail/v1/users/me/messages/' + msgId + '/attachments/' + found.attachmentId,
+    { headers: { Authorization: 'Bearer ' + gmailToken } }
+  );
+  if (!attRes.ok) throw new Error('Could not download email attachment.');
+  const attData = await attRes.json();
+  // Gmail returns base64url — convert to standard base64
+  const base64 = (attData.data || '').replace(/-/g, '+').replace(/_/g, '/');
+  return { base64, mediaType: found.mediaType };
+}
+
+async function parseEmailCard(card) {
+  const msgId = card.dataset.msgId;
+  if (!msgId) return;
+  const fname = card.querySelector('.ec-from')?.textContent || 'Email';
+  const btn = card.querySelector('.btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'parsing…'; }
+
+  document.getElementById('invBody').innerHTML =
+    `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div></div>`;
+
+  try {
+    const attachment = await fetchAttachmentFromEmail(msgId);
+    if (!attachment) throw new Error('No invoice image or PDF found attached to this email. Try uploading the invoice file directly instead.');
+    const items = await callClaudeWithInvoiceData(attachment.base64, attachment.mediaType);
+    if (!items.length) throw new Error('No wine items found in this invoice.');
+    populateParsedItems(fname, items);
+    if (btn) { btn.className = 'btn btn-sm'; btn.textContent = 'parsed ✓'; }
+  } catch (e) {
+    document.getElementById('invBody').innerHTML =
+      `<div class="inbox-state">
+        <div class="inbox-state-lbl">Parse failed</div>
+        <div class="inbox-state-sub">${esc(e.message)}</div>
+        <button class="btn btn-sm" style="margin-top:4px" onclick="resetInventory()">Dismiss</button>
+      </div>`;
+    if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+  }
+}
+
+async function parseFile(card) {
+  const file = fileCardMap.get(card);
+  const fname = card.querySelector('.ec-from')?.textContent || 'Invoice';
+  const btn = card.querySelector('.btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'parsing…'; }
+
+  document.getElementById('invBody').innerHTML =
+    `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div></div>`;
+
+  try {
+    if (!file) throw new Error('File reference lost — please re-upload the invoice.');
+    const items = await parseInvoiceWithClaude(file);
+    if (!items.length) throw new Error('No wine items found in this invoice.');
+    populateParsedItems(fname, items);
+    if (btn) { btn.className = 'btn btn-sm'; btn.textContent = 'parsed ✓'; }
+  } catch (e) {
+    document.getElementById('invBody').innerHTML =
+      `<div class="inbox-state">
+        <div class="inbox-state-lbl">Parse failed</div>
+        <div class="inbox-state-sub">${esc(e.message)}</div>
+        <button class="btn btn-sm" style="margin-top:4px" onclick="resetInventory()">Dismiss</button>
+      </div>`;
+    if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+  }
+}
+
+async function parseAllFiles() {
+  const cards = [...inboxBody.querySelectorAll('.ecard')].filter(c => fileCardMap.has(c));
+  if (!cards.length) return;
+  if (cards.length === 1) { parseFile(cards[0]); return; }
+
+  cards.forEach(c => {
+    const b = c.querySelector('.btn-primary');
+    if (b) { b.disabled = true; b.textContent = 'queued…'; }
+  });
+
+  const allItems = [];
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    const fname = card.querySelector('.ec-from')?.textContent || 'Invoice';
+    const btn = card.querySelector('.btn-primary');
+    if (btn) btn.textContent = 'parsing…';
+    document.getElementById('invBody').innerHTML =
+      `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${i+1} / ${cards.length}: ${esc(fname)}…</div></div>`;
+    try {
+      const file = fileCardMap.get(card);
+      if (!file) throw new Error('File reference lost');
+      const items = await parseInvoiceWithClaude(file);
+      allItems.push(...items);
+      if (btn) { btn.className = 'btn btn-sm'; btn.textContent = 'parsed ✓'; }
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+    }
+  }
+
+  if (!allItems.length) {
+    document.getElementById('invBody').innerHTML =
+      `<div class="inbox-state"><div class="inbox-state-lbl">Nothing parsed</div><div class="inbox-state-sub">No wine items were found across the uploaded files.</div></div>`;
+    return;
+  }
+  const label = cards.length + ' invoice' + (cards.length !== 1 ? 's' : '');
+  populateParsedItems(label, allItems);
+}
+
+function buildInvRow(item, i) {
+  const cost = parseFloat(item.cost_per_bottle) || 0;
+  const sell = Math.round(cost * 4);
+  const svgX = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  const svgOk = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const qty = item.qty_bottles || '';
+  const size = item.size || '750ml';
+  const region = item.region || '';
+  const category = item.category || 'Red';
+  return `<div class="inv-row new-entry" data-category="${category}">
+    <div class="ir-main">
+      <div class="ir-top">
+        <div class="ir-name" contenteditable="false" spellcheck="false">${esc(item.name)}<span class="new-tag">new</span></div>
+        <div class="ir-right"><span class="ir-cost">cost $${cost.toFixed(2)}</span><span class="ir-sell" id="s${i}">$${sell}</span><span class="ir-mg" id="m${i}" onclick="toggleDisplayMode()" title="tap to switch display">\xd74.0</span></div>
+      </div>
+      <div class="ir-bottom">
+        <div class="ir-meta-left"><span>${esc(size)}</span><span>\xb7</span><span>${qty} btl</span><span>\xb7</span><span>${esc(region)}</span></div>
+        <div class="ir-controls">
+          <button class="edit-btn" id="eb${i}" onclick="openSlider(${i})">edit</button>
+          <div class="slider-wrap" id="sw${i}">
+            <div class="btg-row-pill"><button class="btg-r active" id="btgb${i}" onclick="setBtgMode(${i},false)">Btl</button><button class="btg-r" id="btgg${i}" onclick="setBtgMode(${i},true)">Glass</button></div>
+            <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f${i}" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(${i},this.value)" id="rng${i}"></div>
+            <button class="icon-btn cancel" onclick="cancelMg(${i})" aria-label="cancel">${svgX}</button>
+            <button class="icon-btn confirm" onclick="confirmMg(${i})" aria-label="confirm">${svgOk}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function populateParsedItems(source, items) {
+  // Resize state arrays to fit dynamic item count
+  while (costs.length < items.length) { costs.push(0); committed.push(4.0); pending.push(4.0); committedBtg.push(false); pendingBtg.push(false); }
+  items.forEach((item, i) => {
+    costs[i] = parseFloat(item.cost_per_bottle) || 0;
+    committed[i] = 4.0; pending[i] = 4.0;
+    committedBtg[i] = false; pendingBtg[i] = false;
+  });
+
+  document.getElementById('invBody').innerHTML =
+    `<div class="parse-banner"><span class="pb-txt">Raw parse \xb7 ${esc(source)} — review before confirming</span><button class="pb-btn" onclick="pushToWineList()">Confirm all</button></div>` +
+    `<div class="sec-lbl">Parsed \xb7 ${items.length} new</div>` +
+    items.map((item, i) => buildInvRow(item, i)).join('');
+
+  const invFoot = document.getElementById('invFoot');
+  invFoot.style.display = '';
+  invFoot.innerHTML = '<button class="btn btn-primary btn-sm" onclick="pushToWineList()">Push to wine list</button><button class="btn btn-sm" onclick="discardParsed()">Discard</button>';
+}
+
+function pushToWineList() {
+  const rows = [...document.querySelectorAll('#invBody .inv-row')];
+  if (!rows.length) return;
+
+  const wineListBody = document.getElementById('wineListBody');
+  if (!wineListBody.querySelector('.menu-block')) wineListBody.innerHTML = '';
+
+  const CAT_ORDER = ['Sparkling', 'White', 'Rosé', 'Orange', 'Red', 'Dessert', 'Other'];
+
+  const items = rows.map(row => {
+    const nameNode = row.querySelector('.ir-name');
+    const clone = nameNode ? nameNode.cloneNode(true) : null;
+    if (clone) clone.querySelectorAll('span').forEach(s => s.remove());
+    const name = clone ? clone.textContent.trim() : '';
+    const metaSpans = [...row.querySelectorAll('.ir-meta-left span')].filter(s => s.textContent !== '\xb7');
+    const size = metaSpans[0]?.textContent || '';
+    const region = metaSpans[2]?.textContent || '';
+    const price = row.querySelector('.ir-sell')?.textContent?.replace('$','') || '0';
+    const cost = row.querySelector('.ir-cost')?.textContent?.replace('cost $','') || '0';
+    const category = CAT_ORDER.includes(row.dataset.category) ? row.dataset.category : 'Other';
+    return { name, size, region, price, cost, category };
+  });
+
+  // Group items by category preserving CAT_ORDER
+  const groups = {};
+  items.forEach(item => {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push(item);
+  });
+
+  CAT_ORDER.forEach(cat => {
+    const group = groups[cat];
+    if (!group || !group.length) return;
+
+    // Find or create the section block for this category
+    let block = [...wineListBody.querySelectorAll('.menu-block[data-cat]')]
+      .find(b => b.dataset.cat === cat);
+
+    if (!block) {
+      block = document.createElement('div');
+      block.className = 'menu-block';
+      block.dataset.cat = cat;
+      block.innerHTML = `<div class="sec-head"><span class="sec-lbl">${cat}</span><span class="sec-rule"></span><span class="sec-count">0</span></div>`;
+      // Insert before the first existing block whose category comes later
+      const insertBefore = [...wineListBody.querySelectorAll('.menu-block[data-cat]')]
+        .find(b => CAT_ORDER.indexOf(b.dataset.cat) > CAT_ORDER.indexOf(cat));
+      insertBefore ? wineListBody.insertBefore(block, insertBefore) : wineListBody.appendChild(block);
+    }
+
+    // Append .mi rows — wlIdx is global so IDs stay unique across pushes
+    const miHtml = group.map(item => {
+      const wlIdx = wineListBody.querySelectorAll('.mi').length;
+      return `<div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(item.size)} \xb7 ${esc(item.region)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${item.price}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
+    }).join('');
+    block.insertAdjacentHTML('beforeend', miHtml);
+
+    // Update section item count
+    const countEl = block.querySelector('.sec-count');
+    if (countEl) countEl.textContent = block.querySelectorAll('.mi').length;
+  });
+
+  const total = wineListBody.querySelectorAll('.mi').length;
+  const countEl = document.querySelector('#colRight .col-foot span[style*="margin-left"]');
+  if (countEl) countEl.textContent = total + ' item' + (total !== 1 ? 's' : '');
+
+  document.getElementById('invBody').innerHTML =
+    `<div class="inbox-state">
+      <div class="inbox-state-lbl">Pushed to wine list</div>
+      <div class="inbox-state-sub">${items.length} item${items.length !== 1 ? 's' : ''} added to wine list.</div>
+      <button class="btn btn-sm" style="margin-top:4px" onclick="resetInventory()">&#8617; Back to inventory</button>
+    </div>`;
+  document.getElementById('invFoot').style.display = 'none';
+  document.getElementById('invFoot').innerHTML = '';
+}
+
+function resetInventory() {
+  document.getElementById('invBody').innerHTML =
+    `<div class="inbox-state"><div class="inbox-state-lbl">No inventory</div><div class="inbox-state-sub">Connect an inbox or upload an invoice file to populate inventory.</div></div>`;
+  document.getElementById('invFoot').style.display = 'none';
+  document.getElementById('invFoot').innerHTML = '';
+}
+
+function discardParsed() { resetInventory(); }
 
 // ─── SYNC BUTTON ──────────────────────────────────────────────────────────────
 
@@ -1388,18 +1668,30 @@ document.addEventListener('DOMContentLoaded', () => {
   inp.type='file'; inp.id='photoInput'; inp.accept='image/*,.pdf'; inp.multiple=true; inp.style.display='none';
   inp.addEventListener('change', function() {
     if (!this.files.length) return;
-    Array.from(this.files).forEach(file => {
+    // Clear empty/no-results state on first upload
+    const existingCards = inboxBody.querySelectorAll('.ecard');
+    if (!existingCards.length) inboxBody.innerHTML = '';
+    Array.from(this.files).forEach((file, idx) => {
       const card = document.createElement('div');
-      card.className='ecard'; card.style.zIndex='6';
-      card.innerHTML = `<div class="ec-from">${esc(file.name.replace(/\.[^/.]+$/,''))}</div><div class="ec-subj">Photo invoice — pending parse</div><div class="ec-foot"><span class="ec-date">Just now</span><span class="badge" style="background:var(--bg-3);color:var(--ink-3)">Photo</span></div>`;
+      card.className = 'ecard';
+      card.style.zIndex = String(10 - idx);
+      card.innerHTML = `
+        <div class="ec-from">${esc(file.name.replace(/\.[^/.]+$/, ''))}</div>
+        <div class="ec-subj">Invoice file — tap to parse</div>
+        <div class="ec-foot">
+          <span class="ec-date">Just now</span>
+          <span class="badge" style="background:var(--bg-3);color:var(--ink-3)">File</span>
+          <button class="btn btn-primary btn-sm" style="margin-left:auto;padding:2px 7px;font-size:9px" onclick="event.stopPropagation();parseFile(this.closest('.ecard'))">Parse invoice</button>
+        </div>`;
+      fileCardMap.set(card, file);
       inboxBody.insertBefore(card, inboxBody.firstChild);
     });
+    const n = inboxBody.querySelectorAll('.ecard').length;
+    openHint.innerHTML = '<span style="color:var(--green-mid);font-weight:500">' + n + ' file' + (n !== 1 ? 's' : '') + ' ready to parse</span><span style="color:var(--rule)"> · </span><span>↓ tap to open</span>';
+    if (!isExpanded) expand();
     this.value = '';
   });
   document.body.appendChild(inp);
-
-  // Init margin displays
-  for (let i=0; i<5; i++) updateRowDisplay(i);
 
   // Init inbox state
   showInboxEmpty();
