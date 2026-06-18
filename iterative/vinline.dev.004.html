@@ -1239,12 +1239,10 @@ async function callClaudeWithInvoiceData(base64, mediaType) {
   if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY') {
     throw new Error('Anthropic API key not set. Add it to ANTHROPIC_API_KEY at the top of the script.');
   }
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/api/claude', {
     method: 'POST',
     headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-calls': 'true',
+      'x-api-key-fwd': ANTHROPIC_API_KEY,
       'content-type': 'application/json'
     },
     body: JSON.stringify({
