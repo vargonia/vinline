@@ -202,6 +202,8 @@
   .ir-controls{display:flex;align-items:center;justify-content:flex-end;gap:4px}
   .edit-btn{font-family:var(--mono);font-size:6.5px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:2px;padding:0px 3px;cursor:pointer;line-height:1.6;letter-spacing:.01em;transition:all .15s}
   .edit-btn:hover{border-color:var(--ink-3);color:var(--ink-2);background:var(--bg-2)}
+  .sold-btn{font-family:var(--mono);font-size:7px;color:var(--ink-3);background:none;border:0.5px solid var(--rule);border-radius:2px;padding:1px 5px;cursor:pointer;transition:all .15s}
+  .sold-btn:hover{border-color:var(--red);color:var(--red)}
   .slider-wrap{display:none;align-items:center;gap:4px}
   .slider-wrap.visible{display:flex}
   .mg-track{position:relative;width:72px;height:14px;display:flex;align-items:center;flex-shrink:0}
@@ -388,6 +390,10 @@
           <div class="col-head">
             <div><div class="col-eyebrow">Input</div><div class="col-title">✉ Inbox</div></div>
             <div style="display:flex;align-items:center;gap:5px">
+              <button class="btn btn-sm sync-btn" id="inboxSyncBtn" onclick="collapseAndConnect()" title="Connect email inbox">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true"><rect x="1" y="2.5" width="10" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/><polyline points="1,2.5 6,7 11,2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                inbox
+              </button>
               <button class="btn btn-sm sync-btn" onclick="triggerPhotoUpload()" title="Upload invoice photo" style="gap:4px">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
                   <rect x="1" y="2.5" width="10" height="7.5" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/>
@@ -395,10 +401,6 @@
                   <path d="M4 2.5 L4.6 1 L7.4 1 L8 2.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                 </svg>
                 photo
-              </button>
-              <button class="btn btn-sm sync-btn" id="inboxSyncBtn" onclick="reScan(this)" title="Re-scan inbox">
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-                sync
               </button>
             </div>
           </div>
@@ -512,6 +514,8 @@ const GOOGLE_CLIENT_ID = '389113702208-oikpagdsaqp1on4c87liosfl9tm044jv.apps.goo
 const GOOGLE_API_KEY = 'AIzaSyDg4N-4bOs9HVLel6dLfnYzfErIT50It3c';
 const MICROSOFT_CLIENT_ID = 'YOUR_AZURE_CLIENT_ID'; // Azure App Registration → replace when ready
 const ANTHROPIC_API_KEY = ''; // console.anthropic.com → replace before use
+// When opened as file://, relative URLs break — point at the local proxy server instead
+const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:8080' : '';
 const msalConfig = {
   auth: {
     clientId: MICROSOFT_CLIENT_ID,
@@ -550,6 +554,7 @@ const divR = document.getElementById('divR');
 const shelves = Array.from({length:10}, (_,i) => document.getElementById('sl'+i));
 const inboxBody = document.getElementById('inboxBody');
 let isExpanded = false;
+let rowCount = 0;
 
 // MARGIN SYSTEM
 const costs = [71, 12, 18, 15, 28];
@@ -564,41 +569,102 @@ const wlMap = [0, 1, 2, 3, 4];
 const fileCardMap = new Map();
 
 // ─── INVOICE PARSE PROMPT ────────────────────────────────────────────────────
-const INVOICE_PARSE_PROMPT = `You are an expert at reading wine distributor invoices. Extract every wine line item from this invoice image and return a JSON array.
+const INVOICE_PARSE_PROMPT = `You are an expert at reading wine distributor invoices. Extract every wine line item and return a JSON array.
 
-SKIP these line items entirely:
-- CRV / recycling deposits (any line with CRV, "recycling", "deposit", "CA-CRV", "FEESCRV" in the code or description)
-- Freight, carrier, or delivery fees
-- Non-wine items (beer cans, spirits, etc.)
-- Any $0.10 or similar per-unit deposit lines
+IMPORTANT — BOL WITHOUT PRICES: If the document is a Bill of Lading with NO price column (Garber & Company BOLs with "garberandcompany.com", Real Wine/Farm Cottage Wines BOLs with "realwineusa.biz", or any BOL that only shows Locations/Producer/Description/Vintage/Quantity with no cost column), return an empty array: []
 
-For each wine, return an object with exactly these fields:
-- "name": Formatted display name following this convention: "Producer, Appellation \\"Cuvée Name\\" Vintage"
-  • Producer and appellation separated by a comma-space
-  • Cuvée/label name in double quotes ONLY if it's a distinct named bottling (not just the grape or type)
-  • Vintage year at the end, or "NV" for non-vintage
-  • Use proper title-case capitalization; preserve Italian/French particles (d', di, de, del, les, etc.)
-  • Do NOT include alcohol%, DOC/IGT/AOC designations, bottle size, or SKU codes in the name
-  • Examples: "Paltrinieri, Lambrusco di Sorbara \\"Piria\\" 2023" / "Lafon, Milly-Lamartine 2024" / "Cirelli, Orange NV" / "Monte Santoccio, Rosso Ferdinando 2024" / "Ronchi di Cialla, Schioppettino di Cialla \\"RiNera\\" 2022" / "Pierre-Marie Chermette, Beaujolais Origine 2024"
-- "vintage": Year as string (e.g. "2024") or "NV". null if genuinely unknown.
-- "size": Bottle size string, e.g. "750ml", "1.5L", "500ml". Default "750ml" if not shown.
-- "qty_bottles": Total BOTTLES (integer). Convert from cases: multiply cases × bottles_per_case. Standard case = 12 × 750ml. Check pack column for actual size (e.g. 6/1.5L = 6 per case, 24/375ml = 24 per case).
-- "cost_per_bottle": Per-bottle wholesale cost in USD as a decimal number (no $ sign).
-  • If invoice shows a BTL PRICE column (Grapevine format) — use that directly.
-  • If invoice shows NET UNIT PRICE per case (Chambers & Chambers) — divide by bottles_per_case.
-  • If invoice shows UNIT PRICE per case (Beaune, Lyra, Danch & Granger, most others) — divide by bottles_per_case. Apply any DISC% discount first if the discounted price isn't shown separately.
-  • Round to 2 decimal places.
-- "region": Human-readable region string, e.g. "Loire Valley, France", "Beaujolais, France", "Lambrusco, Italy", "Etna, Sicily", "Sta. Rita Hills, California". Infer from appellation when not explicit.
+If multiple invoices appear in one photo, parse ALL of them and combine into one array.
 
-Distributor-specific parsing notes:
-- Beaune Imports: ITEM format is "SKU# – VINTAGE Appellation, Producer" — note the Producer comes AFTER the comma. Reverse to get "Producer, Appellation VINTAGE".
-- Lyra Fine Wine: ITEM is "Producer, CuveéLabel AppellationType DOC VINTAGE - alc%" — cuvée label is the word(s) between the comma and the appellation type.
-- Danch & Granger: ITEM is "VINTAGE Producer Description VINTAGE size/pack" — vintage often repeated, strip size/pack suffix.
-- Grapevine Wine Brokers: ITEM is all-caps "VINTAGE PRODUCER APPELLATION CUVÉE" — normalize capitalization. Use the BTL PRICE column for per-bottle cost.
-- Chambers & Chambers: PRODUCT DESCRIPTION is on two lines (code / name). SIZE column shows pack (e.g. 12x750). Use NET UNIT PRICE ÷ pack size for per-bottle cost. QUANTITY SHIPPED (CASES column) × pack size = qty_bottles.
-- Skurnik (BOL / Bill of Lading): DESCRIPTION column has multi-line text with producer and wine name. NET BTL column is per-bottle cost if visible; otherwise NET CASE ÷ pack.
+SKIP these line items:
+- CRV / recycling deposits: any line with "CRV", "recycling", "deposit", "CA-CRV", "FEESCRV", "Misc Fee", "Non-Product Description", or price ≈ $0.10/unit
+- Freight, delivery fees, split-case charges, "RECYCLING DEPOSIT CHANGE"
+- Lime Ventures invoices sell beer/cans/non-wine — skip ALL items from Lime Ventures
+- Any item with no price or $0 price
 
-- "category": Exactly one of: "Sparkling", "White", "Rosé", "Orange", "Red", "Dessert". Infer from name/appellation/region. Champagne/Crémant/Cava/Prosecco/Pétillant Naturel = Sparkling. Typically white grapes or white appellations (Chardonnay, Sauvignon Blanc, Pinot Gris, Riesling, Burgundy Blanc, Mâcon, Muscadet, Sancerre, Grüner Veltliner, etc.) = White. Pink wines = Rosé. Skin-contact/amber/orange wines = Orange. Red grapes or red appellations = Red. Late harvest/Sauternes/Port/Sherry/Madeira/dessert = Dessert. If genuinely ambiguous, default to "Red".
+For each wine/sake/vermouth, return an object with exactly these fields:
+
+"name": Display name — "Producer, WineName Vintage"
+  • Proper title-case; preserve particles (d', di, de, del, les, la, le, von, etc.)
+  • No alcohol%, DOC/IGT/AOC/appellation designations, bottle size, SKU codes, or importer name prefixes
+  • If wine has a distinct named cuvée, add it in quotes: "Paltrinieri, Lambrusco \\"Pira\\" 2023"
+  • Examples: "Lafon, Milly-Lamartine 2024" / "Cirelli, Orange NV" / "Akilia, Clarete 2023" / "Folk Machine, Grenache 2023" / "Ramey, Claret North Coast 2022" / "Chermette, Beaujolais Origine 2024" / "Sunier, Régnié 2023"
+
+"vintage": Year string ("2024") or "NV". null only if completely unknown.
+
+"size": Bottle size e.g. "750ml", "1L", "500ml", "300ml", "720ml". Default "750ml".
+
+"qty_bottles": Total BOTTLES as integer. Derive from cases × bottles_per_case.
+  Get bottles_per_case from PACK/SIZE/FORMAT column:
+  "12/750ml" or "12x750" → 12 | "6/750ml" or "6x750" → 6 | "6x720" → 6 | "15x300" → 15 | "24/375ml" → 24 | "1/1.5L" → 1
+  If QTY is fractional cases (Grapevine), round(QTY × bottles_per_case).
+
+"cost_per_bottle": Per-bottle wholesale cost, decimal, 2 decimal places, no $ sign.
+
+"region": Human-readable e.g. "Beaujolais, France" / "Loire Valley, France" / "Etna, Sicily" / "Lambrusco, Italy" / "Sta. Rita Hills, California" / "Austria" / "Jerez, Spain". Infer from appellation/grape/producer origin.
+
+"category": Exactly one of: "Sparkling", "White", "Rosé", "Orange", "Red", "Dessert", "Sake", "Vermouth"
+  Sparkling: Champagne, Crémant, Cava, Prosecco, Pétillant Naturel, sparkling/mousseux/sekt
+  White: Chardonnay, Sauvignon Blanc, Pinot Gris/Grigio, Riesling, Grüner Veltliner, Muscadet, Sancerre, Mâcon, Soave, Verdicchio, Blaufränkisch Weiss, white Burgundy/Bordeaux, Fino/Manzanilla Sherry
+  Rosé: pink/rosé wines
+  Orange: skin-contact/amber wines — look for "orange", "skin contact", "ramato", "skin-fermented", "amber"
+  Red: red grapes or red appellations (Burgundy, Barolo, Rioja, Beaujolais, Grenache, Syrah, etc.)
+  Dessert: late-harvest, Sauternes, Port, Oloroso/Amontillado/Pedro Ximénez Sherry, Madeira, ice wine
+  Sake: any Japanese rice wine (Junmai, Daiginjo, Honjozo, etc.)
+  Vermouth: any vermouth product
+  Default "Red" if ambiguous.
+
+━━━ DISTRIBUTOR-SPECIFIC RULES ━━━
+
+BEAUNE IMPORTS (dot-matrix paper, header "Beaune Imports", columns QTY/ITEM/UNIT PRICE/DISC%/TAX/TOTAL):
+  • ITEM format: "SKU# — VINTAGE Appellation, Producer" → name = "Producer, Appellation VINTAGE"
+  • QTY = cases (12 bottles each). UNIT PRICE = per-case.
+  • cost_per_bottle = UNIT_PRICE × (1 − DISC%/100) / 12
+  • Skip "CA-CRV2" line
+
+LYRA FINE WINE (header "LYRA Fine Wine Importers", columns QTY/PACK/CODE/ITEM/UNIT PRICE/DISC%/TOTAL):
+  • ITEM format: "Producer, CuveeName AppellationType VINTAGE - X% alc by vol"
+  • QTY = cases. UNIT PRICE = per-case. cost_per_bottle = UNIT_PRICE × (1 − DISC%/100) / 12
+  • Skip FEESCRV line
+
+DANCH & GRANGER SELECTIONS (header "Danch and Granger Selections", columns QTY/PACK/CODE/ITEM/UNIT PRICE/DISC%/TOTAL):
+  • ITEM format: "VINTAGE Producer WineName VINTAGE size/pack" — strip trailing size/pack info
+  • QTY = cases. UNIT PRICE = per-case. cost_per_bottle = UNIT_PRICE × (1 − DISC%/100) / 12
+  • Skip "CA CRV /Bottle" line
+
+GRAPEVINE WINE BROKERS (header "GRAPEVINE WINE BROKERS", columns QTY/PACK/CODE/ITEM/UNIT PRICE/BTL PRICE/DISC%/TOTAL):
+  • Has BTL PRICE column — use that directly for cost_per_bottle
+  • ITEM is ALL-CAPS "VINTAGE PRODUCER APPELLATION CUVÉE" — normalize capitalization
+  • Skip GWBCRVBTL / "CA CRV BOTTLE" line
+
+CHAMBERS & CHAMBERS (header "CHAMBERS & CHAMBERS WINE MERCHANTS", columns PRODUCT CODE/DESCRIPTION/SIZE/QTY SHIPPED/LIST PRICE/DISC.%/DISC.$/NET UNIT PRICE/EXTENSION):
+  • SIZE column gives pack: "12x750"→12, "6x750"→6, "6x720"→6, "15x300"→15
+  • cost_per_bottle = NET UNIT PRICE / bottles_per_case (NET already after discount)
+  • qty_bottles = QTY SHIPPED (CASES column) × bottles_per_case
+  • Wakatake/Ohyama/any "Junmai/Daiginjo" items → category "Sake"
+  • Sorso Vermouth or any vermouth → category "Vermouth"
+  • Alvear Fino/any Fino/Manzanilla Sherry → category "White"
+  • Skip CRV entries (shown separately below each wine line)
+
+SKURNIK (BOL on yellow paper, columns LINE/ITEM NO/QTY/SOM/DESCRIPTION/CASES PACKS/LIST UNIT PRICE/DISC%/NET CASE PRICE/NET BTL PRICE/AMOUNT):
+  • NET BTL PRICE column = cost_per_bottle (use directly)
+  • If NET BTL PRICE missing, use NET CASE / bottles_per_case
+  • Skip "RECYCLING DEPOSIT CHANGE" / split-case lines
+
+ALLUVIAL WINES & SPIRITS / HOBO WINE CO (REVEL WINE) / ELENTENY IMPORTS — SAME FORMAT:
+  • Identified by: "INVOICE No AW#####", "INVOICE No ######", or "INVOICE No INV######" in header
+  • Columns: Product Description | Bottles | Cases | Case Price | Total
+  • cost_per_bottle = Case Price / bottles_per_case (get bottles_per_case from "[750 mL@12/c]" style in description)
+  • qty_bottles = Cases × bottles_per_case
+  • Description format: "[Optional brand/importer prefix] VINTAGE Producer WineName [size@N/c] [nickname] Item # CODE"
+    Strip leading brand prefix (e.g. "Mission Wine Merchants", "Folk Machine 2023 Folk Machine", "Hobo Wine Co")
+    Extract: vintage, producer name, wine name
+  • Skip "Non-Product Description" CRV lines ("Misc Fee - CA CRV", "Misc Fee - Hobo CRV", etc.)
+
+GARBER & COMPANY BOL (header "BOL: Delivery", sold by garberandcompany.com, columns: Locations/ID#/Format/#/c/Producer/Description/Vintage/Varietal/Quantity — NO PRICE COLUMN):
+  • Return []
+
+REAL WINE / FARM COTTAGE WINES BOL (header "BOL: Delivery", sold by realwineusa.biz, columns: Locations/SD#/Format/#s/Producer/Description/Vintage/Varietal/Quantity — NO PRICE COLUMN):
+  • Return []
 
 Return ONLY a valid JSON array with no other text, markdown, or explanation:
 [{"name":"...","vintage":"...","size":"750ml","qty_bottles":12,"cost_per_bottle":18.50,"region":"...","category":"Red"}]`;
@@ -616,7 +682,8 @@ function updateRowDisplay(i) {
   document.getElementById('m'+i).textContent = mgLabel(mult);
   document.getElementById('f'+i).style.width = multToFill(mult);
   if (document.getElementById('rng'+i)) document.getElementById('rng'+i).value = ((mult-1.0)/5.0*100).toFixed(0);
-  const wlEl = document.getElementById('wlp'+wlMap[i]);
+  const _wlMi = document.querySelector(`.mi[data-inv-idx="${i}"]`);
+  const wlEl = _wlMi?.querySelector('[id^="wlp"]');
   if (wlEl) { wlEl.dataset.bottle = bottleSell; wlEl.textContent = pendingBtg[i] ? wlEl.dataset.glass : bottleSell; }
 }
 
@@ -680,6 +747,34 @@ function cancelMg(i) {
   document.getElementById('eb'+i).style.display = '';
   document.getElementById('sw'+i).classList.remove('visible');
   const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
+}
+
+function markSold(i) {
+  const row = document.getElementById('eb' + i)?.closest('.inv-row');
+  if (row) {
+    row.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(-6px)';
+    setTimeout(() => row.remove(), 230);
+  }
+  const mi = document.querySelector(`.mi[data-inv-idx="${i}"]`);
+  if (mi) {
+    mi.style.transition = 'opacity 0.22s ease';
+    mi.style.opacity = '0';
+    setTimeout(() => {
+      const block = mi.closest('.menu-block');
+      mi.remove();
+      if (block) {
+        const cnt = block.querySelectorAll('.mi').length;
+        const cntEl = block.querySelector('.sec-count');
+        if (cntEl) cntEl.textContent = cnt;
+        if (!cnt) block.remove();
+      }
+      const total = document.querySelectorAll('#wineListBody .mi').length;
+      const footEl = document.querySelector('#colRight .col-foot span[style*="margin-left"]');
+      if (footEl) footEl.textContent = total + ' item' + (total !== 1 ? 's' : '');
+    }, 230);
+  }
 }
 
 // ─── EMAIL AUTH ───────────────────────────────────────────────────────────────
@@ -772,8 +867,7 @@ function setEmailConnected(provider, email) {
   }
 
   // Close modal, start scan
-  document.getElementById('modal-l').style.display = 'none';
-  resetEmailModal();
+  closeModal('modal-l');
   setOpenHintScanning();
   showInboxScanning();
   if (provider === 'Gmail') {
@@ -1154,8 +1248,23 @@ function showInboxError(e) {
 }
 
 function collapseAndConnect() {
-  if (isExpanded) collapse();
-  setTimeout(() => openModal('modal-l'), isExpanded ? 420 : 0);
+  if (isExpanded) {
+    const modal = document.getElementById('modal-l');
+    // Move modal out of #collapsed (display:none parent) to body so it can be shown
+    document.body.appendChild(modal);
+    document.querySelectorAll('.conn-modal').forEach(m => { if (m !== modal) m.style.display = 'none'; });
+    const colHead = document.getElementById('colLeft')?.querySelector('.col-head');
+    if (colHead) {
+      const r = colHead.getBoundingClientRect();
+      modal.style.position = 'fixed';
+      modal.style.top = (r.bottom + 6) + 'px';
+      modal.style.left = r.left + 'px';
+      modal.style.right = 'auto';
+    }
+    modal.style.display = 'block';
+    return;
+  }
+  openModal('modal-l');
 }
 
 // ─── OPEN HINT STATES ─────────────────────────────────────────────────────────
@@ -1199,12 +1308,29 @@ function resetEmailModal() {
 // ─── MODALS ───────────────────────────────────────────────────────────────────
 
 function openModal(id) {
-  document.querySelectorAll('.conn-modal').forEach(m => m.style.display='none');
+  const scene = document.getElementById('scene');
+  document.querySelectorAll('.conn-modal').forEach(m => {
+    m.style.display = 'none';
+    m.style.position = '';
+    m.style.top = '';
+    m.style.left = '';
+    m.style.right = '';
+    if (m.parentElement !== scene) scene.appendChild(m);
+  });
   document.getElementById(id).style.display = 'block';
 }
 function closeModal(id) {
-  document.getElementById(id).style.display = 'none';
-  if (id === 'modal-l') resetEmailModal();
+  const el = document.getElementById(id);
+  el.style.display = 'none';
+  el.style.position = '';
+  el.style.top = '';
+  el.style.left = '';
+  el.style.right = '';
+  if (id === 'modal-l') {
+    resetEmailModal();
+    const scene = document.getElementById('scene');
+    if (el.parentElement !== scene) scene.appendChild(el);
+  }
   if (id === 'modal-r') resetDriveModal();
 }
 
@@ -1224,9 +1350,32 @@ function uploadInvoiceFile() {
   document.getElementById('photoInput').click();
 }
 
+// ─── INVOICE HOVER POPUP ─────────────────────────────────────────────────────
+
+function addPopupToCard(card, fname, items) {
+  card.querySelector('.inv-popup')?.remove();
+  if (!items.length) return;
+  const total = items.reduce((s, it) => s + (parseFloat(it.cost_per_bottle) || 0) * (parseInt(it.qty_bottles) || 0), 0);
+  const show = items.slice(0, 8);
+  const more = items.length > 8 ? `<div class="popup-row" style="color:var(--ink-3);font-size:8px;padding:2px 0">+${items.length - 8} more items</div>` : '';
+  const rowsHtml = show.map(it => {
+    const sub = [it.vintage, it.region].filter(Boolean).join(' \xb7 ');
+    const qty = parseInt(it.qty_bottles) || 0;
+    const price = parseFloat(it.cost_per_bottle) || 0;
+    return `<div class="popup-row"><div><div class="popup-wine">${esc(it.name||'')}</div>${sub?`<span class="popup-wine-sub">${esc(sub)}</span>`:''}</div><div class="popup-right"><span class="popup-qty">${qty} btl</span><span class="popup-price">$${price.toFixed(0)}/btl</span></div></div>`;
+  }).join('');
+  const popup = document.createElement('div');
+  popup.className = 'inv-popup';
+  popup.innerHTML =
+    `<div class="popup-head"><div class="popup-from">${esc(fname)}</div></div>` +
+    `<div class="popup-body"><div class="popup-lbl">Contents</div>${rowsHtml}${more}</div>` +
+    `<div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$${total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>`;
+  card.appendChild(popup);
+}
+
 // ─── FILE PARSE FLOW ─────────────────────────────────────────────────────────
 
-function fileToBase64(file) {
+function pdfToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -1235,11 +1384,42 @@ function fileToBase64(file) {
   });
 }
 
+// Resize photo invoices to max 2048px (cuts cost + latency), reject HEIC
+function imageToBase64(file, maxPx = 2048) {
+  return new Promise((resolve, reject) => {
+    const type = file.type || '';
+    const name = (file.name || '').toLowerCase();
+    if (type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif')) {
+      return reject(new Error('HEIC format not supported by Claude. In Photos, tap Share → Save as JPEG, then upload that file.'));
+    }
+    const img = new Image();
+    const blobUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(blobUrl);
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      if (scale === 1 && (type === 'image/jpeg' || type === 'image/png' || type === 'image/webp')) {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ base64: reader.result.split(',')[1], mediaType: type });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+        return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve({ base64: canvas.toDataURL('image/jpeg', 0.92).split(',')[1], mediaType: 'image/jpeg' });
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error('Could not read image file.')); };
+    img.src = blobUrl;
+  });
+}
+
 async function callClaudeWithInvoiceData(base64, mediaType) {
   if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY') {
     throw new Error('Anthropic API key not set. Add it to ANTHROPIC_API_KEY at the top of the script.');
   }
-  const res = await fetch('/api/claude', {
+  const res = await fetch(API_BASE + '/api/claude', {
     method: 'POST',
     headers: {
       'x-api-key-fwd': ANTHROPIC_API_KEY,
@@ -1247,7 +1427,7 @@ async function callClaudeWithInvoiceData(base64, mediaType) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: 4096,
       messages: [{ role: 'user', content: [
         { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
         { type: 'text', text: INVOICE_PARSE_PROMPT }
@@ -1266,9 +1446,11 @@ async function callClaudeWithInvoiceData(base64, mediaType) {
 }
 
 async function parseInvoiceWithClaude(file) {
-  const base64 = await fileToBase64(file);
-  const mediaType = file.type === 'application/pdf' ? 'application/pdf'
-    : (file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg');
+  if (file.type === 'application/pdf') {
+    const base64 = await pdfToBase64(file);
+    return callClaudeWithInvoiceData(base64, 'application/pdf');
+  }
+  const { base64, mediaType } = await imageToBase64(file);
   return callClaudeWithInvoiceData(base64, mediaType);
 }
 
@@ -1314,8 +1496,16 @@ async function parseEmailCard(card) {
   const btn = card.querySelector('.btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = 'parsing…'; }
 
-  document.getElementById('invBody').innerHTML =
-    `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div></div>`;
+  const invBody = document.getElementById('invBody');
+  const hadRows = !!invBody.querySelector('.inv-row');
+  if (!hadRows) {
+    invBody.innerHTML = `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div></div>`;
+  } else {
+    invBody.querySelector('#parseLoadingBanner')?.remove();
+    invBody.insertAdjacentHTML('beforeend',
+      `<div id="parseLoadingBanner" class="inbox-scanning" style="padding:8px 12px;justify-content:flex-start;gap:6px"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div>`
+    );
+  }
 
   try {
     const attachment = await fetchAttachmentFromEmail(msgId);
@@ -1325,12 +1515,14 @@ async function parseEmailCard(card) {
     populateParsedItems(fname, items);
     if (btn) { btn.className = 'btn btn-sm'; btn.textContent = 'parsed ✓'; }
   } catch (e) {
-    document.getElementById('invBody').innerHTML =
-      `<div class="inbox-state">
+    invBody.querySelector('#parseLoadingBanner')?.remove();
+    if (!hadRows) {
+      invBody.innerHTML = `<div class="inbox-state">
         <div class="inbox-state-lbl">Parse failed</div>
         <div class="inbox-state-sub">${esc(e.message)}</div>
         <button class="btn btn-sm" style="margin-top:4px" onclick="resetInventory()">Dismiss</button>
       </div>`;
+    }
     if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
   }
 }
@@ -1341,22 +1533,33 @@ async function parseFile(card) {
   const btn = card.querySelector('.btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = 'parsing…'; }
 
-  document.getElementById('invBody').innerHTML =
-    `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div></div>`;
+  const invBody = document.getElementById('invBody');
+  const hadRows = !!invBody.querySelector('.inv-row');
+  if (!hadRows) {
+    invBody.innerHTML = `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div></div>`;
+  } else {
+    invBody.querySelector('#parseLoadingBanner')?.remove();
+    invBody.insertAdjacentHTML('beforeend',
+      `<div id="parseLoadingBanner" class="inbox-scanning" style="padding:8px 12px;justify-content:flex-start;gap:6px"><span class="scan-pulse"></span>parsing ${esc(fname)}…</div>`
+    );
+  }
 
   try {
     if (!file) throw new Error('File reference lost — please re-upload the invoice.');
     const items = await parseInvoiceWithClaude(file);
     if (!items.length) throw new Error('No wine items found in this invoice.');
     populateParsedItems(fname, items);
+    addPopupToCard(card, fname, items);
     if (btn) { btn.className = 'btn btn-sm'; btn.textContent = 'parsed ✓'; }
   } catch (e) {
-    document.getElementById('invBody').innerHTML =
-      `<div class="inbox-state">
+    invBody.querySelector('#parseLoadingBanner')?.remove();
+    if (!hadRows) {
+      invBody.innerHTML = `<div class="inbox-state">
         <div class="inbox-state-lbl">Parse failed</div>
         <div class="inbox-state-sub">${esc(e.message)}</div>
         <button class="btn btn-sm" style="margin-top:4px" onclick="resetInventory()">Dismiss</button>
       </div>`;
+    }
     if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
   }
 }
@@ -1371,28 +1574,43 @@ async function parseAllFiles() {
     if (b) { b.disabled = true; b.textContent = 'queued…'; }
   });
 
+  const invBodyAF = document.getElementById('invBody');
+  const hadRowsAF = !!invBodyAF.querySelector('.inv-row');
   const allItems = [];
+
   for (let i = 0; i < cards.length; i++) {
     const card = cards[i];
     const fname = card.querySelector('.ec-from')?.textContent || 'Invoice';
     const btn = card.querySelector('.btn-primary');
     if (btn) btn.textContent = 'parsing…';
-    document.getElementById('invBody').innerHTML =
-      `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${i+1} / ${cards.length}: ${esc(fname)}…</div></div>`;
+
+    invBodyAF.querySelector('#parseLoadingBanner')?.remove();
+    if (!hadRowsAF && !invBodyAF.querySelector('.inv-row')) {
+      invBodyAF.innerHTML = `<div class="inbox-state"><div class="inbox-scanning"><span class="scan-pulse"></span>parsing ${i+1} / ${cards.length}: ${esc(fname)}…</div></div>`;
+    } else {
+      invBodyAF.insertAdjacentHTML('beforeend',
+        `<div id="parseLoadingBanner" class="inbox-scanning" style="padding:8px 12px;justify-content:flex-start;gap:6px"><span class="scan-pulse"></span>parsing ${i+1} / ${cards.length}: ${esc(fname)}…</div>`
+      );
+    }
+
     try {
       const file = fileCardMap.get(card);
       if (!file) throw new Error('File reference lost');
       const items = await parseInvoiceWithClaude(file);
       allItems.push(...items);
+      addPopupToCard(card, fname, items);
       if (btn) { btn.className = 'btn btn-sm'; btn.textContent = 'parsed ✓'; }
     } catch (e) {
       if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
     }
   }
 
+  invBodyAF.querySelector('#parseLoadingBanner')?.remove();
+
   if (!allItems.length) {
-    document.getElementById('invBody').innerHTML =
-      `<div class="inbox-state"><div class="inbox-state-lbl">Nothing parsed</div><div class="inbox-state-sub">No wine items were found across the uploaded files.</div></div>`;
+    if (!invBodyAF.querySelector('.inv-row')) {
+      invBodyAF.innerHTML = `<div class="inbox-state"><div class="inbox-state-lbl">Nothing parsed</div><div class="inbox-state-sub">No wine items were found across the uploaded files.</div></div>`;
+    }
     return;
   }
   const label = cards.length + ' invoice' + (cards.length !== 1 ? 's' : '');
@@ -1408,7 +1626,7 @@ function buildInvRow(item, i) {
   const size = item.size || '750ml';
   const region = item.region || '';
   const category = item.category || 'Red';
-  return `<div class="inv-row new-entry" data-category="${category}">
+  return `<div class="inv-row new-entry" data-category="${category}" data-inv-idx="${i}">
     <div class="ir-main">
       <div class="ir-top">
         <div class="ir-name" contenteditable="false" spellcheck="false">${esc(item.name)}<span class="new-tag">new</span></div>
@@ -1420,6 +1638,7 @@ function buildInvRow(item, i) {
           <button class="edit-btn" id="eb${i}" onclick="openSlider(${i})">edit</button>
           <div class="slider-wrap" id="sw${i}">
             <div class="btg-row-pill"><button class="btg-r active" id="btgb${i}" onclick="setBtgMode(${i},false)">Btl</button><button class="btg-r" id="btgg${i}" onclick="setBtgMode(${i},true)">Glass</button></div>
+            <button class="sold-btn" onclick="markSold(${i})">sold</button>
             <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f${i}" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(${i},this.value)" id="rng${i}"></div>
             <button class="icon-btn cancel" onclick="cancelMg(${i})" aria-label="cancel">${svgX}</button>
             <button class="icon-btn confirm" onclick="confirmMg(${i})" aria-label="confirm">${svgOk}</button>
@@ -1431,18 +1650,38 @@ function buildInvRow(item, i) {
 }
 
 function populateParsedItems(source, items) {
-  // Resize state arrays to fit dynamic item count
-  while (costs.length < items.length) { costs.push(0); committed.push(4.0); pending.push(4.0); committedBtg.push(false); pendingBtg.push(false); }
-  items.forEach((item, i) => {
+  const invBody = document.getElementById('invBody');
+  const hasRows = !!invBody.querySelector('.inv-row');
+  const startIdx = rowCount;
+
+  while (costs.length < rowCount + items.length) {
+    costs.push(0); committed.push(4.0); pending.push(4.0);
+    committedBtg.push(false); pendingBtg.push(false);
+  }
+  items.forEach((item, j) => {
+    const i = rowCount + j;
     costs[i] = parseFloat(item.cost_per_bottle) || 0;
     committed[i] = 4.0; pending[i] = 4.0;
     committedBtg[i] = false; pendingBtg[i] = false;
   });
+  rowCount += items.length;
 
-  document.getElementById('invBody').innerHTML =
-    `<div class="parse-banner"><span class="pb-txt">Raw parse \xb7 ${esc(source)} — review before confirming</span><button class="pb-btn" onclick="pushToWineList()">Confirm all</button></div>` +
+  invBody.querySelector('.inbox-state')?.remove();
+  invBody.querySelector('#parseLoadingBanner')?.remove();
+
+  if (!hasRows) {
+    invBody.insertAdjacentHTML('afterbegin',
+      `<div class="parse-banner"><span class="pb-txt">Raw parse \xb7 ${esc(source)} — review before confirming</span><button class="pb-btn" onclick="pushToWineList()">Confirm all</button></div>`
+    );
+  } else {
+    const pbTxt = invBody.querySelector('.pb-txt');
+    if (pbTxt) pbTxt.textContent = 'Multiple invoices parsed — review before confirming';
+  }
+
+  invBody.insertAdjacentHTML('beforeend',
     `<div class="sec-lbl">Parsed \xb7 ${items.length} new</div>` +
-    items.map((item, i) => buildInvRow(item, i)).join('');
+    items.map((item, j) => buildInvRow(item, startIdx + j)).join('')
+  );
 
   const invFoot = document.getElementById('invFoot');
   invFoot.style.display = '';
@@ -1456,7 +1695,7 @@ function pushToWineList() {
   const wineListBody = document.getElementById('wineListBody');
   if (!wineListBody.querySelector('.menu-block')) wineListBody.innerHTML = '';
 
-  const CAT_ORDER = ['Sparkling', 'White', 'Rosé', 'Orange', 'Red', 'Dessert', 'Other'];
+  const CAT_ORDER = ['Sparkling', 'White', 'Rosé', 'Orange', 'Red', 'Dessert', 'Sake', 'Vermouth', 'Other'];
 
   const items = rows.map(row => {
     const nameNode = row.querySelector('.ir-name');
@@ -1469,7 +1708,8 @@ function pushToWineList() {
     const price = row.querySelector('.ir-sell')?.textContent?.replace('$','') || '0';
     const cost = row.querySelector('.ir-cost')?.textContent?.replace('cost $','') || '0';
     const category = CAT_ORDER.includes(row.dataset.category) ? row.dataset.category : 'Other';
-    return { name, size, region, price, cost, category };
+    const invIdx = row.dataset.invIdx || '';
+    return { name, size, region, price, cost, category, invIdx };
   });
 
   // Group items by category preserving CAT_ORDER
@@ -1501,7 +1741,7 @@ function pushToWineList() {
     // Append .mi rows — wlIdx is global so IDs stay unique across pushes
     const miHtml = group.map(item => {
       const wlIdx = wineListBody.querySelectorAll('.mi').length;
-      return `<div class="mi"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(item.size)} \xb7 ${esc(item.region)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${item.price}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
+      return `<div class="mi" data-inv-idx="${item.invIdx}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(item.size)} \xb7 ${esc(item.region)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${item.price}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
     }).join('');
     block.insertAdjacentHTML('beforeend', miHtml);
 
@@ -1514,12 +1754,8 @@ function pushToWineList() {
   const countEl = document.querySelector('#colRight .col-foot span[style*="margin-left"]');
   if (countEl) countEl.textContent = total + ' item' + (total !== 1 ? 's' : '');
 
-  document.getElementById('invBody').innerHTML =
-    `<div class="inbox-state">
-      <div class="inbox-state-lbl">Pushed to wine list</div>
-      <div class="inbox-state-sub">${items.length} item${items.length !== 1 ? 's' : ''} added to wine list.</div>
-      <button class="btn btn-sm" style="margin-top:4px" onclick="resetInventory()">&#8617; Back to inventory</button>
-    </div>`;
+  // Keep inventory rows — remove parse banner and section labels, rows persist until sold
+  document.getElementById('invBody').querySelectorAll('.parse-banner, .sec-lbl').forEach(el => el.remove());
   document.getElementById('invFoot').style.display = 'none';
   document.getElementById('invFoot').innerHTML = '';
 }
@@ -1529,6 +1765,7 @@ function resetInventory() {
     `<div class="inbox-state"><div class="inbox-state-lbl">No inventory</div><div class="inbox-state-sub">Connect an inbox or upload an invoice file to populate inventory.</div></div>`;
   document.getElementById('invFoot').style.display = 'none';
   document.getElementById('invFoot').innerHTML = '';
+  rowCount = 0;
 }
 
 function discardParsed() { resetInventory(); }
