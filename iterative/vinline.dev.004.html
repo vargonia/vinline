@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Playfair+Display:wght@600;700&display=swap');
 
   :root {
     --ink:#1C1B18;--ink-2:#4A4843;--ink-3:#8A8880;
@@ -274,7 +275,72 @@
   .inbox-state-lbl{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3)}
   .inbox-state-sub{font-size:11px;color:var(--ink-2);line-height:1.55;max-width:155px}
   .inbox-scanning{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+
+  /* PREVIEW / STYLE EDITOR */
+  #previewOverlay{display:none;position:fixed;inset:0;z-index:1000;background:var(--bg)}
+  .preview-panel{width:300px;flex-shrink:0;border-right:0.5px solid var(--rule);display:flex;flex-direction:column;background:var(--bg)}
+  .preview-panel-body{padding:16px;display:flex;flex-direction:column;gap:14px;flex:1;overflow-y:auto}
+  .preview-panel-foot{padding:12px 16px;border-top:0.5px solid var(--rule)}
+  .preview-pane{flex:1;overflow:auto;background:var(--bg-3);padding:40px;display:flex;justify-content:center;align-items:flex-start}
+  .preview-input{width:100%;font-size:12px;padding:7px 9px;border:0.5px solid var(--rule);border-radius:5px;font-family:var(--sans);color:var(--ink);background:var(--bg)}
+  .preview-input:focus{outline:none;border-color:var(--ink-3)}
+  .preview-subhead{margin:0 0 4px;font-size:9px;font-family:var(--mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+
+  .swatch-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .swatch-opt{width:26px;height:26px;border-radius:50%;cursor:pointer;border:none;outline:2px solid transparent;outline-offset:2px;transition:outline-color .12s}
+  .swatch-opt.active{outline-color:var(--ink-3)}
+
+  .font-pair-grid{display:flex;flex-direction:column;gap:6px}
+  .font-pair-card{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:0.5px solid var(--rule);border-radius:5px;cursor:pointer;transition:background .12s,border-color .12s}
+  .font-pair-card:hover{background:var(--bg-2)}
+  .font-pair-card.active{border-color:var(--ink-3);background:var(--bg-2)}
+  .font-pair-sample{font-size:15px;color:var(--ink)}
+  .font-pair-label{font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+
+  .pill-row{display:flex;gap:6px}
+  .pill-btn{flex:1;font-size:10px;font-family:var(--sans);padding:6px 8px;border-radius:6px;border:0.5px solid var(--rule);cursor:pointer;background:transparent;color:var(--ink-2);transition:all .12s;text-align:center}
+  .pill-btn.active{background:var(--bg-3);color:var(--ink);border-color:var(--ink-3)}
+
+  .section-draglist{display:flex;flex-direction:column;gap:4px}
+  .section-drag-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border:0.5px solid var(--rule);border-radius:5px;background:var(--bg);cursor:grab;transition:background .12s}
+  .section-drag-item.dragging{opacity:.4}
+  .section-drag-item.drag-over{border-top:2px solid var(--green-mid)}
+  .drag-handle{color:var(--ink-3);flex-shrink:0}
+  .section-drag-name{flex:1;font-size:11px;color:var(--ink)}
+  .section-drag-name.hidden-section{color:var(--ink-3);text-decoration:line-through}
+
+  .logo-dropzone{border:1px dashed var(--rule);border-radius:6px;padding:14px;text-align:center;cursor:pointer;transition:border-color .12s}
+  .logo-dropzone:hover{border-color:var(--ink-3)}
+  .logo-dropzone-hint{font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+  .logo-thumb{max-width:100%;max-height:50px;display:block;margin:0 auto 6px}
+  .logo-remove{font-family:var(--mono);font-size:9px;color:var(--red);cursor:pointer;display:inline-block;margin-top:6px}
+
+  .preview-paper{background:#fff;box-shadow:0 2px 24px rgba(0,0,0,.10);width:816px;min-height:1056px;padding:72px;color:var(--ink)}
+  .preview-paper.doc-a4{width:794px;min-height:1123px}
+  .preview-empty{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--mono);font-size:11px;color:var(--ink-3);text-align:center}
+
+  .doc-header{text-align:center;margin-bottom:calc(var(--doc-spacing-unit,8px)*4)}
+  .doc-logo{max-height:64px;margin:0 auto 10px;display:block}
+  .doc-title{font-family:var(--doc-font-head,var(--sans));font-weight:var(--doc-font-head-weight,500);font-size:28px;color:var(--doc-accent,var(--ink))}
+  .doc-subtitle{font-family:var(--doc-font-body,var(--sans));font-size:12px;color:var(--ink-3);margin-top:4px;letter-spacing:.04em}
+  .doc-columns{column-count:1;column-gap:36px}
+  .doc-columns.doc-cols-2{column-count:2}
+  .doc-section{break-inside:avoid-column;margin-bottom:calc(var(--doc-spacing-unit,8px)*3)}
+  .doc-section-head{font-family:var(--doc-font-head,var(--sans));font-weight:var(--doc-font-head-weight,500);font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--doc-accent,var(--ink));border-bottom:1px solid var(--doc-accent,var(--ink));padding-bottom:4px;margin-bottom:var(--doc-spacing-unit,8px)}
+  .doc-item{display:flex;justify-content:space-between;gap:10px;break-inside:avoid;page-break-inside:avoid;margin-bottom:var(--doc-spacing-unit,8px)}
+  .doc-item-name{font-family:var(--doc-font-head,var(--sans));font-weight:500;font-size:13px;color:var(--ink)}
+  .doc-item-sub{font-family:var(--doc-font-body,var(--sans));font-size:10px;color:var(--ink-3);margin-top:2px}
+  .doc-item-price{font-family:var(--doc-font-body,var(--sans));font-size:13px;color:var(--ink);white-space:nowrap;flex-shrink:0}
+
+  @media print {
+    .shell{display:none!important}
+    #previewOverlay{position:static!important;display:block!important;background:#fff}
+    .preview-panel{display:none!important}
+    .preview-pane{padding:0;background:#fff;display:block}
+    .preview-paper{box-shadow:none;margin:0 auto;width:auto;min-height:auto}
+  }
 </style>
+<style id="pageSizeStyle"></style>
 </head>
 <body>
 <div class="shell">
@@ -438,7 +504,7 @@
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
                 sync
               </button>
-              <button class="btn btn-sm">Preview</button>
+              <button class="btn btn-sm" onclick="openPreviewEditor()">Preview</button>
             </div>
           </div>
           <div class="col-body" id="wineListBody">
@@ -448,7 +514,7 @@
             </div>
           </div>
           <div class="col-foot">
-            <button class="btn btn-primary btn-sm">↓ PDF</button>
+            <button class="btn btn-primary btn-sm" onclick="quickExportPdf()">↓ PDF</button>
             <button class="btn btn-sm" id="driveFootBtn" onclick="openDriveConnect()">Drive</button>
             <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto">5 items</span>
           </div>
@@ -508,6 +574,65 @@
   </div>
 </div>
 
+<div id="previewOverlay">
+  <div class="preview-panel">
+    <div class="col-head">
+      <div><div class="col-eyebrow">Style editor</div><div class="col-title">Preview</div></div>
+      <button class="btn btn-sm" onclick="closePreviewEditor()" aria-label="close">✕</button>
+    </div>
+    <div class="preview-panel-body">
+
+      <div class="scard">
+        <div class="scard-title">Header</div>
+        <input type="text" id="exportTitleInput" class="preview-input" placeholder="Wine List" oninput="setExportTitle(this.value)" style="margin-bottom:6px">
+        <input type="text" id="exportSubtitleInput" class="preview-input" placeholder="Subtitle (optional)" oninput="setExportSubtitle(this.value)" style="margin-bottom:10px">
+        <div class="logo-dropzone" id="logoDropzone" onclick="document.getElementById('logoFileInput').click()">
+          <div id="logoDropzoneInner"><div class="logo-dropzone-hint">Click to add a logo</div></div>
+        </div>
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Color</div>
+        <div class="swatch-grid" id="colorSwatchGrid"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Typeface</div>
+        <div class="font-pair-grid" id="fontPairGrid"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Layout</div>
+        <div class="preview-subhead">Columns</div>
+        <div class="pill-row" id="columnsPillRow" style="margin-bottom:10px"></div>
+        <div class="preview-subhead">Spacing</div>
+        <div class="pill-row" id="spacingPillRow" style="margin-bottom:10px"></div>
+        <div class="preview-subhead">Paper size</div>
+        <div class="pill-row" id="paperSizePillRow"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Sections</div>
+        <div class="section-draglist" id="sectionDragList"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Display</div>
+        <div class="srow"><div class="sr-l">Show region</div><div class="sr-r"><button class="tog" id="togRegion" onclick="toggleShowRegion()" aria-label="toggle region"></button></div></div>
+        <div class="srow"><div class="sr-l">Decimal prices</div><div class="sr-r"><button class="tog off" id="togDecimal" onclick="toggleDecimalPrices()" aria-label="toggle decimal prices"></button></div></div>
+      </div>
+
+    </div>
+    <div class="preview-panel-foot">
+      <button class="btn btn-primary btn-sm" id="exportPdfBtn" onclick="exportPdfFromEditor()" style="width:100%">↓ Export PDF</button>
+    </div>
+  </div>
+  <div class="preview-pane">
+    <div class="preview-paper" id="previewPaper"></div>
+  </div>
+</div>
+
 <script>
 // ─── CREDENTIALS ─────────────────────────────────────────────────────────────
 const GOOGLE_CLIENT_ID = '389113702208-oikpagdsaqp1on4c87liosfl9tm044jv.apps.googleusercontent.com';
@@ -539,6 +664,8 @@ let driveConnected = false;
 let driveToken = null;
 let driveFile = null; // { id, name, mimeType }
 
+function isAuthExpired(res) { return res && res.status === 401; }
+
 // UI REFS
 const stage = document.getElementById('stage');
 const collapsed = document.getElementById('collapsed');
@@ -555,6 +682,7 @@ const shelves = Array.from({length:10}, (_,i) => document.getElementById('sl'+i)
 const inboxBody = document.getElementById('inboxBody');
 let isExpanded = false;
 let rowCount = 0;
+let currentExportStyle = null;
 
 // MARGIN SYSTEM
 const costs = [71, 12, 18, 15, 28];
@@ -567,6 +695,33 @@ const wlMap = [0, 1, 2, 3, 4];
 
 // file cards → File objects (set when card is created, read when parse is triggered)
 const fileCardMap = new Map();
+
+// ─── EXPORT / PREVIEW STYLE PRESETS ──────────────────────────────────────────
+const CAT_ORDER = ['Sparkling', 'White', 'Rosé', 'Orange', 'Red', 'Dessert', 'Sake', 'Vermouth', 'Other'];
+
+const FONT_PAIRINGS = [
+  { id: 'modern',   label: 'Modern',    head: "'DM Sans',sans-serif",           headWeight: 500, body: "'DM Mono',monospace" },
+  { id: 'classic',  label: 'Classic',   head: "'Playfair Display',serif",       headWeight: 600, body: "'DM Sans',sans-serif" },
+  { id: 'elegant',  label: 'Elegant',   head: "'Cormorant Garamond',serif",     headWeight: 500, body: "'DM Sans',sans-serif" },
+  { id: 'mono',     label: 'Editorial', head: "'DM Mono',monospace",            headWeight: 400, body: "'DM Sans',sans-serif" },
+];
+
+const COLOR_SWATCHES = [
+  { id: 'ink',      label: 'Ink',      hex: '#1C1B18' },
+  { id: 'green',    label: 'Green',    hex: '#1A6B50' },
+  { id: 'burgundy', label: 'Burgundy', hex: '#6B1A2B' },
+  { id: 'charcoal', label: 'Charcoal', hex: '#33312C' },
+  { id: 'gold',     label: 'Gold',     hex: '#9A7B2E' },
+  { id: 'blue',     label: 'Blue',     hex: '#1A4A7A' },
+];
+
+const SPACING_PRESETS = { compact: { unit: '4px' }, cozy: { unit: '8px' }, spacious: { unit: '14px' } };
+
+const COLUMN_OPTIONS = [{ value: 1, label: '1 column' }, { value: 2, label: '2 columns' }];
+const SPACING_OPTIONS = [{ value: 'compact', label: 'Compact' }, { value: 'cozy', label: 'Cozy' }, { value: 'spacious', label: 'Spacious' }];
+const PAPER_SIZE_OPTIONS = [{ value: 'letter', label: 'Letter' }, { value: 'a4', label: 'A4' }];
+
+const EXPORT_STYLE_KEY = 'vinline_export_style_v1';
 
 // ─── INVOICE PARSE PROMPT ────────────────────────────────────────────────────
 const INVOICE_PARSE_PROMPT = `You are an expert at reading wine distributor invoices. Extract every wine line item and return a JSON array.
@@ -877,13 +1032,18 @@ function setEmailConnected(provider, email) {
   }
 }
 
-function disconnectGmail() {
+function resetGmailConnectionUI() {
   gmailToken = null; emailConnected = false; emailProvider = null; emailAddress = '';
   document.getElementById('emailUnconnectedZone').style.display = '';
   document.getElementById('emailConnectedZone').style.display = 'none';
   document.getElementById('topbarStatus').style.display = 'none';
   document.getElementById('settingsGmailSub').textContent = 'Not connected';
   document.getElementById('settingsGmailRight').innerHTML = '<button class="btn btn-sm" onclick="openEmailConnect(\'Gmail\')">Connect →</button>';
+}
+
+function disconnectGmail() {
+  if (gmailToken) google.accounts.oauth2.revoke(gmailToken, () => {});
+  resetGmailConnectionUI();
   openHint.innerHTML = '↓ tap to open';
   showInboxEmpty();
   document.getElementById('inboxCount').textContent = '—';
@@ -922,7 +1082,7 @@ function connectDrive() {
   setDriveModalLoading('Opening Google sign-in…');
   const client = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file',
+    scope: 'https://www.googleapis.com/auth/drive.file',
     callback: (response) => {
       if (response.error) {
         setDriveModalError(response.error === 'access_denied' ? 'Access denied.' : 'Sign-in failed: ' + response.error);
@@ -985,6 +1145,7 @@ function setDriveConnected() {
 }
 
 function disconnectDrive() {
+  if (driveToken) google.accounts.oauth2.revoke(driveToken, () => {});
   driveConnected = false; driveToken = null; driveFile = null;
   document.getElementById('driveConnectedZone').style.display = 'none';
   document.getElementById('driveUnconnectedZone').style.display = '';
@@ -1007,47 +1168,450 @@ async function syncToDrive() {
   const btn = document.getElementById('driveFootBtn');
   btn.disabled = true; btn.textContent = 'syncing…';
   try {
-    const wines = gatherWineListData();
+    const styleConfig = loadExportStyle();
+    const grouped = gatherWineListData();
+    const sections = resolveSectionConfig(styleConfig, grouped).filter(s => s.visible);
     if (driveFile.mimeType === 'application/vnd.google-apps.spreadsheet') {
-      await writeWineListToSheet(wines);
+      await writeWineListToSheet(sections, styleConfig);
     } else {
-      await writeWineListToDoc(wines);
+      await writeWineListToDoc(sections, styleConfig);
     }
     btn.textContent = '✓ synced';
     setTimeout(() => { btn.textContent = '↑ Drive'; btn.disabled = false; }, 2500);
   } catch (e) {
+    if (e.message === 'AUTH_EXPIRED') {
+      disconnectDrive();
+      btn.textContent = 'reconnect Drive'; btn.disabled = false; btn.onclick = connectDrive;
+      return;
+    }
     btn.textContent = 'error';
     setTimeout(() => { btn.textContent = '↑ Drive'; btn.disabled = false; }, 2500);
   }
 }
 
-async function writeWineListToSheet(wines) {
-  const values = [['Wine', 'Vintage & Region', 'Bottle Price'], ...wines.map(w => [w.name, w.sub, '$' + w.price])];
-  await fetch(
+function hexToRgb01(hex) {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return { red: ((n >> 16) & 255) / 255, green: ((n >> 8) & 255) / 255, blue: (n & 255) / 255 };
+}
+
+async function writeWineListToSheet(sections, styleConfig) {
+  const values = [[styleConfig.title || 'Wine List', '', '']];
+  const boldRowIndices = [0];
+  sections.forEach(sec => {
+    boldRowIndices.push(values.length);
+    values.push([sec.category, '', '']);
+    sec.items.forEach(it => {
+      const sub = [it.size, styleConfig.showRegion && it.region].filter(Boolean).join(' \xb7 ');
+      values.push([it.name, sub, '$' + formatPrice(it.price, styleConfig.decimalPrices)]);
+    });
+  });
+
+  const putRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${driveFile.id}/values/A1:C${values.length}?valueInputOption=USER_ENTERED`,
     { method: 'PUT', headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ values }) }
   );
+  if (isAuthExpired(putRes)) throw new Error('AUTH_EXPIRED');
+
+  // repeatCell formatting needs the sheetId (gid) of the first tab — same first-sheet
+  // assumption the original unstyled sync already made.
+  const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${driveFile.id}?fields=sheets.properties`,
+    { headers: { Authorization: 'Bearer ' + driveToken } });
+  const meta = await metaRes.json();
+  const sheetId = meta.sheets?.[0]?.properties?.sheetId || 0;
+  const accentHex = (COLOR_SWATCHES.find(c => c.id === styleConfig.colorId) || COLOR_SWATCHES[0]).hex;
+  const accentRgb = hexToRgb01(accentHex);
+
+  const requests = boldRowIndices.map(rowIdx => ({
+    repeatCell: {
+      range: { sheetId, startRowIndex: rowIdx, endRowIndex: rowIdx + 1, startColumnIndex: 0, endColumnIndex: 3 },
+      cell: { userEnteredFormat: { textFormat: { bold: true, foregroundColor: rowIdx === 0 ? {} : accentRgb } } },
+      fields: 'userEnteredFormat.textFormat'
+    }
+  }));
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${driveFile.id}:batchUpdate`,
+    { method: 'POST', headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ requests }) }
+  );
 }
 
-async function writeWineListToDoc(wines) {
+async function writeWineListToDoc(sections, styleConfig) {
   const metaRes = await fetch(`https://docs.googleapis.com/v1/documents/${driveFile.id}`, { headers: { Authorization: 'Bearer ' + driveToken } });
+  if (isAuthExpired(metaRes)) throw new Error('AUTH_EXPIRED');
   const doc = await metaRes.json();
   const endIndex = doc.body?.content?.slice(-1)[0]?.endIndex || 1;
-  const text = 'WINE LIST\n\n' + wines.map(w => `${w.name}\n${w.sub}  ·  $${w.price}`).join('\n\n') + '\n';
+
+  const title = styleConfig.title || 'Wine List';
+  let text = title + '\n\n';
+  const boldRanges = [{ start: 0, end: title.length }];
+  sections.forEach(sec => {
+    const headStart = text.length;
+    text += sec.category + '\n';
+    boldRanges.push({ start: headStart, end: headStart + sec.category.length });
+    sec.items.forEach(it => {
+      const sub = [it.size, styleConfig.showRegion && it.region].filter(Boolean).join(' \xb7 ');
+      text += `${it.name}\n${sub}  \xb7  $${formatPrice(it.price, styleConfig.decimalPrices)}\n\n`;
+    });
+  });
+
   const requests = [];
   if (endIndex > 2) requests.push({ deleteContentRange: { range: { startIndex: 1, endIndex: endIndex - 1 } } });
   requests.push({ insertText: { location: { index: 1 }, text } });
+  // bold ranges are relative to the inserted text, offset by the +1 leading index
+  boldRanges.forEach(r => requests.push({
+    updateTextStyle: {
+      range: { startIndex: r.start + 1, endIndex: r.end + 1 },
+      textStyle: { bold: true },
+      fields: 'bold'
+    }
+  }));
   await fetch(`https://docs.googleapis.com/v1/documents/${driveFile.id}:batchUpdate`,
     { method: 'POST', headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ requests }) }
   );
 }
 
 function gatherWineListData() {
-  return [...document.querySelectorAll('.mi')].map(mi => ({
-    name: mi.querySelector('.mi-name')?.textContent?.trim() || '',
-    sub: mi.querySelector('.mi-sub')?.textContent?.trim() || '',
-    price: mi.querySelector('[id^="wlp"]')?.textContent?.trim() || ''
-  })).filter(w => w.name);
+  return [...document.querySelectorAll('#wineListBody .menu-block[data-cat]')].map(block => ({
+    category: block.dataset.cat,
+    items: [...block.querySelectorAll('.mi')].map(mi => ({
+      name: mi.querySelector('.mi-name')?.textContent?.trim() || '',
+      sub: mi.querySelector('.mi-sub')?.textContent?.trim() || '',
+      region: mi.dataset.region || '',
+      size: mi.dataset.size || '',
+      price: mi.querySelector('[id^="wlp"]')?.textContent?.trim() || ''
+    })).filter(it => it.name)
+  })).filter(g => g.items.length);
+}
+
+// ─── EXPORT STYLE PERSISTENCE ─────────────────────────────────────────────────
+
+function defaultExportStyle() {
+  return {
+    title: 'Wine List', subtitle: '',
+    logoDataUrl: null, logoEnabled: false,
+    fontPairingId: 'classic', colorId: 'ink',
+    columns: 1, spacing: 'cozy', paperSize: 'letter',
+    showRegion: true, decimalPrices: false,
+    sectionOrder: [], sectionVisible: {}
+  };
+}
+
+function loadExportStyle() {
+  try {
+    const raw = localStorage.getItem(EXPORT_STYLE_KEY);
+    if (!raw) return defaultExportStyle();
+    return { ...defaultExportStyle(), ...JSON.parse(raw) };
+  } catch (e) {
+    return defaultExportStyle();
+  }
+}
+
+function saveExportStyle(config) {
+  try {
+    localStorage.setItem(EXPORT_STYLE_KEY, JSON.stringify(config));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Single source of truth for section order + visibility — used identically by
+// the PDF/preview renderer and the Drive push so they can never disagree.
+function resolveSectionConfig(styleConfig, groupedData) {
+  const present = new Set(groupedData.map(g => g.category));
+  const known = styleConfig.sectionOrder.filter(c => present.has(c));
+  const unknown = CAT_ORDER.filter(c => present.has(c) && !known.includes(c));
+  const order = [...known, ...unknown];
+  return order.map(cat => ({
+    category: cat,
+    items: groupedData.find(g => g.category === cat)?.items || [],
+    visible: styleConfig.sectionVisible[cat] !== false
+  }));
+}
+
+// ─── DOCUMENT RENDERER (shared by live preview pane and print) ───────────────
+
+function formatPrice(price, decimal) {
+  const n = parseFloat(price) || 0;
+  return decimal ? n.toFixed(2) : Math.round(n).toString();
+}
+
+function buildSubLine(item, styleConfig) {
+  const parts = [item.size, styleConfig.showRegion && item.region].filter(Boolean);
+  return esc(parts.join(' \xb7 '));
+}
+
+function renderWineListDoc(styleConfig) {
+  const grouped = gatherWineListData();
+  const sections = resolveSectionConfig(styleConfig, grouped).filter(s => s.visible);
+
+  if (!sections.length) {
+    return '<div class="preview-empty">No wine list items yet — push inventory to the wine list first.</div>';
+  }
+
+  const headerHtml = `
+    <div class="doc-header">
+      ${styleConfig.logoEnabled && styleConfig.logoDataUrl ? `<img class="doc-logo" src="${styleConfig.logoDataUrl}" alt="">` : ''}
+      <div class="doc-title">${esc(styleConfig.title || 'Wine List')}</div>
+      ${styleConfig.subtitle ? `<div class="doc-subtitle">${esc(styleConfig.subtitle)}</div>` : ''}
+    </div>`;
+
+  const sectionsHtml = sections.map(sec => `
+    <div class="doc-section">
+      <div class="doc-section-head">${esc(sec.category)}</div>
+      ${sec.items.map(it => `
+        <div class="doc-item">
+          <div class="doc-item-left">
+            <div class="doc-item-name">${esc(it.name)}</div>
+            <div class="doc-item-sub">${buildSubLine(it, styleConfig)}</div>
+          </div>
+          <div class="doc-item-price">$${formatPrice(it.price, styleConfig.decimalPrices)}</div>
+        </div>`).join('')}
+    </div>`).join('');
+
+  return `${headerHtml}<div class="doc-columns doc-cols-${styleConfig.columns}">${sectionsHtml}</div>`;
+}
+
+function applyDocStyleVars(paperEl, styleConfig) {
+  const pairing = FONT_PAIRINGS.find(f => f.id === styleConfig.fontPairingId) || FONT_PAIRINGS[0];
+  const color = COLOR_SWATCHES.find(c => c.id === styleConfig.colorId) || COLOR_SWATCHES[0];
+  paperEl.style.setProperty('--doc-font-head', pairing.head);
+  paperEl.style.setProperty('--doc-font-head-weight', pairing.headWeight);
+  paperEl.style.setProperty('--doc-font-body', pairing.body);
+  paperEl.style.setProperty('--doc-accent', color.hex);
+  paperEl.style.setProperty('--doc-spacing-unit', SPACING_PRESETS[styleConfig.spacing].unit);
+  paperEl.classList.toggle('doc-a4', styleConfig.paperSize === 'a4');
+}
+
+// ─── PREVIEW / STYLE EDITOR ───────────────────────────────────────────────────
+
+function openPreviewEditor() {
+  currentExportStyle = loadExportStyle();
+  populatePreviewPanel(currentExportStyle);
+  refreshPreviewPane();
+  document.getElementById('previewOverlay').style.display = 'flex';
+}
+
+function closePreviewEditor() {
+  document.getElementById('previewOverlay').style.display = 'none';
+}
+
+function refreshPreviewPane() {
+  const paper = document.getElementById('previewPaper');
+  paper.innerHTML = renderWineListDoc(currentExportStyle);
+  applyDocStyleVars(paper, currentExportStyle);
+  const exportBtn = document.getElementById('exportPdfBtn');
+  if (exportBtn) exportBtn.disabled = !gatherWineListData().length;
+}
+
+function populatePreviewPanel(styleConfig) {
+  document.getElementById('exportTitleInput').value = styleConfig.title;
+  document.getElementById('exportSubtitleInput').value = styleConfig.subtitle;
+  renderColorSwatches(styleConfig);
+  renderFontPairings(styleConfig);
+  renderPillRow('columnsPillRow', COLUMN_OPTIONS, styleConfig.columns, 'setColumns');
+  renderPillRow('spacingPillRow', SPACING_OPTIONS, styleConfig.spacing, 'setSpacing');
+  renderPillRow('paperSizePillRow', PAPER_SIZE_OPTIONS, styleConfig.paperSize, 'setPaperSize');
+  document.getElementById('togRegion').classList.toggle('off', !styleConfig.showRegion);
+  document.getElementById('togDecimal').classList.toggle('off', !styleConfig.decimalPrices);
+  renderLogoDropzone(styleConfig);
+  renderSectionDragList(styleConfig);
+}
+
+function renderPillRow(containerId, options, current, setterName) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = options.map(o => {
+    const arg = typeof o.value === 'number' ? o.value : `'${o.value}'`;
+    return `<button class="pill-btn ${String(o.value) === String(current) ? 'active' : ''}" onclick="${setterName}(${arg})">${esc(o.label)}</button>`;
+  }).join('');
+}
+
+function renderColorSwatches(styleConfig) {
+  document.getElementById('colorSwatchGrid').innerHTML = COLOR_SWATCHES.map(c =>
+    `<button class="swatch-opt ${c.id === styleConfig.colorId ? 'active' : ''}" style="background:${c.hex}" title="${esc(c.label)}" aria-label="${esc(c.label)}" onclick="setColorSwatch('${c.id}')"></button>`
+  ).join('');
+}
+
+function renderFontPairings(styleConfig) {
+  document.getElementById('fontPairGrid').innerHTML = FONT_PAIRINGS.map(f =>
+    `<div class="font-pair-card ${f.id === styleConfig.fontPairingId ? 'active' : ''}" onclick="setFontPairing('${f.id}')">
+      <span class="font-pair-sample" style="font-family:${f.head};font-weight:${f.headWeight}">Aa</span>
+      <span class="font-pair-label">${esc(f.label)}</span>
+    </div>`
+  ).join('');
+}
+
+function setExportTitle(value) { currentExportStyle.title = value; saveExportStyle(currentExportStyle); refreshPreviewPane(); }
+function setExportSubtitle(value) { currentExportStyle.subtitle = value; saveExportStyle(currentExportStyle); refreshPreviewPane(); }
+
+function setFontPairing(id) {
+  currentExportStyle.fontPairingId = id;
+  saveExportStyle(currentExportStyle);
+  renderFontPairings(currentExportStyle);
+  refreshPreviewPane();
+}
+function setColorSwatch(id) {
+  currentExportStyle.colorId = id;
+  saveExportStyle(currentExportStyle);
+  renderColorSwatches(currentExportStyle);
+  refreshPreviewPane();
+}
+function setColumns(n) {
+  currentExportStyle.columns = n;
+  saveExportStyle(currentExportStyle);
+  renderPillRow('columnsPillRow', COLUMN_OPTIONS, n, 'setColumns');
+  refreshPreviewPane();
+}
+function setSpacing(id) {
+  currentExportStyle.spacing = id;
+  saveExportStyle(currentExportStyle);
+  renderPillRow('spacingPillRow', SPACING_OPTIONS, id, 'setSpacing');
+  refreshPreviewPane();
+}
+function setPaperSize(id) {
+  currentExportStyle.paperSize = id;
+  saveExportStyle(currentExportStyle);
+  renderPillRow('paperSizePillRow', PAPER_SIZE_OPTIONS, id, 'setPaperSize');
+  refreshPreviewPane();
+}
+function toggleShowRegion() {
+  currentExportStyle.showRegion = !currentExportStyle.showRegion;
+  saveExportStyle(currentExportStyle);
+  document.getElementById('togRegion').classList.toggle('off', !currentExportStyle.showRegion);
+  refreshPreviewPane();
+}
+function toggleDecimalPrices() {
+  currentExportStyle.decimalPrices = !currentExportStyle.decimalPrices;
+  saveExportStyle(currentExportStyle);
+  document.getElementById('togDecimal').classList.toggle('off', !currentExportStyle.decimalPrices);
+  refreshPreviewPane();
+}
+
+// ─── SECTION DRAG-LIST ────────────────────────────────────────────────────────
+
+const dragHandleSvg = `<svg class="drag-handle" width="11" height="11" viewBox="0 0 12 12" fill="none"><line x1="2" y1="3.5" x2="10" y2="3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="2" y1="8.5" x2="10" y2="8.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>`;
+
+function renderSectionDragList(styleConfig) {
+  const grouped = gatherWineListData();
+  const sections = resolveSectionConfig(styleConfig, grouped);
+  document.getElementById('sectionDragList').innerHTML = sections.map(s => `
+    <div class="section-drag-item" draggable="true" data-cat="${esc(s.category)}"
+         ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)"
+         ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+      ${dragHandleSvg}
+      <span class="section-drag-name${s.visible ? '' : ' hidden-section'}">${esc(s.category)}</span>
+      <button class="tog ${s.visible ? '' : 'off'}" onclick="toggleSectionVisible('${esc(s.category)}')" aria-label="toggle ${esc(s.category)} visibility"></button>
+    </div>`).join('');
+}
+
+let dragSrcCat = null;
+
+function onSectionDragStart(e) {
+  dragSrcCat = e.currentTarget.dataset.cat;
+  e.currentTarget.classList.add('dragging');
+}
+function onSectionDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function onSectionDrop(e) {
+  e.preventDefault();
+  const targetCat = e.currentTarget.dataset.cat;
+  e.currentTarget.classList.remove('drag-over');
+  if (dragSrcCat && dragSrcCat !== targetCat) reorderSection(dragSrcCat, targetCat);
+}
+function onSectionDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.section-drag-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function reorderSection(srcCat, targetCat) {
+  const grouped = gatherWineListData();
+  const sections = resolveSectionConfig(currentExportStyle, grouped);
+  const order = sections.map(s => s.category);
+  order.splice(order.indexOf(targetCat), 0, ...order.splice(order.indexOf(srcCat), 1));
+  currentExportStyle.sectionOrder = order;
+  saveExportStyle(currentExportStyle);
+  renderSectionDragList(currentExportStyle);
+  refreshPreviewPane();
+}
+
+function toggleSectionVisible(category) {
+  currentExportStyle.sectionVisible[category] = !(currentExportStyle.sectionVisible[category] !== false);
+  saveExportStyle(currentExportStyle);
+  renderSectionDragList(currentExportStyle);
+  refreshPreviewPane();
+}
+
+// ─── LOGO UPLOAD ──────────────────────────────────────────────────────────────
+
+function renderLogoDropzone(styleConfig, errorMsg) {
+  const inner = document.getElementById('logoDropzoneInner');
+  if (errorMsg) {
+    inner.innerHTML = `<div class="logo-dropzone-hint" style="color:var(--red)">${esc(errorMsg)}</div>`;
+    return;
+  }
+  if (styleConfig.logoEnabled && styleConfig.logoDataUrl) {
+    inner.innerHTML = `<img class="logo-thumb" src="${styleConfig.logoDataUrl}" alt=""><span class="logo-remove" onclick="event.stopPropagation();removeLogo()">Remove logo</span>`;
+  } else {
+    inner.innerHTML = `<div class="logo-dropzone-hint">Click to add a logo</div>`;
+  }
+}
+
+async function handleLogoUpload(fileInput) {
+  const file = fileInput.files?.[0];
+  if (!file) return;
+  try {
+    const { base64, mediaType } = await imageToBase64(file, 400);
+    const dataUrl = `data:${mediaType};base64,${base64}`;
+    currentExportStyle.logoDataUrl = dataUrl;
+    currentExportStyle.logoEnabled = true;
+    if (!saveExportStyle(currentExportStyle)) {
+      currentExportStyle.logoDataUrl = null;
+      currentExportStyle.logoEnabled = false;
+      renderLogoDropzone(currentExportStyle, 'Logo too large to save — try a smaller image.');
+      return;
+    }
+    renderLogoDropzone(currentExportStyle);
+    refreshPreviewPane();
+  } catch (e) {
+    renderLogoDropzone(currentExportStyle, e.message || 'Could not read image file.');
+  } finally {
+    fileInput.value = '';
+  }
+}
+
+function removeLogo() {
+  currentExportStyle.logoDataUrl = null;
+  currentExportStyle.logoEnabled = false;
+  saveExportStyle(currentExportStyle);
+  renderLogoDropzone(currentExportStyle);
+  refreshPreviewPane();
+}
+
+// ─── PRINT / PDF EXPORT ───────────────────────────────────────────────────────
+
+function printWineListDoc(styleConfig) {
+  if (!gatherWineListData().length) return;
+  const overlay = document.getElementById('previewOverlay');
+  const wasOpen = overlay.style.display === 'flex';
+  const paper = document.getElementById('previewPaper');
+  paper.innerHTML = renderWineListDoc(styleConfig);
+  applyDocStyleVars(paper, styleConfig);
+  document.getElementById('pageSizeStyle').textContent =
+    `@page { size: ${styleConfig.paperSize === 'a4' ? 'A4' : 'letter'}; margin: 0.5in; }`;
+  if (!wasOpen) overlay.style.display = 'flex';
+  window.addEventListener('afterprint', function restore() {
+    if (!wasOpen) overlay.style.display = 'none';
+  }, { once: true });
+  window.print();
+}
+
+function exportPdfFromEditor() {
+  saveExportStyle(currentExportStyle);
+  printWineListDoc(currentExportStyle);
+}
+
+function quickExportPdf() {
+  printWineListDoc(loadExportStyle());
 }
 
 function setDriveModalLoading(msg) {
@@ -1081,6 +1645,7 @@ async function scanInbox(token) {
       'https://gmail.googleapis.com/gmail/v1/users/me/messages?q=' + encodeURIComponent(query) + '&maxResults=8',
       { headers: { Authorization: 'Bearer ' + token } }
     );
+    if (isAuthExpired(res)) { resetGmailConnectionUI(); showInboxError(null, true); return; }
     const data = await res.json();
     const msgs = data.messages || [];
 
@@ -1237,14 +1802,18 @@ function showInboxNoResults() {
   openHint.innerHTML = '<span style="color:var(--ink-3)">no invoices found</span>';
 }
 
-function showInboxError(e) {
+function showInboxError(e, authExpired) {
+  const lbl = authExpired ? 'Session expired' : 'Scan failed';
+  const sub = authExpired
+    ? 'Your Gmail session expired. Reconnect to keep scanning for invoices.'
+    : 'Could not read inbox. Check your connection and try reconnecting.';
   inboxBody.innerHTML = `
     <div class="inbox-state">
-      <div class="inbox-state-lbl">Scan failed</div>
-      <div class="inbox-state-sub">Could not read inbox. Check your connection and try reconnecting.</div>
+      <div class="inbox-state-lbl">${lbl}</div>
+      <div class="inbox-state-sub">${sub}</div>
       <button class="btn btn-sm" style="margin-top:4px" onclick="collapseAndConnect()">Reconnect →</button>
     </div>`;
-  openHint.innerHTML = '<span style="color:var(--red)">scan error</span>';
+  openHint.innerHTML = '<span style="color:var(--red)">' + (authExpired ? 'session expired' : 'scan error') + '</span>';
 }
 
 function collapseAndConnect() {
@@ -1416,9 +1985,6 @@ function imageToBase64(file, maxPx = 2048) {
 }
 
 async function callClaudeWithInvoiceData(base64, mediaType) {
-  if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY') {
-    throw new Error('Anthropic API key not set. Add it to ANTHROPIC_API_KEY at the top of the script.');
-  }
   const res = await fetch(API_BASE + '/api/claude', {
     method: 'POST',
     headers: {
@@ -1459,6 +2025,10 @@ async function fetchAttachmentFromEmail(msgId) {
     'https://gmail.googleapis.com/gmail/v1/users/me/messages/' + msgId + '?format=full',
     { headers: { Authorization: 'Bearer ' + gmailToken } }
   );
+  if (isAuthExpired(res)) {
+    resetGmailConnectionUI();
+    throw new Error('Your Gmail session expired. Reconnect from the inbox panel and try again.');
+  }
   if (!res.ok) throw new Error('Could not fetch email from Gmail.');
   const msg = await res.json();
 
@@ -1482,6 +2052,10 @@ async function fetchAttachmentFromEmail(msgId) {
     'https://gmail.googleapis.com/gmail/v1/users/me/messages/' + msgId + '/attachments/' + found.attachmentId,
     { headers: { Authorization: 'Bearer ' + gmailToken } }
   );
+  if (isAuthExpired(attRes)) {
+    resetGmailConnectionUI();
+    throw new Error('Your Gmail session expired. Reconnect from the inbox panel and try again.');
+  }
   if (!attRes.ok) throw new Error('Could not download email attachment.');
   const attData = await attRes.json();
   // Gmail returns base64url — convert to standard base64
@@ -1695,8 +2269,6 @@ function pushToWineList() {
   const wineListBody = document.getElementById('wineListBody');
   if (!wineListBody.querySelector('.menu-block')) wineListBody.innerHTML = '';
 
-  const CAT_ORDER = ['Sparkling', 'White', 'Rosé', 'Orange', 'Red', 'Dessert', 'Sake', 'Vermouth', 'Other'];
-
   const items = rows.map(row => {
     const nameNode = row.querySelector('.ir-name');
     const clone = nameNode ? nameNode.cloneNode(true) : null;
@@ -1741,7 +2313,7 @@ function pushToWineList() {
     // Append .mi rows — wlIdx is global so IDs stay unique across pushes
     const miHtml = group.map(item => {
       const wlIdx = wineListBody.querySelectorAll('.mi').length;
-      return `<div class="mi" data-inv-idx="${item.invIdx}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(item.size)} \xb7 ${esc(item.region)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${item.price}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
+      return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(item.size)} \xb7 ${esc(item.region)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${item.price}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
     }).join('');
     block.insertAdjacentHTML('beforeend', miHtml);
 

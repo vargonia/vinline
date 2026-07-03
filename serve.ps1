@@ -34,17 +34,42 @@ while ($listener.IsListening) {
             $body = $reader.ReadToEnd()
             $reader.Close()
 
-            $http = New-Object System.Net.Http.HttpClient
-            $http.Timeout = [System.TimeSpan]::FromSeconds(60)
-            $content = New-Object System.Net.Http.StringContent($body, [System.Text.Encoding]::UTF8, 'application/json')
-            $http.DefaultRequestHeaders.Add('x-api-key', $key)
-            $http.DefaultRequestHeaders.Add('anthropic-version', '2023-06-01')
+            $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+            $statusCode = 200
+            $resBody = ''
 
-            $apiRes = $http.PostAsync('https://api.anthropic.com/v1/messages', $content).Result
-            $resBody = $apiRes.Content.ReadAsStringAsync().Result
+            $webReq = [System.Net.HttpWebRequest]::Create('https://api.anthropic.com/v1/messages')
+            $webReq.Method = 'POST'
+            $webReq.ContentType = 'application/json'
+            $webReq.Timeout = 120000
+            $webReq.ReadWriteTimeout = 120000
+            $webReq.Headers.Add('x-api-key', $key)
+            $webReq.Headers.Add('anthropic-version', '2023-06-01')
+            $webReq.ContentLength = $bodyBytes.Length
+            $reqStream = $webReq.GetRequestStream()
+            $reqStream.Write($bodyBytes, 0, $bodyBytes.Length)
+            $reqStream.Close()
+
+            try {
+                $webResp = $webReq.GetResponse()
+                $sr = New-Object System.IO.StreamReader($webResp.GetResponseStream(), [System.Text.Encoding]::UTF8)
+                $resBody = $sr.ReadToEnd(); $sr.Close()
+                $statusCode = [int]$webResp.StatusCode
+            } catch [System.Net.WebException] {
+                $errResp = $_.Exception.Response
+                if ($errResp) {
+                    $sr = New-Object System.IO.StreamReader($errResp.GetResponseStream(), [System.Text.Encoding]::UTF8)
+                    $resBody = $sr.ReadToEnd(); $sr.Close()
+                    $statusCode = [int]([System.Net.HttpWebResponse]$errResp).StatusCode
+                } else {
+                    $resBody = '{"error":{"message":"' + $_.Exception.Message.Replace('"','\"') + '"}}'
+                    $statusCode = 502
+                }
+            }
+
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($resBody)
             $response.ContentType = 'application/json'
-            $response.StatusCode = [int]$apiRes.StatusCode
+            $response.StatusCode = $statusCode
             $response.ContentLength64 = $bytes.Length
             $response.OutputStream.Write($bytes, 0, $bytes.Length)
         } catch {
