@@ -64,12 +64,19 @@ function parseBody(body) {
 }
 
 // ── static serving contract ──────────────────────────────────────────────────
-test('root redirects to /app/', async () => {
+test('root serves the landing page; bare /app redirects to /app/', async () => {
   const s = await startServer();
   try {
-    const res = await fetch(s.base + '/', { redirect: 'manual' });
-    assert.equal(res.status, 302);
-    assert.equal(res.headers.get('location'), '/app/');
+    const landing = await fetch(s.base + '/');
+    assert.equal(landing.status, 200);
+    assert.match(landing.headers.get('content-type'), /text\/html/);
+    const body = await landing.text();
+    assert.match(body, /vinline/);
+    assert.match(body, /href="\/app\/"/);
+
+    const bare = await fetch(s.base + '/app', { redirect: 'manual' });
+    assert.equal(bare.status, 302);
+    assert.equal(bare.headers.get('location'), '/app/');
   } finally { await s.stop(); }
 });
 
@@ -180,6 +187,18 @@ test('shared mode: daily cap returns 429 after MAX_PARSES_PER_DAY coded parses',
     const third = await hit();
     assert.equal(third.status, 429);
     assert.equal((await third.json()).error.type, 'rate_limited');
+  } finally { await s.stop(); }
+});
+
+test('client error log endpoint accepts POST and returns 204', async () => {
+  const s = await startServer();
+  try {
+    const res = await fetch(s.base + '/api/log', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ kind: 'error', message: 'test error', version: '1.1.0' })
+    });
+    assert.equal(res.status, 204);
   } finally { await s.stop(); }
 });
 

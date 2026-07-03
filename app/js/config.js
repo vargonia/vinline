@@ -40,6 +40,16 @@ const SPACING_OPTIONS = [{ value: 'compact', label: 'Compact' }, { value: 'cozy'
 const PAPER_SIZE_OPTIONS = [{ value: 'letter', label: 'Letter' }, { value: 'a4', label: 'A4' }];
 
 const EXPORT_STYLE_KEY = 'vinline_export_style_v1';
+const APP_VERSION = '1.1.0';
+
+// Pre-parsed sample invoice for the first-run demo — instant, zero API cost.
+const DEMO_INVOICE_ITEMS = [
+  { name: 'Herbert Beaufort, "Carte d\'Or" Grand Cru NV', vintage: 'NV', size: '750ml', qty_bottles: 12, cost_per_bottle: 36, region: 'Champagne, France', category: 'Sparkling' },
+  { name: 'Domaine Vacheron, Sancerre 2023', vintage: '2023', size: '750ml', qty_bottles: 12, cost_per_bottle: 24, region: 'Loire, France', category: 'White' },
+  { name: 'Occhipinti, "SP68" Rosso 2022', vintage: '2022', size: '750ml', qty_bottles: 24, cost_per_bottle: 19, region: 'Sicily, Italy', category: 'Red' },
+  { name: 'La Ca\'Nova, Barbera d\'Alba "Loreto" 2021', vintage: '2021', size: '750ml', qty_bottles: 12, cost_per_bottle: 18, region: 'Piedmont, Italy', category: 'Red' },
+  { name: 'Ch\xe2teau Jolys, Juran\xe7on Doux 2020', vintage: '2020', size: '500ml', qty_bottles: 6, cost_per_bottle: 14, region: 'Southwest, France', category: 'Dessert' }
+];
 
 // ─── INVOICE PARSE PROMPT ────────────────────────────────────────────────────
 const INVOICE_PARSE_PROMPT = `You are an expert at reading wine distributor invoices. Extract every wine line item and return a JSON array.
@@ -145,5 +155,6 @@ Return ONLY a valid JSON array with no other text, markdown, or explanation:
 export {
   GOOGLE_CLIENT_ID, GOOGLE_API_KEY, MICROSOFT_CLIENT_ID, ANTHROPIC_API_KEY, API_BASE, msalConfig,
   CAT_ORDER, FONT_PAIRINGS, COLOR_SWATCHES, SPACING_PRESETS,
-  COLUMN_OPTIONS, SPACING_OPTIONS, PAPER_SIZE_OPTIONS, EXPORT_STYLE_KEY, INVOICE_PARSE_PROMPT
+  COLUMN_OPTIONS, SPACING_OPTIONS, PAPER_SIZE_OPTIONS, EXPORT_STYLE_KEY, INVOICE_PARSE_PROMPT,
+  APP_VERSION, DEMO_INVOICE_ITEMS
 };

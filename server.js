@@ -144,8 +144,10 @@ function serveStatic(req, res) {
     res.writeHead(400); res.end('Bad request'); return;
   }
 
-  // Canonical entry: the app lives at /app/ (relative asset paths depend on the trailing slash)
-  if (urlPath === '/' || urlPath === '/app') {
+  // Landing page at the root; the app lives at /app/ (relative asset paths
+  // depend on the trailing slash, so bare /app redirects)
+  if (urlPath === '/') urlPath = '/landing/index.html';
+  if (urlPath === '/app') {
     res.writeHead(302, { location: '/app/' });
     res.end();
     return;
@@ -178,9 +180,28 @@ function serveStatic(req, res) {
   });
 }
 
+// Client error telemetry: logs to stdout (visible in Railway logs), stores nothing.
+function logClientError(req, res) {
+  const chunks = [];
+  let size = 0;
+  req.on('data', (c) => {
+    size += c.length;
+    if (size > 32 * 1024) { req.destroy(); return; }
+    chunks.push(c);
+  });
+  req.on('end', () => {
+    const text = Buffer.concat(chunks).toString('utf8').replace(/[\r\n]+/g, ' ').slice(0, 4000);
+    console.log('[client-error]', text);
+    res.writeHead(204);
+    res.end();
+  });
+}
+
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/claude') {
     proxyClaude(req, res);
+  } else if (req.method === 'POST' && req.url === '/api/log') {
+    logClientError(req, res);
   } else if (req.method === 'GET' || req.method === 'HEAD') {
     serveStatic(req, res);
   } else {

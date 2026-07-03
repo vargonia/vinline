@@ -354,6 +354,40 @@
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   }
 
+  /* RESPONSIVE — phone/tablet. The workflow is linear (inbox → inventory →
+     wine list), so on narrow screens the three columns stack vertically. */
+  @media (max-width: 760px) {
+    .topbar{padding:10px 14px}
+    .three-col{display:flex;flex-direction:column}
+    .col-div{display:none}
+    .col{border-bottom:0.5px solid var(--rule)}
+    .col:last-child{border-bottom:none}
+    .col-body{min-height:120px;max-height:52vh;overflow-y:auto}
+    #collapsed{padding:36px 14px 28px;gap:14px}
+    #settings{padding:14px}
+    .mg-grid{grid-template-columns:1fr}
+    /* Style editor: panel becomes a top drawer above the paper */
+    #previewOverlay{flex-direction:column}
+    .preview-panel{width:100%;max-height:46vh;border-right:none;border-bottom:0.5px solid var(--rule)}
+    .preview-pane{padding:14px}
+    .swatch-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  }
+
+  /* Touch devices: bigger tap targets without changing the desktop density */
+  @media (pointer: coarse) {
+    .btn-sm{padding:7px 12px;font-size:11px}
+    .icon-only-btn{padding:8px 10px}
+    .edit-btn{font-size:10px;padding:2px 6px}
+    .sold-btn{font-size:10px;padding:3px 8px}
+    .btg-r{padding:5px 9px}
+    .tog{width:38px;height:22px}
+    .tog::after{width:15px;height:15px;top:3.5px;right:3.5px}
+    .tog.off::after{left:3.5px}
+    .mi{padding:10px 3px}
+    .push-anyway{font-size:10px;padding:2px 7px}
+    .sec-move{font-size:11px;padding:4px 6px}
+  }
+
   @media print {
     .shell{display:none!important}
     #previewOverlay{position:static!important;display:block!important;background:#fff}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="vinline reads your wine-distributor invoices with AI and builds a priced, styled wine list. Parse, price, publish.">
+<title>vinline — parse, price, publish</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='25' font-family='Consolas,Menlo,monospace' font-size='24' font-weight='700' text-anchor='middle' fill='%23C4C2BA'%3E%5D%5B%3C/text%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+:root{
+  --ink:#1C1B18; --ink-2:#4A4843; --ink-3:#6B6962;
+  --rule:#E4E2DC; --rule-2:#F0EEE8;
+  --bg:#FAF9F6; --bg-2:#F4F2EC; --bg-3:#EEECEA;
+  --green:#1A6B50; --green-dim:#E6F0EB; --green-mid:#2E9B74;
+  --bracket:#C4C2BA;
+  --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+.shell{max-width:900px;margin:0 auto;border:0.5px solid var(--rule);border-top:none;border-bottom:none;min-height:100vh;background:var(--bg)}
+
+a{color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:2px}
+
+.eyebrow{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ---- top bar ---- */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:0.5px solid var(--rule);position:sticky;top:0;background:var(--bg);z-index:100}
+.wordmark{display:flex;align-items:baseline;gap:7px;font-family:var(--mono)}
+.wordmark .bk{font-size:18px;font-weight:300;color:var(--bracket);letter-spacing:-2px}
+.wordmark .nm{font-size:13px;font-weight:400;color:var(--ink);letter-spacing:.04em}
+.topbar a.open{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-2);text-decoration:none;padding:5px 12px;border-radius:20px;border:0.5px solid var(--rule);transition:background .15s,color .15s}
+.topbar a.open:hover{background:var(--bg-2);color:var(--ink)}
+
+/* ---- hero ---- */
+.hero{padding:80px 28px 72px;border-bottom:0.5px solid var(--rule)}
+.hero h1{font-family:var(--sans);font-weight:400;font-size:clamp(30px,5.4vw,50px);line-height:1.12;letter-spacing:-.01em;color:var(--ink);max-width:15ch}
+.hero .sub{margin-top:22px;font-size:clamp(15px,1.9vw,18px);color:var(--ink-2);max-width:56ch;line-height:1.55}
+.hero .cta-row{margin-top:34px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.btn-primary{display:inline-block;font-family:var(--sans);font-size:14px;font-weight:500;letter-spacing:.01em;color:var(--bg);background:var(--green);padding:12px 26px;border-radius:24px;text-decoration:none;transition:background .15s}
+.btn-primary:hover{background:#155641}
+.link-quiet{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-3);text-decoration:none;border-bottom:0.5px solid transparent;transition:color .15s,border-color .15s}
+.link-quiet:hover{color:var(--ink);border-color:var(--rule)}
+
+/* ---- three-step strip ---- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:0.5px solid var(--rule)}
+.step{padding:44px 28px;border-right:0.5px solid var(--rule)}
+.step:last-child{border-right:none}
+.step .glyph{font-family:var(--mono);font-size:52px;font-weight:300;color:var(--bracket);line-height:1;letter-spacing:-4px;user-select:none}
+.step .eyebrow{margin-top:18px}
+.step h2{font-family:var(--sans);font-weight:500;font-size:17px;color:var(--ink);margin-top:8px}
+.step p{margin-top:9px;font-size:14px;color:var(--ink-2);line-height:1.5}
+
+/* ---- capability list ---- */
+.caps{padding:60px 28px 64px;border-bottom:0.5px solid var(--rule)}
+.caps .eyebrow{margin-bottom:24px}
+.cap-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}
+.cap{display:flex;gap:12px;padding:15px 0;border-top:0.5px solid var(--rule-2);font-size:14.5px;color:var(--ink-2);line-height:1.45}
+.cap .mk{font-family:var(--mono);color:var(--green-mid);flex-shrink:0}
+
+/* ---- footnote ---- */
+.note{padding:56px 28px 60px;border-bottom:0.5px solid var(--rule);background:var(--bg-2)}
+.note .eyebrow{margin-bottom:16px}
+.note p{font-size:14.5px;color:var(--ink-2);max-width:64ch;line-height:1.6}
+.note .links{margin-top:24px;display:flex;flex-wrap:wrap;gap:12px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+.note .links a{color:var(--ink-2);text-decoration:none;border-bottom:0.5px solid var(--rule);transition:color .15s,border-color .15s}
+.note .links a:hover{color:var(--ink);border-color:var(--ink-3)}
+.note .lic{color:var(--ink-3)}
+
+/* ---- footer ---- */
+.foot{padding:30px 28px;text-align:center}
+.foot span{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
+.foot .bk{color:var(--bracket);letter-spacing:-2px}
+
+@media (max-width:600px){
+  .topbar{padding:12px 18px}
+  .hero{padding:52px 18px 48px}
+  .steps{grid-template-columns:1fr}
+  .step{border-right:none;border-bottom:0.5px solid var(--rule);padding:36px 18px}
+  .step:last-child{border-bottom:none}
+  .caps{padding:44px 18px 48px}
+  .cap-grid{grid-template-columns:1fr;column-gap:0}
+  .note{padding:44px 18px 48px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <a class="wordmark" href="/app/" aria-label="vinline home" style="text-decoration:none">
+      <span class="bk" aria-hidden="true">][</span><span class="nm">vinline</span>
+    </a>
+    <a class="open" href="/app/">Open app →</a>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-h">
+      <h1 id="hero-h">Your invoices already know your wine list.</h1>
+      <p class="sub">Photograph a distributor invoice, let the AI read every line, review your margins, and publish a styled list — in the time it takes to unpack a case.</p>
+      <div class="cta-row">
+        <a class="btn-primary" href="/app/">Open vinline</a>
+        <a class="link-quiet" href="#how">How it works ↓</a>
+      </div>
+    </section>
+
+    <!-- THREE-STEP STRIP -->
+    <section class="steps" id="how" aria-label="How it works">
+      <article class="step">
+        <div class="glyph" aria-hidden="true">]</div>
+        <p class="eyebrow">Input</p>
+        <h2>Photograph or upload</h2>
+        <p>Snap or drop in any distributor invoice. Ten-plus formats parsed, line by line — no templates, no data entry.</p>
+      </article>
+      <article class="step">
+        <div class="glyph" aria-hidden="true">][</div>
+        <p class="eyebrow">Inventory</p>
+        <h2>Review and price</h2>
+        <p>Check costs, set margins with a slider, and split bottle from by-the-glass. Everything stays editable.</p>
+      </article>
+      <article class="step">
+        <div class="glyph" aria-hidden="true">[</div>
+        <p class="eyebrow">Output</p>
+        <h2>Publish your list</h2>
+        <p>Print a styled PDF, or push it straight to Google Sheets and Docs. Your logo, your layout.</p>
+      </article>
+    </section>
+
+    <!-- CAPABILITY LIST -->
+    <section class="caps" aria-labelledby="caps-h">
+      <p class="eyebrow" id="caps-h">What it handles</p>
+      <div class="cap-grid">
+        <div class="cap"><span class="mk" aria-hidden="true">·</span><span>Duplicate detection across invoices</span></div>
+        <div class="cap"><span class="mk" aria-hidden="true">·</span><span>By-the-glass sections alongside bottle pricing</span></div>
+        <div class="cap"><span class="mk" aria-hidden="true">·</span><span>Curated menu styling with your own logo</span></div>
+        <div class="cap"><span class="mk" aria-hidden="true">·</span><span>Works on your data only — everything stays in your browser</span></div>
+        <div class="cap"><span class="mk" aria-hidden="true">·</span><span>Undo everything, at any step</span></div>
+        <div class="cap"><span class="mk" aria-hidden="true">·</span><span>Your own API key, or an instance access code</span></div>
+      </div>
+    </section>
+
+    <!-- HONEST FOOTNOTE -->
+    <section class="note" aria-labelledby="note-h">
+      <p class="eyebrow" id="note-h">Early access</p>
+      <p>vinline is in early access. Parsing uses your Anthropic API key or a shared instance code — see the setup guide before you start.</p>
+      <div class="links">
+        <a href="/SETUP.md">Setup guide →</a>
+        <a href="/legal/terms.md">Terms</a>
+        <a href="/legal/privacy.md">Privacy</a>
+        <span class="lic">PolyForm Noncommercial · © 2026 Andrew Icardi</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span><span class="bk" aria-hidden="true">][</span> vinline — parse, price, publish</span>
+  </footer>
+
+</div>
+</body>
+</html>

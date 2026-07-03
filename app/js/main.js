@@ -1,4 +1,5 @@
 // vinline — entry point: module bootstrap, window bridge for inline handlers, init
+import { API_BASE, APP_VERSION } from './config.js';
 import * as utils from './utils.js';
 import * as ui from './ui.js';
 import * as auth from './auth.js';
@@ -152,6 +153,33 @@ function init() {
     if (t instanceof Element && (t.closest('.mi') || t.closest('.inv-row'))) persistNow();
   }, true);
 }
+
+// ─── ERROR TELEMETRY (lite) ───────────────────────────────────────────────────
+// Uncaught errors go to the app's own /api/log (server stdout / Railway logs).
+// No third-party service, no cookies; capped at 5 reports per session.
+let _errorReports = 0;
+function reportClientError(kind, message, stack) {
+  if (_errorReports >= 5) return;
+  _errorReports += 1;
+  try {
+    fetch(API_BASE + '/api/log', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        kind,
+        message: String(message).slice(0, 500),
+        stack: String(stack || '').slice(0, 1500),
+        page: location.pathname,
+        version: APP_VERSION,
+        ua: navigator.userAgent.slice(0, 120),
+        ts: new Date().toISOString()
+      })
+    }).catch(() => {});
+  } catch (e) { /* never let telemetry throw */ }
+}
+
+window.addEventListener('error', (e) => reportClientError('error', e.message, e.error?.stack));
+window.addEventListener('unhandledrejection', (e) => reportClientError('unhandledrejection', e.reason?.message || e.reason, e.reason?.stack));
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);

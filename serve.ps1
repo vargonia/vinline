@@ -86,7 +86,7 @@ while ($listener.IsListening) {
     }
 
     # ── Static files ─────────────────────────────────────────────────────────
-    if ($localPath -eq '/') { $localPath = '/index.html' }
+    if ($localPath -eq '/') { $localPath = '/landing/index.html' }
     $filePath = Join-Path $Root ($localPath.TrimStart('/'))
 
     # Directory request → serve its index.html (e.g. /app/ → /app/index.html)

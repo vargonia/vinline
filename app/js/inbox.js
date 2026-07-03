@@ -143,8 +143,9 @@ function showInboxEmpty() {
   inboxBody.innerHTML = `
     <div class="inbox-state">
       <div class="inbox-state-lbl">Inbox not connected</div>
-      <div class="inbox-state-sub">Connect your Gmail or Outlook from the collapsed view to scan for invoices</div>
+      <div class="inbox-state-sub">Connect an inbox, upload an invoice photo — or take a spin with a sample first.</div>
       <button class="btn btn-sm" style="margin-top:4px" onclick="collapseAndConnect()">Connect inbox →</button>
+      <button class="btn btn-primary btn-sm" onclick="loadDemoInvoice()">Try a sample invoice</button>
     </div>`;
 }
 

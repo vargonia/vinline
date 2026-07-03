@@ -1,5 +1,5 @@
 // vinline — parse pipeline, inventory rows, margin system, wine list
-import { API_BASE, ANTHROPIC_API_KEY, INVOICE_PARSE_PROMPT, CAT_ORDER } from './config.js';
+import { API_BASE, ANTHROPIC_API_KEY, INVOICE_PARSE_PROMPT, CAT_ORDER, DEMO_INVOICE_ITEMS } from './config.js';
 import { esc, isAuthExpired, pdfToBase64, imageToBase64, getUserAnthropicKey, getAccessCode } from './utils.js';
 import { gmailToken, resetGmailConnectionUI } from './auth.js';
 import { addPopupToCard, fileCardMap } from './inbox.js';
@@ -765,6 +765,13 @@ function resetInventory() {
   persistNow();
 }
 
+// First-run demo: a pre-parsed sample invoice — instant, no API key needed
+function loadDemoInvoice() {
+  populateParsedItems('sample invoice (demo)', DEMO_INVOICE_ITEMS);
+  showToast('Sample invoice parsed — adjust a margin, push to the wine list, try the PDF preview. Discard anytime.', { duration: 9000 });
+  announce('Sample invoice loaded with ' + DEMO_INVOICE_ITEMS.length + ' wines');
+}
+
 function discardParsed() {
   const items = snapshotInventory();
   resetInventory();
@@ -782,7 +789,7 @@ export {
   liveMg, nameEl, openSlider, closeAllSliders, confirmMg, cancelMg, markSold,
   gatherWineListData, callClaudeWithInvoiceData, parseInvoiceWithClaude, fetchAttachmentFromEmail,
   parseEmailCard, parseFile, parseAllFiles, buildInvRow, buildMiHtml, populateParsedItems,
-  pushToWineList, pushRows, pushRowAnyway, resetInventory, discardParsed,
+  pushToWineList, pushRows, pushRowAnyway, resetInventory, discardParsed, loadDemoInvoice,
   persistNow, rehydrateFromState, renderInventoryItems,
   normalizeWineName, extractVintage, findWineListMatch, presetMultForCategory
 };

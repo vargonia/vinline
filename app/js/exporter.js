@@ -137,9 +137,11 @@ function applyDocStyleVars(paperEl, styleConfig) {
 
 function openPreviewEditor() {
   currentExportStyle = loadExportStyle();
+  // Show the overlay BEFORE rendering: fitPreviewPaper measures the pane,
+  // which is 0 wide while the overlay is display:none.
+  document.getElementById('previewOverlay').style.display = 'flex';
   populatePreviewPanel(currentExportStyle);
   refreshPreviewPane();
-  document.getElementById('previewOverlay').style.display = 'flex';
   activateDialog(document.getElementById('previewOverlay'), closePreviewEditor);
 }
 
@@ -165,7 +167,9 @@ function fitPreviewPaper() {
   const paper = document.getElementById('previewPaper');
   if (!pane || !paper) return;
   const paperWidth = paper.classList.contains('doc-a4') ? 794 : 816;
-  const avail = pane.clientWidth - 80; // pane padding
+  const cs = getComputedStyle(pane);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  const avail = pane.clientWidth - pad;
   paper.style.zoom = avail < paperWidth ? String(Math.max(0.25, avail / paperWidth)) : '';
 }
 
