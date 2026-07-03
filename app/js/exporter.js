@@ -152,9 +152,26 @@ function refreshPreviewPane() {
   const paper = document.getElementById('previewPaper');
   paper.innerHTML = renderWineListDoc(currentExportStyle);
   applyDocStyleVars(paper, currentExportStyle);
+  fitPreviewPaper();
   const exportBtn = document.getElementById('exportPdfBtn');
   if (exportBtn) exportBtn.disabled = !gatherWineListData().length;
 }
+
+// Scale the paper down to fit the preview pane (like a real print preview) so
+// the right edge — prices, second column — is never visually cut off on
+// narrower windows. Print output is unaffected (@media print resets zoom).
+function fitPreviewPaper() {
+  const pane = document.querySelector('.preview-pane');
+  const paper = document.getElementById('previewPaper');
+  if (!pane || !paper) return;
+  const paperWidth = paper.classList.contains('doc-a4') ? 794 : 816;
+  const avail = pane.clientWidth - 80; // pane padding
+  paper.style.zoom = avail < paperWidth ? String(Math.max(0.25, avail / paperWidth)) : '';
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('previewOverlay')?.style.display === 'flex') fitPreviewPaper();
+});
 
 function populatePreviewPanel(styleConfig) {
   document.getElementById('exportTitleInput').value = styleConfig.title;

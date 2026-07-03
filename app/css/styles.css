@@ -359,6 +359,6 @@
     #previewOverlay{position:static!important;display:block!important;background:#fff}
     .preview-panel{display:none!important}
     .preview-pane{padding:0;background:#fff;display:block}
-    .preview-paper{box-shadow:none;margin:0 auto;width:auto;min-height:auto}
+    .preview-paper{box-shadow:none;margin:0 auto;width:auto;min-height:auto;zoom:normal!important}
     #toastHost{display:none!important}
   }
