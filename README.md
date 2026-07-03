@@ -46,13 +46,15 @@ A personal tool for sommeliers: photograph or scan a wine distributor invoice, l
 
 ## Quickstart
 
-### Prerequisites
+### Local Development
+
+#### Prerequisites
 - Windows with PowerShell 5.1+
 - A modern browser (Chrome, Edge, Firefox, Safari)
-- Anthropic API key (from console.anthropic.com, under icardiandrew@gmail.com)
+- Anthropic API key (from console.anthropic.com)
 - Google Cloud OAuth setup (optional, needed for Gmail/Drive features)
 
-### 1. Create a gitignored wrapper script
+#### 1. Create a gitignored wrapper script
 
 Create `serve.local.ps1` in the project root (will not be committed):
 
@@ -62,18 +64,30 @@ $ANTHROPIC_KEY = 'sk-ant-...' # paste your real key here
 .\serve.ps1 -AnthropicKey $ANTHROPIC_KEY
 ```
 
-### 2. Start the server
+#### 2. Start the server
 
 ```powershell
 # In PowerShell from C:\Users\andre\Desktop\vinline
 .\serve.local.ps1
 ```
 
-### 3. Open the app
+#### 3. Open the app
 
 ```
 http://localhost:8000/app/
 ```
+
+### Deploy to Railway (share with others)
+
+For a step-by-step guide to deploy to Railway and share vinline with friends, see **DEPLOY.md**. TL;DR:
+
+- Push to GitHub vargonia/vinline
+- Connect Railway to the repo (auto-detects Node)
+- Generate a domain and share the URL
+- Visitors bring their own Anthropic API keys (BYOK model)
+- Optionally set a server-side key for a personal instance (but then your credits are at risk)
+
+See **DEPLOY.md** for full setup, Google OAuth configuration, and troubleshooting.
 
 ---
 
@@ -81,13 +95,26 @@ http://localhost:8000/app/
 
 ### Anthropic API Key (required for parsing)
 
+**Local development:**
+
 1. Go to **console.anthropic.com**
-2. Sign in as **icardiandrew@gmail.com**
+2. Sign in or create an account
 3. Navigate to **API keys** → **Create key**
 4. Copy the key
 5. Paste it into `serve.local.ps1` as shown above
 
 The key runs server-side inside `serve.ps1` and is never exposed to the browser.
+
+**In-app (for shared/deployed instances):**
+
+Alternatively, visitors can enter their own Anthropic API key in the Settings panel:
+
+1. Click **Settings** (top right)
+2. Find the **Claude API key** card
+3. Paste the API key into the text field
+4. Click **Save**
+
+The key is stored only in that user's browser (localStorage) and forwarded per request via the `x-api-key-fwd` header to the server proxy. A server-side key (if set) is used as a fallback.
 
 ### Google Cloud (required for Gmail/Drive features)
 
@@ -240,3 +267,13 @@ For questions, setup help, or feature requests, see the Obsidian vault:
 - **How to use:** `for-the-sommelier/how-to-use.md`
 - **Known issues:** `tasks/next-actions.md` (Known issues section)
 - **Architecture details:** `architecture/app-structure.md`
+
+---
+
+## License
+
+vinline is licensed under the **PolyForm Noncommercial License 1.0.0**. 
+
+Copyright (c) 2026 Andrew Icardi.
+
+Free for personal and noncommercial use; commercial rights reserved. See **LICENSE** for the full text.

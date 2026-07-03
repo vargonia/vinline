@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="vinline - reads wine distributor invoices and builds a priced wine list. Parse, price, publish.">
 <title>vinline</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23FAF9F6'/%3E%3Ctext x='16' y='23.5' font-family='Consolas,Menlo,monospace' font-size='19' font-weight='700' text-anchor='middle' fill='%231A6B50'%3E%5D%5B%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='25' font-family='Consolas,Menlo,monospace' font-size='24' font-weight='700' text-anchor='middle' fill='%23C4C2BA'%3E%5D%5B%3C/text%3E%3C/svg%3E">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
@@ -224,6 +224,16 @@
           <div><div class="sr-l">Auto-sync on change</div><div class="sr-sub">Push wine list changes to Drive (arms after your first manual sync)</div></div>
           <div class="sr-r"><button class="tog off" id="togAutoSync" role="switch" aria-checked="false" onclick="toggleAutoSync()" aria-label="toggle auto-sync Drive"></button></div>
         </div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">⚿ Claude API key</div>
+        <div class="sr-sub" style="margin-bottom:8px">Your own Anthropic key powers invoice parsing. It is stored only in this browser and sent only to this app's own parse endpoint. Get one at console.anthropic.com.</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="password" id="anthropicKeyInput" class="preview-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" aria-label="Anthropic API key" style="flex:1">
+          <button class="btn btn-sm" onclick="saveAnthropicKeyFromSettings()">Save</button>
+          <button class="btn btn-sm" onclick="clearAnthropicKeyFromSettings()">Clear</button>
+        </div>
+        <div class="sr-sub" id="anthropicKeyStatus" style="margin-top:6px">No key saved</div>
       </div>
       <div class="scard">
         <div class="scard-title">× Default margins by category</div>

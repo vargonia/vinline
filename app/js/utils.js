@@ -52,4 +52,22 @@ function formatDate(d) {
   if (diff < 172800000) return 'Yesterday';
   return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
-export { isAuthExpired, pdfToBase64, imageToBase64, esc, formatDate };
+
+// ─── USER ANTHROPIC KEY (bring-your-own-key) ─────────────────────────────────
+// Stored only in this browser's localStorage, sent per-request to the app's own
+// /api/claude proxy via the x-api-key-fwd header. Never part of app state.
+const USER_KEY_STORAGE = 'vinline_anthropic_key';
+
+function getUserAnthropicKey() {
+  try { return localStorage.getItem(USER_KEY_STORAGE) || ''; } catch (e) { return ''; }
+}
+
+function saveUserAnthropicKey(key) {
+  try {
+    if (key) localStorage.setItem(USER_KEY_STORAGE, key.trim());
+    else localStorage.removeItem(USER_KEY_STORAGE);
+    return true;
+  } catch (e) { return false; }
+}
+
+export { isAuthExpired, pdfToBase64, imageToBase64, esc, formatDate, getUserAnthropicKey, saveUserAnthropicKey };

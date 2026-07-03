@@ -7,7 +7,7 @@ import * as exporter from './exporter.js';
 import * as inbox from './inbox.js';
 import * as core from './core.js';
 
-import { esc } from './utils.js';
+import { esc, getUserAnthropicKey, saveUserAnthropicKey } from './utils.js';
 import { inboxBody, openHint, isExpanded, expand, setSwitch } from './ui.js';
 import { fileCardMap, showInboxEmpty } from './inbox.js';
 import { loadAppState, getState, saveAppState } from './state.js';
@@ -27,7 +27,35 @@ function setMarginPreset(bucket, sliderVal, inputEl) {
   saveAppState();
   if (inputEl?.nextElementSibling) inputEl.nextElementSibling.textContent = '\xd7' + mult.toFixed(1);
 }
-Object.assign(window, { setMarginPreset });
+// Settings: bring-your-own Anthropic key (localStorage only, never in app state)
+function refreshAnthropicKeyStatus() {
+  const el = document.getElementById('anthropicKeyStatus');
+  if (!el) return;
+  const key = getUserAnthropicKey();
+  el.textContent = key ? 'Key saved (•••' + key.slice(-4) + ') — used for your parses in this browser' : 'No key saved';
+}
+
+function saveAnthropicKeyFromSettings() {
+  const input = document.getElementById('anthropicKeyInput');
+  const key = (input?.value || '').trim();
+  if (!key) return;
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('anthropicKeyStatus').textContent = 'That does not look like an Anthropic key (should start with sk-ant-)';
+    return;
+  }
+  saveUserAnthropicKey(key);
+  input.value = '';
+  refreshAnthropicKeyStatus();
+}
+
+function clearAnthropicKeyFromSettings() {
+  saveUserAnthropicKey('');
+  const input = document.getElementById('anthropicKeyInput');
+  if (input) input.value = '';
+  refreshAnthropicKeyStatus();
+}
+
+Object.assign(window, { setMarginPreset, saveAnthropicKeyFromSettings, clearAnthropicKeyFromSettings });
 
 // Reflect persisted settings into the Settings panel controls
 function initSettingsPanel() {
@@ -39,6 +67,7 @@ function initSettingsPanel() {
     el.value = Math.round(mult * 10);
     if (el.nextElementSibling) el.nextElementSibling.textContent = '\xd7' + mult.toFixed(1);
   });
+  refreshAnthropicKeyStatus();
   setSwitch(document.getElementById('togAutoScan'), getState().settings.autoScan);
   setSwitch(document.getElementById('togAutoSync'), getState().settings.autoSync);
   applyAutoScan();

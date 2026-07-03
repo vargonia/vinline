@@ -1,0 +1,13 @@
+{
+  "name": "vinline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reads wine distributor invoices and builds a priced wine list. Parse, price, publish.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}

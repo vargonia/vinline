@@ -1,6 +1,6 @@
 // vinline — parse pipeline, inventory rows, margin system, wine list
 import { API_BASE, ANTHROPIC_API_KEY, INVOICE_PARSE_PROMPT, CAT_ORDER } from './config.js';
-import { esc, isAuthExpired, pdfToBase64, imageToBase64 } from './utils.js';
+import { esc, isAuthExpired, pdfToBase64, imageToBase64, getUserAnthropicKey } from './utils.js';
 import { gmailToken, resetGmailConnectionUI } from './auth.js';
 import { addPopupToCard, fileCardMap } from './inbox.js';
 import { inboxBody, showToast, announce } from './ui.js';
@@ -296,12 +296,14 @@ function rehydrateFromState() {
 // ─── FILE PARSE FLOW ─────────────────────────────────────────────────────────
 
 async function callClaudeWithInvoiceData(base64, mediaType) {
+  const headers = { 'content-type': 'application/json' };
+  // Bring-your-own-key: the user's key (Settings) rides along per request and
+  // takes precedence over any server-side key at the proxy.
+  const userKey = getUserAnthropicKey() || ANTHROPIC_API_KEY;
+  if (userKey) headers['x-api-key-fwd'] = userKey;
   const res = await fetch(API_BASE + '/api/claude', {
     method: 'POST',
-    headers: {
-      'x-api-key-fwd': ANTHROPIC_API_KEY,
-      'content-type': 'application/json'
-    },
+    headers,
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
@@ -313,7 +315,11 @@ async function callClaudeWithInvoiceData(base64, mediaType) {
   });
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
-    throw new Error(errBody.error?.message || `API error ${res.status}`);
+    const msg = errBody.error?.message || `API error ${res.status}`;
+    if (res.status === 401 || /authentication|api.key/i.test(msg)) {
+      throw new Error('Claude API key missing or invalid — open Settings and add your Anthropic API key.');
+    }
+    throw new Error(msg);
   }
   const data = await res.json();
   const text = data.content?.[0]?.text || '';

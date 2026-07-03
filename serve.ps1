@@ -28,7 +28,9 @@ while ($listener.IsListening) {
 
     # ── Claude API proxy ──────────────────────────────────────────────────────
     if ($request.HttpMethod -eq 'POST' -and $localPath -eq '/api/claude') {
-        $key = if ($AnthropicKey) { $AnthropicKey } else { $request.Headers['x-api-key-fwd'] }
+        # Bring-your-own-key first: a key supplied by the browser (in-app Settings)
+        # takes precedence over the server-side key, matching server.js
+        $key = if ($request.Headers['x-api-key-fwd']) { $request.Headers['x-api-key-fwd'] } else { $AnthropicKey }
         try {
             $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
             $body = $reader.ReadToEnd()
