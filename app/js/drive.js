@@ -2,7 +2,7 @@
 import { GOOGLE_CLIENT_ID, GOOGLE_API_KEY, COLOR_SWATCHES } from './config.js';
 import { isAuthExpired, esc } from './utils.js';
 import { openModal, settings, collapsed, expanded, isExpanded, showToast, setSwitch } from './ui.js';
-import { loadExportStyle, resolveSectionConfig, formatPrice } from './exporter.js';
+import { loadExportStyle, resolveSectionConfig, formatPrice, splitByGlass } from './exporter.js';
 import { gatherWineListData } from './core.js';
 import { getState, saveAppState } from './state.js';
 // DRIVE STATE
@@ -30,6 +30,12 @@ function connectDrive() {
       driveToken = response.access_token;
       setDriveModalLoading('Opening file browser…');
       loadAndOpenPicker(driveToken);
+    },
+    // Fires when the Google popup is blocked or dismissed without completing —
+    // without this the modal stayed stuck in its loading state forever.
+    error_callback: (err) => {
+      if (err && err.type === 'popup_closed') resetDriveModal();
+      else setDriveModalError('Sign-in could not start' + (err?.type ? ' (' + err.type + ')' : '') + '. Check popup blockers and try again.');
     }
   });
   client.requestAccessToken();
@@ -138,13 +144,24 @@ function hexToRgb01(hex) {
 async function writeWineListToSheet(sections, styleConfig) {
   const values = [[styleConfig.title || 'Wine List', '', '']];
   const boldRowIndices = [0];
-  sections.forEach(sec => {
+  const { glass, bottles } = splitByGlass(sections);
+  const pushItem = (it) => {
+    const sub = [it.size, styleConfig.showRegion && it.region].filter(Boolean).join(' \xb7 ');
+    values.push([it.name, sub, '$' + formatPrice(it.price, styleConfig.decimalPrices)]);
+  };
+  // By-the-glass leads, with category rows inside it — same split as PDF/preview
+  if (glass.length) {
+    boldRowIndices.push(values.length);
+    values.push(['By the glass', '', '']);
+    glass.forEach(sec => {
+      values.push(['  ' + sec.category, '', '']);
+      sec.items.forEach(pushItem);
+    });
+  }
+  bottles.forEach(sec => {
     boldRowIndices.push(values.length);
     values.push([sec.category, '', '']);
-    sec.items.forEach(it => {
-      const sub = [it.size, styleConfig.showRegion && it.region].filter(Boolean).join(' \xb7 ');
-      values.push([it.name, sub, '$' + formatPrice(it.price, styleConfig.decimalPrices)]);
-    });
+    sec.items.forEach(pushItem);
   });
 
   const putRes = await fetch(
@@ -183,14 +200,26 @@ async function writeWineListToDoc(sections, styleConfig) {
   const title = styleConfig.title || 'Wine List';
   let text = title + '\n\n';
   const boldRanges = [{ start: 0, end: title.length }];
-  sections.forEach(sec => {
+  const appendItem = (it) => {
+    const sub = [it.size, styleConfig.showRegion && it.region].filter(Boolean).join(' \xb7 ');
+    text += `${it.name}\n${sub}  \xb7  $${formatPrice(it.price, styleConfig.decimalPrices)}\n\n`;
+  };
+  const { glass, bottles } = splitByGlass(sections);
+  // By-the-glass leads, with category subheads inside it — same split as PDF/preview
+  if (glass.length) {
+    const headStart = text.length;
+    text += 'By the glass\n';
+    boldRanges.push({ start: headStart, end: headStart + 'By the glass'.length });
+    glass.forEach(sec => {
+      text += sec.category + '\n';
+      sec.items.forEach(appendItem);
+    });
+  }
+  bottles.forEach(sec => {
     const headStart = text.length;
     text += sec.category + '\n';
     boldRanges.push({ start: headStart, end: headStart + sec.category.length });
-    sec.items.forEach(it => {
-      const sub = [it.size, styleConfig.showRegion && it.region].filter(Boolean).join(' \xb7 ');
-      text += `${it.name}\n${sub}  \xb7  $${formatPrice(it.price, styleConfig.decimalPrices)}\n\n`;
-    });
+    sec.items.forEach(appendItem);
   });
 
   const requests = [];
@@ -213,7 +242,8 @@ async function writeWineListToDoc(sections, styleConfig) {
 function setDriveModalLoading(msg) {
   document.getElementById('driveModalBody').innerHTML =
     '<div class="modal-status"><span class="auth-spinner"></span>' + esc(msg) + '</div>';
-  document.getElementById('driveModalClose').disabled = true;
+  // Cancel stays enabled — a dismissed/blocked popup must never trap the user here
+  document.getElementById('driveModalClose').disabled = false;
 }
 
 function setDriveModalError(msg) {
@@ -227,7 +257,7 @@ function resetDriveModal() {
   document.getElementById('driveModalHead').textContent = 'Output destination';
   document.getElementById('driveModalBody').innerHTML =
     '<div class="modal-opt" role="button" tabindex="0" onclick="connectDrive()"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div></div>' +
-    '<div class="modal-opt"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand</div></div></div>';
+    '<div class="modal-opt" role="button" tabindex="0" onclick="closeModal(\'modal-r\');quickExportPdf()"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand →</div></div></div>';
   document.getElementById('driveModalClose').disabled = false;
   document.getElementById('driveModalClose').textContent = 'Cancel';
 }

@@ -29,6 +29,7 @@ function updateRowDisplay(i) {
   const _wlMi = document.querySelector(`.mi[data-inv-idx="${i}"]`);
   const wlEl = _wlMi?.querySelector('[id^="wlp"]');
   if (wlEl) { wlEl.dataset.bottle = bottleSell; wlEl.textContent = pendingBtg[i] ? wlEl.dataset.glass : bottleSell; }
+  if (_wlMi) _wlMi.dataset.btg = pendingBtg[i] ? '1' : '0';
 }
 
 function setBtgMode(i, glass) {
@@ -158,6 +159,7 @@ function miToItem(mi) {
     price: priceEl?.textContent?.trim() || '',
     bottle: priceEl?.dataset?.bottle || '',
     cost: priceEl?.dataset?.glass || '',
+    btg: mi.dataset.btg === '1',
     invIdx: mi.dataset.invIdx || ''
   };
 }
@@ -660,11 +662,11 @@ function pushRowAnyway(i) {
 }
 
 // Single template for a wine-list item — used by pushToWineList and rehydrate.
-// item: { name, sub?, region, size, price, cost, bottle?, invIdx }
+// item: { name, sub?, region, size, price, cost, bottle?, btg?, invIdx }
 function buildMiHtml(item, wlIdx) {
   const sub = item.sub || `${item.size} \xb7 ${item.region}`;
   const bottle = item.bottle || item.price;
-  return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false" aria-label="wine name — editable">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false" aria-label="wine details — editable">${esc(sub)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${bottle}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
+  return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}" data-btg="${item.btg ? '1' : '0'}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false" aria-label="wine name — editable">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false" aria-label="wine details — editable">${esc(sub)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${bottle}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
 }
 
 // Push specific inventory rows to the wine list (no duplicate check here)
@@ -675,6 +677,7 @@ function pushRows(rows) {
 
   const items = rows.map(row => {
     const metaSpans = [...row.querySelectorAll('.ir-meta-left span')].filter(s => s.textContent !== '\xb7');
+    const invIdx = parseInt(row.dataset.invIdx, 10);
     return {
       name: rowName(row),
       size: metaSpans[0]?.textContent || '',
@@ -682,6 +685,7 @@ function pushRows(rows) {
       price: row.querySelector('.ir-sell')?.textContent?.replace('$', '') || '0',
       cost: row.querySelector('.ir-cost')?.textContent?.replace('cost $', '') || '0',
       category: CAT_ORDER.includes(row.dataset.category) ? row.dataset.category : 'Other',
+      btg: !!committedBtg[invIdx],
       invIdx: row.dataset.invIdx || ''
     };
   });

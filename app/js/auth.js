@@ -36,6 +36,12 @@ function connectGmail() {
       } catch (e) {
         setEmailConnected('Gmail', 'gmail account');
       }
+    },
+    // Fires when the Google popup is blocked or dismissed without completing —
+    // without this the modal stayed stuck in its loading state forever.
+    error_callback: (err) => {
+      if (err && err.type === 'popup_closed') resetEmailModal();
+      else setModalError('Sign-in could not start' + (err?.type ? ' (' + err.type + ')' : '') + '. Check popup blockers and try again.');
     }
   });
   client.requestAccessToken();

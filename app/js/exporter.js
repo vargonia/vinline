@@ -62,6 +62,21 @@ function buildSubLine(item, styleConfig) {
   return esc(parts.join(' \xb7 '));
 }
 
+// Split resolved sections into by-the-glass and bottle lists. Glass wines get
+// their own top-level section with category subsections. The same split is
+// used by the PDF/preview renderer and the Drive writers so outputs never
+// disagree. Section order and visibility are already applied by the caller.
+function splitByGlass(sections) {
+  const glass = [], bottles = [];
+  sections.forEach(sec => {
+    const g = sec.items.filter(it => it.btg);
+    const b = sec.items.filter(it => !it.btg);
+    if (g.length) glass.push({ category: sec.category, items: g });
+    if (b.length) bottles.push({ category: sec.category, items: b });
+  });
+  return { glass, bottles };
+}
+
 function renderWineListDoc(styleConfig) {
   const grouped = gatherWineListData();
   const sections = resolveSectionConfig(styleConfig, grouped).filter(s => s.visible);
@@ -77,20 +92,34 @@ function renderWineListDoc(styleConfig) {
       ${styleConfig.subtitle ? `<div class="doc-subtitle">${esc(styleConfig.subtitle)}</div>` : ''}
     </div>`;
 
-  const sectionsHtml = sections.map(sec => `
-    <div class="doc-section">
-      <div class="doc-section-head">${esc(sec.category)}</div>
-      ${sec.items.map(it => `
+  const itemHtml = (it) => `
         <div class="doc-item">
           <div class="doc-item-left">
             <div class="doc-item-name">${esc(it.name)}</div>
             <div class="doc-item-sub">${buildSubLine(it, styleConfig)}</div>
           </div>
           <div class="doc-item-price">$${formatPrice(it.price, styleConfig.decimalPrices)}</div>
-        </div>`).join('')}
+        </div>`;
+
+  const { glass, bottles } = splitByGlass(sections);
+
+  // By-the-glass leads the menu (standard wine-list convention), with
+  // category subsections inside a single top-level section.
+  const glassHtml = glass.length ? `
+    <div class="doc-section">
+      <div class="doc-section-head">By the glass</div>
+      ${glass.map(sec => `
+      <div class="doc-glass-cat">${esc(sec.category)}</div>
+      ${sec.items.map(itemHtml).join('')}`).join('')}
+    </div>` : '';
+
+  const bottlesHtml = bottles.map(sec => `
+    <div class="doc-section">
+      <div class="doc-section-head">${esc(sec.category)}</div>
+      ${sec.items.map(itemHtml).join('')}
     </div>`).join('');
 
-  return `${headerHtml}<div class="doc-columns doc-cols-${styleConfig.columns}">${sectionsHtml}</div>`;
+  return `${headerHtml}<div class="doc-columns doc-cols-${styleConfig.columns}">${glassHtml}${bottlesHtml}</div>`;
 }
 
 function applyDocStyleVars(paperEl, styleConfig) {
@@ -354,7 +383,7 @@ function quickExportPdf() {
   printWineListDoc(loadExportStyle());
 }
 export {
-  defaultExportStyle, loadExportStyle, saveExportStyle, resolveSectionConfig,
+  defaultExportStyle, loadExportStyle, saveExportStyle, resolveSectionConfig, splitByGlass,
   formatPrice, buildSubLine, renderWineListDoc, applyDocStyleVars,
   openPreviewEditor, closePreviewEditor, refreshPreviewPane, populatePreviewPanel,
   renderPillRow, renderColorSwatches, renderFontPairings,

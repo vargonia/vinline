@@ -218,7 +218,8 @@ function setOpenHintReady(n) {
 function setModalLoading(msg) {
   document.getElementById('emailModalBody').innerHTML =
     '<div class="modal-status"><span class="auth-spinner"></span>' + esc(msg) + '</div>';
-  document.getElementById('emailModalClose').disabled = true;
+  // Cancel stays enabled — a dismissed/blocked popup must never trap the user here
+  document.getElementById('emailModalClose').disabled = false;
 }
 
 function setModalError(msg) {
