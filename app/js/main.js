@@ -7,7 +7,7 @@ import * as exporter from './exporter.js';
 import * as inbox from './inbox.js';
 import * as core from './core.js';
 
-import { esc, getUserAnthropicKey, saveUserAnthropicKey } from './utils.js';
+import { esc, getUserAnthropicKey, saveUserAnthropicKey, getAccessCode, saveAccessCode } from './utils.js';
 import { inboxBody, openHint, isExpanded, expand, setSwitch } from './ui.js';
 import { fileCardMap, showInboxEmpty } from './inbox.js';
 import { loadAppState, getState, saveAppState } from './state.js';
@@ -55,7 +55,29 @@ function clearAnthropicKeyFromSettings() {
   refreshAnthropicKeyStatus();
 }
 
-Object.assign(window, { setMarginPreset, saveAnthropicKeyFromSettings, clearAnthropicKeyFromSettings });
+function refreshAccessCodeStatus() {
+  const el = document.getElementById('accessCodeStatus');
+  if (!el) return;
+  el.textContent = getAccessCode() ? 'Code saved — parses use this instance’s shared key' : 'No code saved';
+}
+
+function saveAccessCodeFromSettings() {
+  const input = document.getElementById('accessCodeInput');
+  const code = (input?.value || '').trim();
+  if (!code) return;
+  saveAccessCode(code);
+  input.value = '';
+  refreshAccessCodeStatus();
+}
+
+function clearAccessCodeFromSettings() {
+  saveAccessCode('');
+  const input = document.getElementById('accessCodeInput');
+  if (input) input.value = '';
+  refreshAccessCodeStatus();
+}
+
+Object.assign(window, { setMarginPreset, saveAnthropicKeyFromSettings, clearAnthropicKeyFromSettings, saveAccessCodeFromSettings, clearAccessCodeFromSettings });
 
 // Reflect persisted settings into the Settings panel controls
 function initSettingsPanel() {
@@ -68,6 +90,7 @@ function initSettingsPanel() {
     if (el.nextElementSibling) el.nextElementSibling.textContent = '\xd7' + mult.toFixed(1);
   });
   refreshAnthropicKeyStatus();
+  refreshAccessCodeStatus();
   setSwitch(document.getElementById('togAutoScan'), getState().settings.autoScan);
   setSwitch(document.getElementById('togAutoSync'), getState().settings.autoSync);
   applyAutoScan();

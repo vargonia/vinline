@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+    branches: [main, iterative]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run server contract tests
+        run: npm test
+      - name: Syntax-check server (CommonJS)
+        run: node --check server.js
+      - name: Syntax-check client modules (ESM)
+        run: |
+          for f in app/js/*.js; do
+            node --input-type=module --check < "$f" || { echo "syntax error in $f"; exit 1; }
+          done

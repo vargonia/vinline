@@ -38,9 +38,21 @@ By default, Railway does **not** set `ANTHROPIC_API_KEY`, which means every visi
    - Key: `ANTHROPIC_API_KEY`
    - Value: `sk-ant-...` (your real Anthropic key)
 
-**⚠️ WARNING:** If you set a server-side key on a shared URL, anyone with the link can parse invoices on your dime and burn your credits. Only set `ANTHROPIC_API_KEY` if the Railway URL will remain private (e.g., shared only with trusted team members).
+**⚠️ WARNING:** If you set a server-side key on a shared URL **without an access code** (below), anyone with the link can parse invoices on your dime and burn your credits.
 
-For a public or shared instance, leave `ANTHROPIC_API_KEY` unset. Visitors will add their own key in the app's Settings panel.
+For a public or shared instance, either leave `ANTHROPIC_API_KEY` unset (visitors bring their own key via Settings), or use access-code mode:
+
+### Shared instance with an access code (recommended for friends)
+
+Friends shouldn't need Anthropic developer accounts. Set **both** variables and your key is used only for visitors who present the code:
+
+| Variable | Value |
+|----------|-------|
+| `ANTHROPIC_API_KEY` | `sk-ant-...` (your key) |
+| `SHARED_ACCESS_CODE` | any secret phrase you choose (e.g. `corkdork-2026`) |
+| `MAX_PARSES_PER_DAY` | optional, default `200` — daily cap across all code users |
+
+Then give each friend the code; they paste it in **Settings → Access code** (instead of an API key). Requests without the code get a clear "access code required" message; the daily cap guards against a leaked code, and every shared-key parse is counted in the Railway logs (`[meter] ...`). A visitor who supplies their **own** API key in Settings always bypasses the code and parses on their own account.
 
 ## Step 4: Generate a Domain
 

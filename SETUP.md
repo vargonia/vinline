@@ -14,8 +14,11 @@ vinline turns wine distributor invoices into styled wine lists. Photograph or sc
 - Chrome, Edge, Firefox, or Safari (anything from the last 3 years)
 - JavaScript enabled
 
-### 2. An Anthropic API Key (for parsing)
-This is your own key — you bring it, not the site owner:
+### 2. Parsing credentials — an access code OR your own API key
+
+**Easiest: an access code.** If the person who shared vinline with you gave you an access code, that's all you need — skip to First Run and paste it into **Settings → Access code**. Your parses use the instance owner's account.
+
+**Otherwise: your own Anthropic API key.**
 
 1. Go to **console.anthropic.com**
 2. Sign up or log in with your email
@@ -35,13 +38,13 @@ If you want to use Gmail scanning or Google Drive sync (see below), you'll need 
 ### Step 1: Open the App
 Click the link the site owner shared. You'll see the vinline interface.
 
-### Step 2: Add Your Anthropic Key
-1. Click **Settings** (top right corner, looks like a gear)
+### Step 2: Add Your Credentials
+1. Click **Settings** (top right corner)
 2. Find the **Claude API key** card
-3. Paste your Anthropic key into the text field
-4. Click **Save**
+3. **If you have an access code:** scroll to the **Access code** field inside that card, paste it, click **Save** — done
+4. **If you have your own key:** paste it into the key field and click **Save**
 
-Your key is stored **only in your browser's private storage** and is never sent to anyone but Anthropic (for parsing). The site owner can't see it.
+Either one is stored **only in your browser's private storage**. Your own key is never sent to anyone but Anthropic (for parsing) — the site owner can't see it.
 
 ### Step 3: Upload an Invoice
 1. Click the **Input** card (left side)

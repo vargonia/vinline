@@ -234,6 +234,16 @@
           <button class="btn btn-sm" onclick="clearAnthropicKeyFromSettings()">Clear</button>
         </div>
         <div class="sr-sub" id="anthropicKeyStatus" style="margin-top:6px">No key saved</div>
+        <div class="srow" style="margin-top:10px;border-top:0.5px solid var(--rule-2);padding-top:10px;display:block">
+          <div class="sr-l">Access code</div>
+          <div class="sr-sub" style="margin:2px 0 8px">If whoever shared this vinline with you gave you an access code, enter it here instead of an API key.</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" id="accessCodeInput" class="preview-input" placeholder="access code" autocomplete="off" spellcheck="false" aria-label="instance access code" style="flex:1">
+            <button class="btn btn-sm" onclick="saveAccessCodeFromSettings()">Save</button>
+            <button class="btn btn-sm" onclick="clearAccessCodeFromSettings()">Clear</button>
+          </div>
+          <div class="sr-sub" id="accessCodeStatus" style="margin-top:6px">No code saved</div>
+        </div>
       </div>
       <div class="scard">
         <div class="scard-title">× Default margins by category</div>

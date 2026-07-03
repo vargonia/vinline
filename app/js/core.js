@@ -1,6 +1,6 @@
 // vinline — parse pipeline, inventory rows, margin system, wine list
 import { API_BASE, ANTHROPIC_API_KEY, INVOICE_PARSE_PROMPT, CAT_ORDER } from './config.js';
-import { esc, isAuthExpired, pdfToBase64, imageToBase64, getUserAnthropicKey } from './utils.js';
+import { esc, isAuthExpired, pdfToBase64, imageToBase64, getUserAnthropicKey, getAccessCode } from './utils.js';
 import { gmailToken, resetGmailConnectionUI } from './auth.js';
 import { addPopupToCard, fileCardMap } from './inbox.js';
 import { inboxBody, showToast, announce } from './ui.js';
@@ -298,9 +298,12 @@ function rehydrateFromState() {
 async function callClaudeWithInvoiceData(base64, mediaType) {
   const headers = { 'content-type': 'application/json' };
   // Bring-your-own-key: the user's key (Settings) rides along per request and
-  // takes precedence over any server-side key at the proxy.
+  // takes precedence over any server-side key at the proxy. An access code
+  // (shared instances) unlocks the instance owner's server-side key instead.
   const userKey = getUserAnthropicKey() || ANTHROPIC_API_KEY;
   if (userKey) headers['x-api-key-fwd'] = userKey;
+  const accessCode = getAccessCode();
+  if (accessCode) headers['x-access-code'] = accessCode;
   const res = await fetch(API_BASE + '/api/claude', {
     method: 'POST',
     headers,
@@ -316,8 +319,14 @@ async function callClaudeWithInvoiceData(base64, mediaType) {
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
     const msg = errBody.error?.message || `API error ${res.status}`;
+    if (errBody.error?.type === 'access_code_required' || res.status === 403) {
+      throw new Error(msg || 'This instance needs an access code — add it in Settings.');
+    }
+    if (res.status === 429) {
+      throw new Error(msg || 'Daily parse limit reached on this instance — try again tomorrow or use your own API key in Settings.');
+    }
     if (res.status === 401 || /authentication|api.key/i.test(msg)) {
-      throw new Error('Claude API key missing or invalid — open Settings and add your Anthropic API key.');
+      throw new Error('Claude API key missing or invalid — open Settings and add your Anthropic API key (or an access code if this instance was shared with you).');
     }
     throw new Error(msg);
   }

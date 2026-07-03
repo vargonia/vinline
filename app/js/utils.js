@@ -70,4 +70,20 @@ function saveUserAnthropicKey(key) {
   } catch (e) { return false; }
 }
 
-export { isAuthExpired, pdfToBase64, imageToBase64, esc, formatDate, getUserAnthropicKey, saveUserAnthropicKey };
+// Access code for shared instances — the instance owner's server-side key is
+// used when a valid code accompanies the request. Same storage rules as above.
+const ACCESS_CODE_STORAGE = 'vinline_access_code';
+
+function getAccessCode() {
+  try { return localStorage.getItem(ACCESS_CODE_STORAGE) || ''; } catch (e) { return ''; }
+}
+
+function saveAccessCode(code) {
+  try {
+    if (code) localStorage.setItem(ACCESS_CODE_STORAGE, code.trim());
+    else localStorage.removeItem(ACCESS_CODE_STORAGE);
+    return true;
+  } catch (e) { return false; }
+}
+
+export { isAuthExpired, pdfToBase64, imageToBase64, esc, formatDate, getUserAnthropicKey, saveUserAnthropicKey, getAccessCode, saveAccessCode };

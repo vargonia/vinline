@@ -4,7 +4,8 @@
   "private": true,
   "description": "Reads wine distributor invoices and builds a priced wine list. Parse, price, publish.",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/"
   },
   "engines": {
     "node": ">=18"
