@@ -322,10 +322,26 @@
   .doc-item-sub{font-family:var(--doc-font-body,var(--sans));font-size:10px;color:var(--ink-3);margin-top:2px}
   .doc-item-price{font-family:var(--doc-font-body,var(--sans));font-size:13px;color:var(--ink);white-space:nowrap;flex-shrink:0}
 
+  /* TOASTS */
+  #toastHost{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:1200;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .toast{display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;font-family:var(--sans);font-size:11px;padding:9px 15px;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.18);animation:toastIn .18s ease}
+  .toast button{background:none;border:none;color:var(--green-mid);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);padding:0}
+  .toast button:hover{text-decoration:underline}
+  @keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* INVENTORY STATUS TAGS */
+  .onlist-tag{font-family:var(--mono);font-size:7.5px;background:var(--blue-dim);color:var(--blue);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle}
+  .dup-tag{font-family:var(--mono);font-size:7.5px;background:var(--amber-dim);color:var(--amber);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle;cursor:default}
+  .vint-tag{font-family:var(--mono);font-size:7.5px;background:var(--blue-dim);color:var(--blue);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle;cursor:default}
+  .age-tag{font-family:var(--mono);font-size:7.5px;background:var(--amber-dim);color:var(--amber);border-radius:3px;padding:1px 4px;margin-left:3px;font-weight:500;vertical-align:middle;cursor:default}
+  .push-anyway{font-family:var(--mono);font-size:7.5px;background:none;border:0.5px solid var(--rule);border-radius:3px;padding:0 4px;margin-left:3px;cursor:pointer;color:var(--ink-3);vertical-align:middle;transition:all .12s}
+  .push-anyway:hover{border-color:var(--green-mid);color:var(--green-mid)}
+
   @media print {
     .shell{display:none!important}
     #previewOverlay{position:static!important;display:block!important;background:#fff}
     .preview-panel{display:none!important}
     .preview-pane{padding:0;background:#fff;display:block}
     .preview-paper{box-shadow:none;margin:0 auto;width:auto;min-height:auto}
+    #toastHost{display:none!important}
   }

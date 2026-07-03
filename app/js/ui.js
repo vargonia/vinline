@@ -164,7 +164,33 @@ function toggleSettings(e) {
   else { if (!isExpanded) collapsed.style.display='flex'; else expanded.style.display='block'; }
 }
 
+// ─── TOAST NOTIFICATIONS ──────────────────────────────────────────────────────
+
+function showToast(msg, opts = {}) {
+  let host = document.getElementById('toastHost');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'toastHost';
+    document.body.appendChild(host);
+  }
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.setAttribute('role', 'status');
+  const span = document.createElement('span');
+  span.textContent = msg;
+  t.appendChild(span);
+  if (opts.actionLabel && opts.onAction) {
+    const b = document.createElement('button');
+    b.textContent = opts.actionLabel;
+    b.onclick = () => { opts.onAction(); t.remove(); };
+    t.appendChild(b);
+  }
+  host.appendChild(t);
+  setTimeout(() => t.remove(), opts.duration || 6000);
+  return t;
+}
+
 export {
   stage, collapsed, expanded, settings, bkL, bkR, openHint, colLeft, colRight, divL, divR, shelves, inboxBody,
-  isExpanded, openModal, closeModal, syncBtn, sI, visibleBInfos, expand, collapse, toggleSettings
+  isExpanded, openModal, closeModal, syncBtn, sI, visibleBInfos, expand, collapse, toggleSettings, showToast
 };
