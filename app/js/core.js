@@ -206,6 +206,17 @@ function persistNow() {
   st.inventory = snapshotInventory();
   st.wineList = gatherWineListData();
   saveAppState();
+  // Decoupled signal for listeners (e.g. Drive auto-sync)
+  window.dispatchEvent(new CustomEvent('vinline:changed'));
+}
+
+// Default multiplier for a newly parsed item, from the Settings margin presets
+function presetMultForCategory(cat) {
+  const p = getState().settings.marginPresets || {};
+  if (cat === 'Sparkling') return p.sparkling ?? 4.0;
+  if (cat === 'White' || cat === 'Rosé' || cat === 'Orange') return p.white ?? 4.0;
+  if (cat === 'Red') return p.red ?? 4.0;
+  return p.other ?? 4.0;
 }
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -534,7 +545,8 @@ function populateParsedItems(source, items) {
   items.forEach((item, j) => {
     const i = rowCount + j;
     costs[i] = parseFloat(item.cost_per_bottle) || 0;
-    committed[i] = 4.0; pending[i] = 4.0;
+    const mult = presetMultForCategory(item.category || 'Red');
+    committed[i] = mult; pending[i] = mult;
     committedBtg[i] = false; pendingBtg[i] = false;
   });
   rowCount += items.length;
@@ -553,7 +565,7 @@ function populateParsedItems(source, items) {
 
   invBody.insertAdjacentHTML('beforeend',
     `<div class="sec-lbl">Parsed \xb7 ${items.length} new</div>` +
-    items.map((item, j) => buildInvRow(item, startIdx + j)).join('')
+    items.map((item, j) => buildInvRow(item, startIdx + j, { mult: committed[startIdx + j] })).join('')
   );
 
   const invFoot = document.getElementById('invFoot');
@@ -751,5 +763,5 @@ export {
   parseEmailCard, parseFile, parseAllFiles, buildInvRow, buildMiHtml, populateParsedItems,
   pushToWineList, pushRows, pushRowAnyway, resetInventory, discardParsed,
   persistNow, rehydrateFromState, renderInventoryItems,
-  normalizeWineName, extractVintage, findWineListMatch
+  normalizeWineName, extractVintage, findWineListMatch, presetMultForCategory
 };

@@ -1,13 +1,16 @@
 // vinline — Google Drive OAuth, Picker, Sheets/Docs sync
 import { GOOGLE_CLIENT_ID, GOOGLE_API_KEY, COLOR_SWATCHES } from './config.js';
 import { isAuthExpired, esc } from './utils.js';
-import { openModal, settings, collapsed, expanded, isExpanded } from './ui.js';
+import { openModal, settings, collapsed, expanded, isExpanded, showToast } from './ui.js';
 import { loadExportStyle, resolveSectionConfig, formatPrice } from './exporter.js';
 import { gatherWineListData } from './core.js';
+import { getState, saveAppState } from './state.js';
 // DRIVE STATE
 let driveConnected = false;
 let driveToken = null;
 let driveFile = null; // { id, name, mimeType }
+let hasManualSynced = false; // auto-sync arms only after one explicit sync this session
+let autoSyncTimer = null;
 // ─── DRIVE AUTH & PICKER ─────────────────────────────────────────────────────
 
 function connectDrive() {
@@ -113,6 +116,8 @@ async function syncToDrive() {
       await writeWineListToDoc(sections, styleConfig);
     }
     btn.textContent = '✓ synced';
+    hasManualSynced = true; // user has explicitly chosen this target — auto-sync may arm
+    updateAutoSyncBadge();
     setTimeout(() => { btn.textContent = '↑ Drive'; btn.disabled = false; }, 2500);
   } catch (e) {
     if (e.message === 'AUTH_EXPIRED') {
@@ -227,9 +232,48 @@ function resetDriveModal() {
   document.getElementById('driveModalClose').textContent = 'Cancel';
 }
 
+// ─── HEADER SYNC BUTTON + AUTO-SYNC ──────────────────────────────────────────
+
+function headerDriveSync(btn) {
+  if (!driveConnected) {
+    showToast('Connect Google Drive first — use the Drive button in the wine list footer');
+    return;
+  }
+  btn.classList.add('spinning'); btn.disabled = true;
+  Promise.resolve(syncToDrive()).finally(() => {
+    btn.classList.remove('spinning'); btn.disabled = false;
+  });
+}
+
+function updateAutoSyncBadge() {
+  const on = getState().settings.autoSync && driveConnected && hasManualSynced;
+  const badge = document.getElementById('autoSyncBadge');
+  if (badge) badge.style.display = on ? '' : 'none';
+}
+
+function toggleAutoSync() {
+  const st = getState();
+  st.settings.autoSync = !st.settings.autoSync;
+  saveAppState();
+  document.getElementById('togAutoSync')?.classList.toggle('off', !st.settings.autoSync);
+  updateAutoSyncBadge();
+  showToast(st.settings.autoSync
+    ? 'Auto-sync on — arms after your first manual Drive sync, then pushes changes automatically'
+    : 'Auto-sync off');
+}
+
+// Debounced auto-sync: fires 3s after the last wine-list change, and never
+// before the user has explicitly synced once (protects the target file).
+window.addEventListener('vinline:changed', () => {
+  if (!getState().settings.autoSync || !driveConnected || !hasManualSynced) return;
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(() => syncToDrive(), 3000);
+});
+
 export {
   driveConnected, driveToken, driveFile,
   connectDrive, loadAndOpenPicker, pickerCallback, setDriveConnected, disconnectDrive,
   openDriveConnect, syncToDrive, hexToRgb01, writeWineListToSheet, writeWineListToDoc,
-  setDriveModalLoading, setDriveModalError, resetDriveModal
+  setDriveModalLoading, setDriveModalError, resetDriveModal,
+  headerDriveSync, toggleAutoSync, updateAutoSyncBadge
 };

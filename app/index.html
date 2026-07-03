@@ -107,7 +107,7 @@
             <div class="modal-opt" onclick="connectDrive()">
               <div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div>
             </div>
-            <div class="modal-opt"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand</div></div></div>
+            <div class="modal-opt" onclick="closeModal('modal-r');quickExportPdf()"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand →</div></div></div>
           </div>
           <button class="modal-close" id="driveModalClose" onclick="closeModal('modal-r')">Cancel</button>
         </div>
@@ -128,6 +128,10 @@
               <button class="btn btn-sm sync-btn" id="inboxSyncBtn" onclick="collapseAndConnect()" title="Connect email inbox">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true"><rect x="1" y="2.5" width="10" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/><polyline points="1,2.5 6,7 11,2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
                 inbox
+              </button>
+              <button class="btn btn-sm sync-btn" id="inboxRefreshBtn" onclick="reScan(this)" title="Re-scan the connected inbox">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                refresh
               </button>
               <button class="btn btn-sm sync-btn" onclick="triggerPhotoUpload()" title="Upload invoice photo" style="gap:4px">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true">
@@ -169,8 +173,8 @@
           <div class="col-head">
             <div><div class="col-eyebrow">Output</div><div class="col-title">☰ Wine list</div></div>
             <div class="head-actions">
-              <button class="btn btn-sm sync-btn" onclick="syncBtn(this)" title="Re-sync formatting from Drive">
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              <button class="btn btn-sm sync-btn" onclick="headerDriveSync(this)" title="Sync wine list to the connected Drive file">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
                 sync
               </button>
               <button class="btn btn-sm" onclick="openPreviewEditor()">Preview</button>
@@ -185,6 +189,7 @@
           <div class="col-foot">
             <button class="btn btn-primary btn-sm" onclick="quickExportPdf()">↓ PDF</button>
             <button class="btn btn-sm" id="driveFootBtn" onclick="openDriveConnect()">Drive</button>
+            <span class="conn-label" id="autoSyncBadge" style="display:none" title="wine list changes push to Drive automatically">auto</span>
             <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto">0 items</span>
           </div>
         </div>
@@ -208,8 +213,8 @@
           <div class="sr-r" id="settingsOutlookRight"><button class="btn btn-sm" onclick="openEmailConnect('Outlook')">Connect →</button></div>
         </div>
         <div class="srow">
-          <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Every 30 minutes</div></div>
-          <div class="sr-r"><button class="tog" aria-label="toggle auto-scan"></button></div>
+          <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Re-scan the connected inbox every 30 minutes</div></div>
+          <div class="sr-r"><button class="tog off" id="togAutoScan" onclick="toggleAutoScan()" aria-label="toggle auto-scan"></button></div>
         </div>
       </div>
       <div class="scard">
@@ -219,24 +224,19 @@
           <div class="sr-r" id="settingsDriveRight"><button class="btn btn-sm" onclick="openDriveConnect()">Connect →</button></div>
         </div>
         <div class="srow">
-          <div><div class="sr-l">Auto-sync on change</div><div class="sr-sub">Update file when wine list changes</div></div>
-          <div class="sr-r"><button class="tog off" aria-label="toggle auto-sync Drive"></button></div>
+          <div><div class="sr-l">Auto-sync on change</div><div class="sr-sub">Push wine list changes to Drive (arms after your first manual sync)</div></div>
+          <div class="sr-r"><button class="tog off" id="togAutoSync" onclick="toggleAutoSync()" aria-label="toggle auto-sync Drive"></button></div>
         </div>
       </div>
       <div class="scard">
-        <div class="scard-title">% Margins by category</div>
+        <div class="scard-title">× Default margins by category</div>
+        <div class="sr-sub" style="margin-bottom:8px">Multiplier applied to newly parsed items. Adjust per-item later with the row slider.</div>
         <div class="mg-grid">
-          <div class="mg-item"><div class="mg-lbl">Bottle — red</div><div class="mg-row"><input type="range" min="25" max="85" value="56" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">56%</span></div></div>
-          <div class="mg-item"><div class="mg-lbl">Bottle — white</div><div class="mg-row"><input type="range" min="25" max="85" value="55" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">55%</span></div></div>
-          <div class="mg-item"><div class="mg-lbl">By the glass</div><div class="mg-row"><input type="range" min="25" max="150" value="120" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">120%</span></div></div>
-          <div class="mg-item"><div class="mg-lbl">Sparkling</div><div class="mg-row"><input type="range" min="25" max="85" value="50" step="1" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="mg-num">50%</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — red</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpRed" oninput="setMarginPreset('red', this.value, this)" aria-label="default red multiplier"><span class="mg-num">×4.0</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — white / rosé / orange</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpWhite" oninput="setMarginPreset('white', this.value, this)" aria-label="default white multiplier"><span class="mg-num">×4.0</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Sparkling</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpSparkling" oninput="setMarginPreset('sparkling', this.value, this)" aria-label="default sparkling multiplier"><span class="mg-num">×4.0</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Other styles</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpOther" oninput="setMarginPreset('other', this.value, this)" aria-label="default other multiplier"><span class="mg-num">×4.0</span></div></div>
         </div>
-      </div>
-      <div class="scard">
-        <div class="scard-title">≡ Naming convention</div>
-        <div class="srow"><div class="sr-l">Include appellation</div><div class="sr-r"><button class="tog" aria-label="toggle appellation"></button></div></div>
-        <div class="srow"><div class="sr-l">Include vintage</div><div class="sr-r"><button class="tog" aria-label="toggle vintage"></button></div></div>
-        <div class="srow"><div class="sr-l">Include region / country</div><div class="sr-r"><button class="tog off" aria-label="toggle region"></button></div></div>
       </div>
     </div>
 

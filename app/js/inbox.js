@@ -1,7 +1,8 @@
 // vinline — inbox: Gmail/Outlook scan, email + file cards, hover popups
 import { esc, formatDate, isAuthExpired } from './utils.js';
 import { resetGmailConnectionUI, emailConnected, emailProvider, gmailToken, outlookToken } from './auth.js';
-import { openHint, isExpanded, openModal, closeModal, inboxBody } from './ui.js';
+import { openHint, isExpanded, openModal, closeModal, inboxBody, showToast } from './ui.js';
+import { getState, saveAppState } from './state.js';
 // file cards → File objects (set when card is created, read when parse is triggered)
 const fileCardMap = new Map();
 // ─── INBOX SCANNING ───────────────────────────────────────────────────────────
@@ -70,7 +71,10 @@ function populateOutlookCards(msgs) {
 }
 
 async function reScan(btn) {
-  if (!emailConnected) return;
+  if (!emailConnected) {
+    showToast('Connect an inbox first — tap the inbox button');
+    return;
+  }
   btn.classList.add('spinning'); btn.disabled = true;
   setOpenHintScanning(); showInboxScanning();
   if (emailProvider === 'Gmail') {
@@ -79,6 +83,33 @@ async function reScan(btn) {
     await scanOutlookInbox(outlookToken);
   }
   btn.classList.remove('spinning'); btn.disabled = false;
+}
+
+// ─── AUTO-SCAN (Settings toggle: re-scan the connected inbox every 30 min) ────
+
+let autoScanTimer = null;
+
+function applyAutoScan() {
+  clearInterval(autoScanTimer);
+  autoScanTimer = null;
+  if (getState().settings.autoScan) {
+    autoScanTimer = setInterval(() => {
+      if (document.hidden || !emailConnected) return;
+      const btn = document.getElementById('inboxRefreshBtn');
+      if (btn && !btn.disabled) reScan(btn);
+    }, 30 * 60 * 1000);
+  }
+}
+
+function toggleAutoScan() {
+  const st = getState();
+  st.settings.autoScan = !st.settings.autoScan;
+  saveAppState();
+  document.getElementById('togAutoScan')?.classList.toggle('off', !st.settings.autoScan);
+  applyAutoScan();
+  showToast(st.settings.autoScan
+    ? 'Auto-scan on — inbox re-scans every 30 minutes while connected'
+    : 'Auto-scan off');
 }
 
 function populateInboxCards(messages) {
@@ -244,5 +275,6 @@ export {
   populateInboxCards, showInboxEmpty, showInboxScanning,
   showInboxNoResults, showInboxError, collapseAndConnect,
   setOpenHintScanning, setOpenHintReady, setModalLoading, setModalError, resetEmailModal,
-  triggerPhotoUpload, uploadInvoiceFile, addPopupToCard
+  triggerPhotoUpload, uploadInvoiceFile, addPopupToCard,
+  toggleAutoScan, applyAutoScan
 };

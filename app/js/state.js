@@ -11,7 +11,7 @@ function defaultState() {
     settings: {
       autoScan: false,
       autoSync: false,
-      marginPresets: { red: 4.0, white: 4.0, sparkling: 4.0, glass: 1.0 }
+      marginPresets: { red: 4.0, white: 4.0, sparkling: 4.0, other: 4.0 }
     },
     savedAt: null
   };

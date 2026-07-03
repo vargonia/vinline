@@ -10,12 +10,40 @@ import * as core from './core.js';
 import { esc } from './utils.js';
 import { inboxBody, openHint, isExpanded, expand } from './ui.js';
 import { fileCardMap, showInboxEmpty } from './inbox.js';
-import { loadAppState } from './state.js';
+import { loadAppState, getState, saveAppState } from './state.js';
 import { rehydrateFromState, persistNow } from './core.js';
+import { applyAutoScan } from './inbox.js';
+import { updateAutoSyncBadge } from './drive.js';
 
 // Inline on* handlers in the markup (and in runtime-generated HTML strings)
 // resolve against window — bridge every module export explicitly.
 Object.assign(window, utils, ui, auth, drive, exporter, inbox, core);
+
+// Settings: default-margin preset sliders (multiplier per category bucket)
+function setMarginPreset(bucket, sliderVal, inputEl) {
+  const mult = parseInt(sliderVal, 10) / 10;
+  const st = getState();
+  st.settings.marginPresets[bucket] = mult;
+  saveAppState();
+  if (inputEl?.nextElementSibling) inputEl.nextElementSibling.textContent = '\xd7' + mult.toFixed(1);
+}
+Object.assign(window, { setMarginPreset });
+
+// Reflect persisted settings into the Settings panel controls
+function initSettingsPanel() {
+  const p = getState().settings.marginPresets;
+  [['red', 'mgpRed'], ['white', 'mgpWhite'], ['sparkling', 'mgpSparkling'], ['other', 'mgpOther']].forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const mult = p[k] ?? 4.0;
+    el.value = Math.round(mult * 10);
+    if (el.nextElementSibling) el.nextElementSibling.textContent = '\xd7' + mult.toFixed(1);
+  });
+  document.getElementById('togAutoScan')?.classList.toggle('off', !getState().settings.autoScan);
+  document.getElementById('togAutoSync')?.classList.toggle('off', !getState().settings.autoSync);
+  applyAutoScan();
+  updateAutoSyncBadge();
+}
 
 function init() {
   // Photo upload input
@@ -53,6 +81,7 @@ function init() {
 
   // Restore persisted wine list + inventory from a previous session
   loadAppState();
+  initSettingsPanel();
   const restored = rehydrateFromState();
   if (restored && !isExpanded) expand();
 

@@ -54,7 +54,6 @@ document.getElementById('openHint').addEventListener('click', expand);
 
 // ─── SYNC BUTTON ──────────────────────────────────────────────────────────────
 
-function syncBtn(btn) { btn.classList.add('spinning'); btn.disabled=true; setTimeout(()=>{btn.classList.remove('spinning');btn.disabled=false;},700); }
 
 // ─── ANIMATION HELPERS ────────────────────────────────────────────────────────
 
@@ -192,5 +191,5 @@ function showToast(msg, opts = {}) {
 
 export {
   stage, collapsed, expanded, settings, bkL, bkR, openHint, colLeft, colRight, divL, divR, shelves, inboxBody,
-  isExpanded, openModal, closeModal, syncBtn, sI, visibleBInfos, expand, collapse, toggleSettings, showToast
+  isExpanded, openModal, closeModal, sI, visibleBInfos, expand, collapse, toggleSettings, showToast
 };
