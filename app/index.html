@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="vinline - reads wine distributor invoices and builds a priced wine list. Parse, price, publish.">
+<title>vinline</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#127863;</text></svg>">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/dist/msal-browser.min.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+<style id="pageSizeStyle"></style>
+</head>
+<body><div id="ariaStatus" class="sr-only" role="status" aria-live="polite"></div><div class="shell">
+
+  <header class="topbar">
+    <div class="logo-unit">
+      <div class="logo-mark">
+        <span class="logo-bk">]</span>
+        <div class="logo-lines"><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div><div class="logo-line"></div></div>
+        <span class="logo-bk">[</span>
+      </div>
+      <div><div class="logo-name">vinline</div><div class="logo-build">dev.004</div></div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-badge" id="topbarStatus" style="display:none">
+        <span class="sync-dot"></span><span id="topbarStatusText"></span>
+      </div>
+      <button class="nav-btn" id="settingsBtn" onclick="toggleSettings(event)">Settings</button>
+    </div>
+  </header>
+
+  <div id="stage">
+
+    <!-- COLLAPSED -->
+    <div id="collapsed">
+      <div class="scene" id="scene" style="position:relative">
+
+        <!-- LEFT BRACKET: email — starts unconnected -->
+        <div class="bracket-unit">
+          <!-- Connected state (hidden until auth succeeds) -->
+          <div class="b-info b-info-l" id="emailConnectedZone" style="display:none" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-l')">
+            <span class="b-label">Email</span>
+            <span class="b-val right" id="emailDisplayName">—</span>
+            <span class="b-status right"><span class="b-dot"></span><span id="emailProviderLabel">Gmail</span></span>
+            <span class="b-change right">change →</span>
+          </div>
+          <!-- Unconnected state (shown on first launch) -->
+          <div class="b-empty b-empty-l" id="emailUnconnectedZone" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-l')">
+            <span class="b-label">Email</span>
+            <span class="b-empty-val right">tap to<br>connect</span>
+            <span class="b-empty-status right"><span class="b-red-dot"></span>none</span>
+            <span class="b-empty-hint right">open setup →</span>
+          </div>
+          <span class="b-char" id="bk-l">]</span>
+        </div>
+
+        <div class="shelf-center" id="shelfWrap">
+          <div class="s-line s-hi" id="sl0"></div><div class="s-line s-hi" id="sl1"></div>
+          <div class="s-line s-lo" id="sl2"></div><div class="s-line s-hi" id="sl3"></div>
+          <div class="s-line s-hi" id="sl4"></div><div class="s-line s-lo" id="sl5"></div>
+          <div class="s-line s-hi" id="sl6"></div><div class="s-line s-hi" id="sl7"></div>
+          <div class="s-line s-lo" id="sl8"></div><div class="s-line s-lo" id="sl9"></div>
+        </div>
+
+        <!-- RIGHT BRACKET: output -->
+        <div class="bracket-unit">
+          <span class="b-char" id="bk-r" style="color:#D0CEC6">[</span>
+          <!-- Connected state (hidden until Drive file is selected) -->
+          <div class="b-info b-info-r" id="driveConnectedZone" style="display:none" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-r')">
+            <span class="b-label">Output</span>
+            <span class="b-val" id="driveFileName">—</span>
+            <span class="b-status"><span class="b-dot"></span><span>Drive</span></span>
+            <span class="b-change">change →</span>
+          </div>
+          <!-- Unconnected state -->
+          <div class="b-empty b-empty-r" id="driveUnconnectedZone" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-r')">
+            <span class="b-label">Output</span>
+            <span class="b-empty-val">tap to<br>connect</span>
+            <span class="b-empty-status"><span class="b-red-dot"></span>none</span>
+            <span class="b-empty-hint">open setup →</span>
+          </div>
+        </div>
+
+        <!-- EMAIL CONNECT MODAL -->
+        <div class="conn-modal" id="modal-l" role="dialog" aria-modal="true" aria-label="Connect inbox" onclick="event.stopPropagation()">
+          <div class="modal-head" id="emailModalHead">Connect inbox</div>
+          <div id="emailModalBody">
+            <div class="modal-opt" role="button" tabindex="0" onclick="connectGmail()">
+              <div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div>
+            </div>
+            <div class="modal-opt" role="button" tabindex="0" onclick="connectOutlook()">
+              <div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div>
+            </div>
+            <div class="modal-opt" role="button" tabindex="0" onclick="uploadInvoiceFile()">
+              <div><div class="mo-name">Invoice file</div><div class="mo-sub">Upload PDF or photo →</div></div>
+            </div>
+          </div>
+          <button class="modal-close" id="emailModalClose" onclick="closeModal('modal-l')">Cancel</button>
+        </div>
+
+        <!-- OUTPUT MODAL -->
+        <div class="conn-modal" id="modal-r" role="dialog" aria-modal="true" aria-label="Output destination" onclick="event.stopPropagation()">
+          <div class="modal-head" id="driveModalHead">Output destination</div>
+          <div id="driveModalBody">
+            <div class="modal-opt" role="button" tabindex="0" onclick="connectDrive()">
+              <div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div>
+            </div>
+            <div class="modal-opt" role="button" tabindex="0" onclick="closeModal('modal-r');quickExportPdf()"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand →</div></div></div>
+          </div>
+          <button class="modal-close" id="driveModalClose" onclick="closeModal('modal-r')">Cancel</button>
+        </div>
+
+      </div>
+      <div class="open-hint" id="openHint">↓ tap to open</div>
+    </div>
+
+    <!-- EXPANDED -->
+    <div id="expanded">
+      <div class="three-col">
+
+        <!-- LEFT: INBOX -->
+        <div class="col" id="colLeft">
+          <div class="col-head">
+            <div><div class="col-eyebrow">Input</div><div class="col-title">✉ Inbox</div></div>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+              <button class="btn btn-sm icon-only-btn" id="inboxSyncBtn" onclick="collapseAndConnect()" title="Connect email inbox" aria-label="connect email inbox">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><rect x="1" y="2.5" width="10" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/><polyline points="1,2.5 6,7 11,2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              </button>
+              <button class="btn btn-sm icon-only-btn" id="inboxRefreshBtn" onclick="reScan(this)" title="Re-scan the connected inbox" aria-label="re-scan the connected inbox">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              </button>
+              <button class="btn btn-sm icon-only-btn" onclick="triggerPhotoUpload()" title="Upload invoice photo or PDF" aria-label="upload invoice photo or PDF">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <rect x="1" y="2.5" width="10" height="7.5" rx="1.2" stroke="currentColor" stroke-width="1.1" fill="none"/>
+                  <circle cx="6" cy="6.2" r="1.8" stroke="currentColor" stroke-width="1.0" fill="none"/>
+                  <path d="M4 2.5 L4.6 1 L7.4 1 L8 2.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="col-body" id="inboxBody">
+            <!-- Populated by JS: empty-state → scanning → email cards -->
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm" onclick="parseAllFiles()">Parse invoice</button>
+            <span id="inboxCount" style="font-family:var(--mono);font-size:9px;color:var(--ink-3)">—</span>
+          </div>
+        </div>
+
+        <div class="col-div" id="divL"></div>
+
+        <!-- CENTER: INVENTORY -->
+        <div class="col col-mid">
+          <div class="col-head"><div><div class="col-eyebrow">Processing</div><div class="col-title">≡ Inventory</div></div></div>
+          <div class="col-body" id="invBody">
+            <div class="inbox-state">
+              <div class="inbox-state-lbl">No inventory</div>
+              <div class="inbox-state-sub">Connect an inbox and parse an invoice to populate inventory.</div>
+            </div>
+          </div>
+          <div class="col-foot" style="background:var(--bg-2);display:none" id="invFoot"></div>
+        </div>
+
+        <div class="col-div" id="divR"></div>
+
+        <!-- RIGHT: WINE LIST -->
+        <div class="col" id="colRight">
+          <div class="col-head">
+            <div><div class="col-eyebrow">Output</div><div class="col-title">☰ Wine list</div></div>
+            <div class="head-actions">
+              <button class="btn btn-sm sync-btn" onclick="headerDriveSync(this)" title="Sync wine list to the connected Drive file">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex-shrink:0" aria-hidden="true"><path d="M10.5 6A4.5 4.5 0 1 1 8.3 2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><polyline points="8,1 8.3,2.2 7,2.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                sync
+              </button>
+              <button class="btn btn-sm" onclick="openPreviewEditor()">Preview</button>
+            </div>
+          </div>
+          <div class="col-body" id="wineListBody">
+            <div class="inbox-state">
+              <div class="inbox-state-lbl">No wine list</div>
+              <div class="inbox-state-sub">Inventory items pushed from parsed invoices will appear here.</div>
+            </div>
+          </div>
+          <div class="col-foot">
+            <button class="btn btn-primary btn-sm" onclick="quickExportPdf()">↓ PDF</button>
+            <button class="btn btn-sm" id="driveFootBtn" onclick="openDriveConnect()">Drive</button>
+            <span class="conn-label" id="autoSyncBadge" style="display:none" title="wine list changes push to Drive automatically">auto</span>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto">0 items</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="collapse-bar"><button class="collapse-btn" onclick="collapse()">↑ collapse</button></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings">
+      <div class="scard">
+        <div class="scard-title">✉ Email connection</div>
+        <div class="srow" id="settingsGmailRow">
+          <div><div class="sr-l">Gmail</div><div class="sr-sub" id="settingsGmailSub">Not connected</div></div>
+          <div class="sr-r" id="settingsGmailRight">
+            <button class="btn btn-sm" onclick="openEmailConnect('Gmail')">Connect →</button>
+          </div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Outlook / Microsoft 365</div><div class="sr-sub" id="settingsOutlookSub">Not connected</div></div>
+          <div class="sr-r" id="settingsOutlookRight"><button class="btn btn-sm" onclick="openEmailConnect('Outlook')">Connect →</button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Re-scan the connected inbox every 30 minutes</div></div>
+          <div class="sr-r"><button class="tog off" id="togAutoScan" role="switch" aria-checked="false" onclick="toggleAutoScan()" aria-label="toggle auto-scan"></button></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">☁ Google Drive</div>
+        <div class="srow">
+          <div><div class="sr-l">Output file</div><div class="sr-sub" id="settingsDriveSub">Not connected</div></div>
+          <div class="sr-r" id="settingsDriveRight"><button class="btn btn-sm" onclick="openDriveConnect()">Connect →</button></div>
+        </div>
+        <div class="srow">
+          <div><div class="sr-l">Auto-sync on change</div><div class="sr-sub">Push wine list changes to Drive (arms after your first manual sync)</div></div>
+          <div class="sr-r"><button class="tog off" id="togAutoSync" role="switch" aria-checked="false" onclick="toggleAutoSync()" aria-label="toggle auto-sync Drive"></button></div>
+        </div>
+      </div>
+      <div class="scard">
+        <div class="scard-title">× Default margins by category</div>
+        <div class="sr-sub" style="margin-bottom:8px">Multiplier applied to newly parsed items. Adjust per-item later with the row slider.</div>
+        <div class="mg-grid">
+          <div class="mg-item"><div class="mg-lbl">Bottle — red</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpRed" oninput="setMarginPreset('red', this.value, this)" aria-label="default red multiplier"><span class="mg-num">×4.0</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Bottle — white / rosé / orange</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpWhite" oninput="setMarginPreset('white', this.value, this)" aria-label="default white multiplier"><span class="mg-num">×4.0</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Sparkling</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpSparkling" oninput="setMarginPreset('sparkling', this.value, this)" aria-label="default sparkling multiplier"><span class="mg-num">×4.0</span></div></div>
+          <div class="mg-item"><div class="mg-lbl">Other styles</div><div class="mg-row"><input type="range" min="10" max="60" value="40" step="1" id="mgpOther" oninput="setMarginPreset('other', this.value, this)" aria-label="default other multiplier"><span class="mg-num">×4.0</span></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="previewOverlay" role="dialog" aria-modal="true" aria-label="Wine list style editor">
+  <div class="preview-panel">
+    <div class="col-head">
+      <div><div class="col-eyebrow">Style editor</div><div class="col-title">Preview</div></div>
+      <button class="btn btn-sm" onclick="closePreviewEditor()" aria-label="close">✕</button>
+    </div>
+    <div class="preview-panel-body">
+
+      <div class="scard">
+        <div class="scard-title">Header</div>
+        <input type="text" id="exportTitleInput" class="preview-input" placeholder="Wine List" oninput="setExportTitle(this.value)" style="margin-bottom:6px">
+        <input type="text" id="exportSubtitleInput" class="preview-input" placeholder="Subtitle (optional)" oninput="setExportSubtitle(this.value)" style="margin-bottom:10px">
+        <div class="logo-dropzone" id="logoDropzone" onclick="document.getElementById('logoFileInput').click()">
+          <div id="logoDropzoneInner"><div class="logo-dropzone-hint">Click to add a logo</div></div>
+        </div>
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Color</div>
+        <div class="swatch-grid" id="colorSwatchGrid"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Typeface</div>
+        <div class="font-pair-grid" id="fontPairGrid"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Layout</div>
+        <div class="preview-subhead">Columns</div>
+        <div class="pill-row" id="columnsPillRow" style="margin-bottom:10px"></div>
+        <div class="preview-subhead">Spacing</div>
+        <div class="pill-row" id="spacingPillRow" style="margin-bottom:10px"></div>
+        <div class="preview-subhead">Paper size</div>
+        <div class="pill-row" id="paperSizePillRow"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Sections</div>
+        <div class="section-draglist" id="sectionDragList"></div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-title">Display</div>
+        <div class="srow"><div class="sr-l">Show region</div><div class="sr-r"><button class="tog" id="togRegion" role="switch" aria-checked="true" onclick="toggleShowRegion()" aria-label="toggle region"></button></div></div>
+        <div class="srow"><div class="sr-l">Decimal prices</div><div class="sr-r"><button class="tog off" id="togDecimal" role="switch" aria-checked="false" onclick="toggleDecimalPrices()" aria-label="toggle decimal prices"></button></div></div>
+      </div>
+
+    </div>
+    <div class="preview-panel-foot">
+      <button class="btn btn-primary btn-sm" id="exportPdfBtn" onclick="exportPdfFromEditor()" style="width:100%">↓ Export PDF</button>
+    </div>
+  </div>
+  <div class="preview-pane">
+    <div class="preview-paper" id="previewPaper"></div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
