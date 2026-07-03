@@ -87,6 +87,11 @@ while ($listener.IsListening) {
     if ($localPath -eq '/') { $localPath = '/index.html' }
     $filePath = Join-Path $Root ($localPath.TrimStart('/'))
 
+    # Directory request → serve its index.html (e.g. /app/ → /app/index.html)
+    if (Test-Path $filePath -PathType Container) {
+        $filePath = Join-Path $filePath 'index.html'
+    }
+
     if (Test-Path $filePath -PathType Leaf) {
         $ext = [System.IO.Path]::GetExtension($filePath)
         $contentType = $mimeMap[$ext]
