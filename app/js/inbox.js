@@ -1,7 +1,7 @@
 // vinline — inbox: Gmail/Outlook scan, email + file cards, hover popups
 import { esc, formatDate, isAuthExpired } from './utils.js';
 import { resetGmailConnectionUI, emailConnected, emailProvider, gmailToken, outlookToken } from './auth.js';
-import { openHint, isExpanded, openModal, closeModal, inboxBody, showToast } from './ui.js';
+import { openHint, isExpanded, openModal, closeModal, inboxBody, showToast, activateDialog, setSwitch } from './ui.js';
 import { getState, saveAppState } from './state.js';
 // file cards → File objects (set when card is created, read when parse is triggered)
 const fileCardMap = new Map();
@@ -105,7 +105,7 @@ function toggleAutoScan() {
   const st = getState();
   st.settings.autoScan = !st.settings.autoScan;
   saveAppState();
-  document.getElementById('togAutoScan')?.classList.toggle('off', !st.settings.autoScan);
+  setSwitch(document.getElementById('togAutoScan'), st.settings.autoScan);
   applyAutoScan();
   showToast(st.settings.autoScan
     ? 'Auto-scan on — inbox re-scans every 30 minutes while connected'
@@ -195,6 +195,7 @@ function collapseAndConnect() {
       modal.style.right = 'auto';
     }
     modal.style.display = 'block';
+    activateDialog(modal, () => closeModal('modal-l'));
     return;
   }
   openModal('modal-l');
@@ -223,17 +224,17 @@ function setModalLoading(msg) {
 function setModalError(msg) {
   document.getElementById('emailModalBody').innerHTML =
     '<div class="modal-error-msg">' + esc(msg) + '</div>' +
-    '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Try again →</div></div></div>' +
-    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Try again →</div></div></div>';
+    '<div class="modal-opt" role="button" tabindex="0" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Try again →</div></div></div>' +
+    '<div class="modal-opt" role="button" tabindex="0" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Try again →</div></div></div>';
   document.getElementById('emailModalClose').disabled = false;
 }
 
 function resetEmailModal() {
   document.getElementById('emailModalHead').textContent = 'Connect inbox';
   document.getElementById('emailModalBody').innerHTML =
-    '<div class="modal-opt" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div></div>' +
-    '<div class="modal-opt" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div></div>' +
-    '<div class="modal-opt" onclick="uploadInvoiceFile()"><div><div class="mo-name">Invoice file</div><div class="mo-sub">Upload PDF or photo →</div></div></div>';
+    '<div class="modal-opt" role="button" tabindex="0" onclick="connectGmail()"><div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div></div>' +
+    '<div class="modal-opt" role="button" tabindex="0" onclick="connectOutlook()"><div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div></div>' +
+    '<div class="modal-opt" role="button" tabindex="0" onclick="uploadInvoiceFile()"><div><div class="mo-name">Invoice file</div><div class="mo-sub">Upload PDF or photo →</div></div></div>';
   document.getElementById('emailModalClose').disabled = false;
   document.getElementById('emailModalClose').textContent = 'Cancel';
 }

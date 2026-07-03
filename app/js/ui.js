@@ -29,8 +29,10 @@ function openModal(id) {
     if (m.parentElement !== scene) scene.appendChild(m);
   });
   document.getElementById(id).style.display = 'block';
+  activateDialog(document.getElementById(id), () => closeModal(id));
 }
 function closeModal(id) {
+  deactivateDialog();
   const el = document.getElementById(id);
   el.style.display = 'none';
   el.style.position = '';
@@ -153,6 +155,50 @@ function collapse() {
   }, 360);
 }
 
+// ─── DIALOG FOCUS MANAGEMENT ─────────────────────────────────────────────────
+
+let _dialogOpener = null;
+let _dialogKeyHandler = null;
+
+function activateDialog(el, onClose) {
+  deactivateDialog(false);
+  _dialogOpener = document.activeElement;
+  const focusables = () => [...el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+    .filter(f => !f.disabled && f.offsetParent !== null);
+  const first = focusables()[0];
+  if (first) first.focus();
+  _dialogKeyHandler = (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
+    if (e.key !== 'Tab') return;
+    const f = focusables();
+    if (!f.length) return;
+    const idx = f.indexOf(document.activeElement);
+    if (e.shiftKey && idx <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && idx === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  };
+  document.addEventListener('keydown', _dialogKeyHandler);
+}
+
+function deactivateDialog(restoreFocus = true) {
+  if (_dialogKeyHandler) document.removeEventListener('keydown', _dialogKeyHandler);
+  _dialogKeyHandler = null;
+  if (restoreFocus && _dialogOpener && typeof _dialogOpener.focus === 'function') _dialogOpener.focus();
+  _dialogOpener = null;
+}
+
+// role="switch" state helper — keeps class and aria-checked in lockstep
+function setSwitch(el, on) {
+  if (!el) return;
+  el.classList.toggle('off', !on);
+  el.setAttribute('aria-checked', String(on));
+}
+
+// Screen-reader announcements via the aria-live region
+function announce(msg) {
+  const el = document.getElementById('ariaStatus');
+  if (el) el.textContent = msg;
+}
+
 function toggleSettings(e) {
   e.stopPropagation();
   const btn = document.getElementById('settingsBtn');
@@ -191,5 +237,6 @@ function showToast(msg, opts = {}) {
 
 export {
   stage, collapsed, expanded, settings, bkL, bkR, openHint, colLeft, colRight, divL, divR, shelves, inboxBody,
-  isExpanded, openModal, closeModal, sI, visibleBInfos, expand, collapse, toggleSettings, showToast
+  isExpanded, openModal, closeModal, sI, visibleBInfos, expand, collapse, toggleSettings, showToast,
+  activateDialog, deactivateDialog, setSwitch, announce
 };

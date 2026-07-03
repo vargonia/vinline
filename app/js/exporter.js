@@ -1,6 +1,7 @@
 // vinline — preview/style editor, document renderer, print-to-PDF
 import { CAT_ORDER, EXPORT_STYLE_KEY, FONT_PAIRINGS, COLOR_SWATCHES, SPACING_PRESETS, COLUMN_OPTIONS, SPACING_OPTIONS, PAPER_SIZE_OPTIONS } from './config.js';
 import { esc, imageToBase64 } from './utils.js';
+import { activateDialog, deactivateDialog, setSwitch } from './ui.js';
 import { gatherWineListData } from './core.js';
 let currentExportStyle = null;
 // ─── EXPORT STYLE PERSISTENCE ─────────────────────────────────────────────────
@@ -110,9 +111,11 @@ function openPreviewEditor() {
   populatePreviewPanel(currentExportStyle);
   refreshPreviewPane();
   document.getElementById('previewOverlay').style.display = 'flex';
+  activateDialog(document.getElementById('previewOverlay'), closePreviewEditor);
 }
 
 function closePreviewEditor() {
+  deactivateDialog();
   document.getElementById('previewOverlay').style.display = 'none';
 }
 
@@ -132,8 +135,8 @@ function populatePreviewPanel(styleConfig) {
   renderPillRow('columnsPillRow', COLUMN_OPTIONS, styleConfig.columns, 'setColumns');
   renderPillRow('spacingPillRow', SPACING_OPTIONS, styleConfig.spacing, 'setSpacing');
   renderPillRow('paperSizePillRow', PAPER_SIZE_OPTIONS, styleConfig.paperSize, 'setPaperSize');
-  document.getElementById('togRegion').classList.toggle('off', !styleConfig.showRegion);
-  document.getElementById('togDecimal').classList.toggle('off', !styleConfig.decimalPrices);
+  setSwitch(document.getElementById('togRegion'), styleConfig.showRegion);
+  setSwitch(document.getElementById('togDecimal'), styleConfig.decimalPrices);
   renderLogoDropzone(styleConfig);
   renderSectionDragList(styleConfig);
 }
@@ -197,13 +200,13 @@ function setPaperSize(id) {
 function toggleShowRegion() {
   currentExportStyle.showRegion = !currentExportStyle.showRegion;
   saveExportStyle(currentExportStyle);
-  document.getElementById('togRegion').classList.toggle('off', !currentExportStyle.showRegion);
+  setSwitch(document.getElementById('togRegion'), currentExportStyle.showRegion);
   refreshPreviewPane();
 }
 function toggleDecimalPrices() {
   currentExportStyle.decimalPrices = !currentExportStyle.decimalPrices;
   saveExportStyle(currentExportStyle);
-  document.getElementById('togDecimal').classList.toggle('off', !currentExportStyle.decimalPrices);
+  setSwitch(document.getElementById('togDecimal'), currentExportStyle.decimalPrices);
   refreshPreviewPane();
 }
 
@@ -220,7 +223,8 @@ function renderSectionDragList(styleConfig) {
          ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
       ${dragHandleSvg}
       <span class="section-drag-name${s.visible ? '' : ' hidden-section'}">${esc(s.category)}</span>
-      <button class="tog ${s.visible ? '' : 'off'}" onclick="toggleSectionVisible('${esc(s.category)}')" aria-label="toggle ${esc(s.category)} visibility"></button>
+      <button class="sec-move sec-move-up" onclick="moveSection('${esc(s.category)}', -1)" aria-label="move ${esc(s.category)} up">▲</button><button class="sec-move sec-move-dn" onclick="moveSection('${esc(s.category)}', 1)" aria-label="move ${esc(s.category)} down">▼</button>
+      <button class="tog ${s.visible ? '' : 'off'}" role="switch" aria-checked="${s.visible}" onclick="toggleSectionVisible('${esc(s.category)}')" aria-label="toggle ${esc(s.category)} visibility"></button>
     </div>`).join('');
 }
 
@@ -261,6 +265,20 @@ function toggleSectionVisible(category) {
   saveExportStyle(currentExportStyle);
   renderSectionDragList(currentExportStyle);
   refreshPreviewPane();
+}
+
+function moveSection(cat, delta) {
+  const sections = resolveSectionConfig(currentExportStyle, gatherWineListData());
+  const order = sections.map(s => s.category);
+  const i = order.indexOf(cat);
+  const j = i + delta;
+  if (i < 0 || j < 0 || j >= order.length) return;
+  [order[i], order[j]] = [order[j], order[i]];
+  currentExportStyle.sectionOrder = order;
+  saveExportStyle(currentExportStyle);
+  renderSectionDragList(currentExportStyle);
+  refreshPreviewPane();
+  document.querySelector(`.section-drag-item[data-cat="${CSS.escape(cat)}"] .sec-move${delta < 0 ? '-up' : '-dn'}`)?.focus();
 }
 
 // ─── LOGO UPLOAD ──────────────────────────────────────────────────────────────
@@ -343,7 +361,7 @@ export {
   setExportTitle, setExportSubtitle, setFontPairing, setColorSwatch, setColumns, setSpacing, setPaperSize,
   toggleShowRegion, toggleDecimalPrices,
   renderSectionDragList, onSectionDragStart, onSectionDragOver, onSectionDrop, onSectionDragEnd,
-  reorderSection, toggleSectionVisible,
+  reorderSection, toggleSectionVisible, moveSection,
   renderLogoDropzone, handleLogoUpload, removeLogo,
   printWineListDoc, exportPdfFromEditor, quickExportPdf
 };

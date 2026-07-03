@@ -3,7 +3,7 @@ import { API_BASE, ANTHROPIC_API_KEY, INVOICE_PARSE_PROMPT, CAT_ORDER } from './
 import { esc, isAuthExpired, pdfToBase64, imageToBase64 } from './utils.js';
 import { gmailToken, resetGmailConnectionUI } from './auth.js';
 import { addPopupToCard, fileCardMap } from './inbox.js';
-import { inboxBody, showToast } from './ui.js';
+import { inboxBody, showToast, announce } from './ui.js';
 import { getState, saveAppState } from './state.js';
 let rowCount = 0;
 // MARGIN SYSTEM — arrays are indexed by inventory row index (data-inv-idx)
@@ -513,17 +513,17 @@ function buildInvRow(item, i, opts = {}) {
   return `<div class="inv-row${isNew ? ' new-entry' : ''}" data-category="${category}" data-inv-idx="${i}" data-parsed-at="${esc(parsedAt)}">
     <div class="ir-main">
       <div class="ir-top">
-        <div class="ir-name" contenteditable="false" spellcheck="false">${esc(item.name)}${isNew ? '<span class="new-tag">new</span>' : ''}</div>
+        <div class="ir-name" contenteditable="false" spellcheck="false" aria-label="wine name">${esc(item.name)}${isNew ? '<span class="new-tag">new</span>' : ''}</div>
         <div class="ir-right"><span class="ir-cost">cost $${cost.toFixed(2)}</span><span class="ir-sell" id="s${i}">$${sell}</span><span class="ir-mg" id="m${i}" onclick="toggleDisplayMode()" title="tap to switch display">\xd7${mult.toFixed(1)}</span></div>
       </div>
       <div class="ir-bottom">
         <div class="ir-meta-left"><span>${esc(size)}</span><span>\xb7</span><span>${qty} btl</span><span>\xb7</span><span>${esc(region)}</span></div>
         <div class="ir-controls">
-          <button class="edit-btn" id="eb${i}" onclick="openSlider(${i})">edit</button>
+          <button class="edit-btn" id="eb${i}" onclick="openSlider(${i})" aria-label="edit ${esc(item.name)}">edit</button>
           <div class="slider-wrap" id="sw${i}">
             <div class="btg-row-pill"><button class="btg-r active" id="btgb${i}" onclick="setBtgMode(${i},false)">Btl</button><button class="btg-r" id="btgg${i}" onclick="setBtgMode(${i},true)">Glass</button></div>
-            <button class="sold-btn" onclick="markSold(${i})">sold</button>
-            <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f${i}" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(${i},this.value)" id="rng${i}"></div>
+            <button class="sold-btn" onclick="markSold(${i})" aria-label="mark ${esc(item.name)} sold">sold</button>
+            <div class="mg-track"><div class="mg-track-bg"></div><div class="mg-track-fill" id="f${i}" style="width:60%"></div><input class="mg-slider" type="range" min="0" max="100" value="60" step="1" oninput="liveMg(${i},this.value)" id="rng${i}" aria-label="margin multiplier for ${esc(item.name)}"></div>
             <button class="icon-btn cancel" onclick="cancelMg(${i})" aria-label="cancel">${svgX}</button>
             <button class="icon-btn confirm" onclick="confirmMg(${i})" aria-label="confirm">${svgOk}</button>
           </div>
@@ -572,6 +572,7 @@ function populateParsedItems(source, items) {
   invFoot.style.display = '';
   invFoot.innerHTML = '<button class="btn btn-primary btn-sm" onclick="pushToWineList()">Push to wine list</button><button class="btn btn-sm" onclick="discardParsed()">Discard</button>';
   persistNow();
+  announce(items.length + ' item' + (items.length !== 1 ? 's' : '') + ' parsed into inventory');
 }
 
 // ─── DUPLICATE DETECTION ──────────────────────────────────────────────────────
@@ -663,7 +664,7 @@ function pushRowAnyway(i) {
 function buildMiHtml(item, wlIdx) {
   const sub = item.sub || `${item.size} \xb7 ${item.region}`;
   const bottle = item.bottle || item.price;
-  return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(sub)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${bottle}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
+  return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false" aria-label="wine name — editable">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false" aria-label="wine details — editable">${esc(sub)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${bottle}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
 }
 
 // Push specific inventory rows to the wine list (no duplicate check here)
@@ -703,6 +704,7 @@ function pushRows(rows) {
 
   updateWineListFooterCount();
   rows.forEach(markPushed);
+  announce(rows.length + ' item' + (rows.length !== 1 ? 's' : '') + ' added to the wine list');
 }
 
 function pushToWineList() {

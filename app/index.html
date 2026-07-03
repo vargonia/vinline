@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="css/styles.css">
 <style id="pageSizeStyle"></style>
 </head>
-<body><div class="shell">
+<body><div id="ariaStatus" class="sr-only" role="status" aria-live="polite"></div><div class="shell">
 
   <header class="topbar">
     <div class="logo-unit">
@@ -40,14 +40,14 @@
         <!-- LEFT BRACKET: email — starts unconnected -->
         <div class="bracket-unit">
           <!-- Connected state (hidden until auth succeeds) -->
-          <div class="b-info b-info-l" id="emailConnectedZone" style="display:none" onclick="event.stopPropagation();openModal('modal-l')">
+          <div class="b-info b-info-l" id="emailConnectedZone" style="display:none" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-l')">
             <span class="b-label">Email</span>
             <span class="b-val right" id="emailDisplayName">—</span>
             <span class="b-status right"><span class="b-dot"></span><span id="emailProviderLabel">Gmail</span></span>
             <span class="b-change right">change →</span>
           </div>
           <!-- Unconnected state (shown on first launch) -->
-          <div class="b-empty b-empty-l" id="emailUnconnectedZone" onclick="event.stopPropagation();openModal('modal-l')">
+          <div class="b-empty b-empty-l" id="emailUnconnectedZone" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-l')">
             <span class="b-label">Email</span>
             <span class="b-empty-val right">tap to<br>connect</span>
             <span class="b-empty-status right"><span class="b-red-dot"></span>none</span>
@@ -68,14 +68,14 @@
         <div class="bracket-unit">
           <span class="b-char" id="bk-r" style="color:#D0CEC6">[</span>
           <!-- Connected state (hidden until Drive file is selected) -->
-          <div class="b-info b-info-r" id="driveConnectedZone" style="display:none" onclick="event.stopPropagation();openModal('modal-r')">
+          <div class="b-info b-info-r" id="driveConnectedZone" style="display:none" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-r')">
             <span class="b-label">Output</span>
             <span class="b-val" id="driveFileName">—</span>
             <span class="b-status"><span class="b-dot"></span><span>Drive</span></span>
             <span class="b-change">change →</span>
           </div>
           <!-- Unconnected state -->
-          <div class="b-empty b-empty-r" id="driveUnconnectedZone" onclick="event.stopPropagation();openModal('modal-r')">
+          <div class="b-empty b-empty-r" id="driveUnconnectedZone" role="button" tabindex="0" onclick="event.stopPropagation();openModal('modal-r')">
             <span class="b-label">Output</span>
             <span class="b-empty-val">tap to<br>connect</span>
             <span class="b-empty-status"><span class="b-red-dot"></span>none</span>
@@ -84,16 +84,16 @@
         </div>
 
         <!-- EMAIL CONNECT MODAL -->
-        <div class="conn-modal" id="modal-l" onclick="event.stopPropagation()">
+        <div class="conn-modal" id="modal-l" role="dialog" aria-modal="true" aria-label="Connect inbox" onclick="event.stopPropagation()">
           <div class="modal-head" id="emailModalHead">Connect inbox</div>
           <div id="emailModalBody">
-            <div class="modal-opt" onclick="connectGmail()">
+            <div class="modal-opt" role="button" tabindex="0" onclick="connectGmail()">
               <div><div class="mo-name">Gmail</div><div class="mo-sub">Sign in with Google →</div></div>
             </div>
-            <div class="modal-opt" onclick="connectOutlook()">
+            <div class="modal-opt" role="button" tabindex="0" onclick="connectOutlook()">
               <div><div class="mo-name">Outlook</div><div class="mo-sub">Sign in with Microsoft →</div></div>
             </div>
-            <div class="modal-opt" onclick="uploadInvoiceFile()">
+            <div class="modal-opt" role="button" tabindex="0" onclick="uploadInvoiceFile()">
               <div><div class="mo-name">Invoice file</div><div class="mo-sub">Upload PDF or photo →</div></div>
             </div>
           </div>
@@ -101,13 +101,13 @@
         </div>
 
         <!-- OUTPUT MODAL -->
-        <div class="conn-modal" id="modal-r" onclick="event.stopPropagation()">
+        <div class="conn-modal" id="modal-r" role="dialog" aria-modal="true" aria-label="Output destination" onclick="event.stopPropagation()">
           <div class="modal-head" id="driveModalHead">Output destination</div>
           <div id="driveModalBody">
-            <div class="modal-opt" onclick="connectDrive()">
+            <div class="modal-opt" role="button" tabindex="0" onclick="connectDrive()">
               <div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div>
             </div>
-            <div class="modal-opt" onclick="closeModal('modal-r');quickExportPdf()"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand →</div></div></div>
+            <div class="modal-opt" role="button" tabindex="0" onclick="closeModal('modal-r');quickExportPdf()"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand →</div></div></div>
           </div>
           <button class="modal-close" id="driveModalClose" onclick="closeModal('modal-r')">Cancel</button>
         </div>
@@ -214,7 +214,7 @@
         </div>
         <div class="srow">
           <div><div class="sr-l">Auto-scan</div><div class="sr-sub">Re-scan the connected inbox every 30 minutes</div></div>
-          <div class="sr-r"><button class="tog off" id="togAutoScan" onclick="toggleAutoScan()" aria-label="toggle auto-scan"></button></div>
+          <div class="sr-r"><button class="tog off" id="togAutoScan" role="switch" aria-checked="false" onclick="toggleAutoScan()" aria-label="toggle auto-scan"></button></div>
         </div>
       </div>
       <div class="scard">
@@ -225,7 +225,7 @@
         </div>
         <div class="srow">
           <div><div class="sr-l">Auto-sync on change</div><div class="sr-sub">Push wine list changes to Drive (arms after your first manual sync)</div></div>
-          <div class="sr-r"><button class="tog off" id="togAutoSync" onclick="toggleAutoSync()" aria-label="toggle auto-sync Drive"></button></div>
+          <div class="sr-r"><button class="tog off" id="togAutoSync" role="switch" aria-checked="false" onclick="toggleAutoSync()" aria-label="toggle auto-sync Drive"></button></div>
         </div>
       </div>
       <div class="scard">
@@ -243,7 +243,7 @@
   </div>
 </div>
 
-<div id="previewOverlay">
+<div id="previewOverlay" role="dialog" aria-modal="true" aria-label="Wine list style editor">
   <div class="preview-panel">
     <div class="col-head">
       <div><div class="col-eyebrow">Style editor</div><div class="col-title">Preview</div></div>
@@ -288,8 +288,8 @@
 
       <div class="scard">
         <div class="scard-title">Display</div>
-        <div class="srow"><div class="sr-l">Show region</div><div class="sr-r"><button class="tog" id="togRegion" onclick="toggleShowRegion()" aria-label="toggle region"></button></div></div>
-        <div class="srow"><div class="sr-l">Decimal prices</div><div class="sr-r"><button class="tog off" id="togDecimal" onclick="toggleDecimalPrices()" aria-label="toggle decimal prices"></button></div></div>
+        <div class="srow"><div class="sr-l">Show region</div><div class="sr-r"><button class="tog" id="togRegion" role="switch" aria-checked="true" onclick="toggleShowRegion()" aria-label="toggle region"></button></div></div>
+        <div class="srow"><div class="sr-l">Decimal prices</div><div class="sr-r"><button class="tog off" id="togDecimal" role="switch" aria-checked="false" onclick="toggleDecimalPrices()" aria-label="toggle decimal prices"></button></div></div>
       </div>
 
     </div>

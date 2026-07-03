@@ -8,7 +8,7 @@ import * as inbox from './inbox.js';
 import * as core from './core.js';
 
 import { esc } from './utils.js';
-import { inboxBody, openHint, isExpanded, expand } from './ui.js';
+import { inboxBody, openHint, isExpanded, expand, setSwitch } from './ui.js';
 import { fileCardMap, showInboxEmpty } from './inbox.js';
 import { loadAppState, getState, saveAppState } from './state.js';
 import { rehydrateFromState, persistNow } from './core.js';
@@ -39,8 +39,8 @@ function initSettingsPanel() {
     el.value = Math.round(mult * 10);
     if (el.nextElementSibling) el.nextElementSibling.textContent = '\xd7' + mult.toFixed(1);
   });
-  document.getElementById('togAutoScan')?.classList.toggle('off', !getState().settings.autoScan);
-  document.getElementById('togAutoSync')?.classList.toggle('off', !getState().settings.autoSync);
+  setSwitch(document.getElementById('togAutoScan'), getState().settings.autoScan);
+  setSwitch(document.getElementById('togAutoSync'), getState().settings.autoSync);
   applyAutoScan();
   updateAutoSyncBadge();
 }
@@ -84,6 +84,15 @@ function init() {
   initSettingsPanel();
   const restored = rehydrateFromState();
   if (restored && !isExpanded) expand();
+
+  // Keyboard activation for non-button elements carrying role="button"
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof Element
+        && e.target.getAttribute('role') === 'button' && e.target.tagName !== 'BUTTON') {
+      e.preventDefault();
+      e.target.click();
+    }
+  });
 
   // In-place contenteditable edits (wine names, subs, inventory names) persist on blur
   document.addEventListener('blur', (e) => {

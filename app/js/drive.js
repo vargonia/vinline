@@ -1,7 +1,7 @@
 // vinline — Google Drive OAuth, Picker, Sheets/Docs sync
 import { GOOGLE_CLIENT_ID, GOOGLE_API_KEY, COLOR_SWATCHES } from './config.js';
 import { isAuthExpired, esc } from './utils.js';
-import { openModal, settings, collapsed, expanded, isExpanded, showToast } from './ui.js';
+import { openModal, settings, collapsed, expanded, isExpanded, showToast, setSwitch } from './ui.js';
 import { loadExportStyle, resolveSectionConfig, formatPrice } from './exporter.js';
 import { gatherWineListData } from './core.js';
 import { getState, saveAppState } from './state.js';
@@ -219,14 +219,14 @@ function setDriveModalLoading(msg) {
 function setDriveModalError(msg) {
   document.getElementById('driveModalBody').innerHTML =
     '<div class="modal-error-msg">' + esc(msg) + '</div>' +
-    '<div class="modal-opt" onclick="connectDrive()"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Try again →</div></div></div>';
+    '<div class="modal-opt" role="button" tabindex="0" onclick="connectDrive()"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Try again →</div></div></div>';
   document.getElementById('driveModalClose').disabled = false;
 }
 
 function resetDriveModal() {
   document.getElementById('driveModalHead').textContent = 'Output destination';
   document.getElementById('driveModalBody').innerHTML =
-    '<div class="modal-opt" onclick="connectDrive()"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div></div>' +
+    '<div class="modal-opt" role="button" tabindex="0" onclick="connectDrive()"><div><div class="mo-name">Google Drive</div><div class="mo-sub">Browse &amp; pick a file →</div></div></div>' +
     '<div class="modal-opt"><div><div class="mo-name">PDF export</div><div class="mo-sub">Download on demand</div></div></div>';
   document.getElementById('driveModalClose').disabled = false;
   document.getElementById('driveModalClose').textContent = 'Cancel';
@@ -255,7 +255,7 @@ function toggleAutoSync() {
   const st = getState();
   st.settings.autoSync = !st.settings.autoSync;
   saveAppState();
-  document.getElementById('togAutoSync')?.classList.toggle('off', !st.settings.autoSync);
+  setSwitch(document.getElementById('togAutoSync'), st.settings.autoSync);
   updateAutoSyncBadge();
   showToast(st.settings.autoSync
     ? 'Auto-sync on — arms after your first manual Drive sync, then pushes changes automatically'
