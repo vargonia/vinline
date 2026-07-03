@@ -10,6 +10,8 @@ import * as core from './core.js';
 import { esc } from './utils.js';
 import { inboxBody, openHint, isExpanded, expand } from './ui.js';
 import { fileCardMap, showInboxEmpty } from './inbox.js';
+import { loadAppState } from './state.js';
+import { rehydrateFromState, persistNow } from './core.js';
 
 // Inline on* handlers in the markup (and in runtime-generated HTML strings)
 // resolve against window — bridge every module export explicitly.
@@ -48,6 +50,17 @@ function init() {
 
   // Init inbox state
   showInboxEmpty();
+
+  // Restore persisted wine list + inventory from a previous session
+  loadAppState();
+  const restored = rehydrateFromState();
+  if (restored && !isExpanded) expand();
+
+  // In-place contenteditable edits (wine names, subs, inventory names) persist on blur
+  document.addEventListener('blur', (e) => {
+    const t = e.target;
+    if (t instanceof Element && (t.closest('.mi') || t.closest('.inv-row'))) persistNow();
+  }, true);
 }
 
 if (document.readyState === 'loading') {

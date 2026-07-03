@@ -108,41 +108,6 @@ function populateInboxCards(messages) {
   setOpenHintReady(n);
 }
 
-function showDemoCards() {
-  inboxBody.innerHTML = `
-    <div class="ecard sel" style="z-index:10;position:relative">
-      <div class="ec-from">Southern Wine &amp; Spirits</div>
-      <div class="ec-subj">Invoice #8821 — June delivery confirmed</div>
-      <div class="ec-foot"><span class="ec-date">Today 9:14</span><span class="badge b-inv">Invoice</span></div>
-      <div class="inv-popup">
-        <div class="popup-head"><div class="popup-from">Southern Wine &amp; Spirits</div><div class="popup-inv"><span>Invoice #8821</span><span>12 Dec 2024</span></div></div>
-        <div class="popup-body"><div class="popup-lbl">Contents</div>
-          <div class="popup-row"><div><div class="popup-wine">Richard Leroy, Anjou</div><span class="popup-wine-sub">"Les Noëls de Montbenault" 2020</span></div><div class="popup-right"><span class="popup-qty">3 btl</span><span class="popup-price">$71/btl</span></div></div>
-          <div class="popup-row"><div><div class="popup-wine">La Ca'Nova, Barbera d'Alba</div><span class="popup-wine-sub">"Loreto" 2021</span></div><div class="popup-right"><span class="popup-qty">84 btl</span><span class="popup-price">$18/btl</span></div></div>
-          <div class="popup-row"><div><div class="popup-wine">Champagne Herbert Beaufort</div><span class="popup-wine-sub">"Carte d'Or" Grand Cru NV</span></div><div class="popup-right"><span class="popup-qty">12 btl</span><span class="popup-price">$36/btl</span></div></div>
-        </div>
-        <div class="popup-foot"><span class="popup-total-lbl">Invoice total</span><span class="popup-total">$1,763.00</span></div>
-      </div>
-    </div>
-    <div class="ecard" style="z-index:9">
-      <div class="ec-from">Grapevine Wine Brokers</div>
-      <div class="ec-subj">Invoice #22197 — December order</div>
-      <div class="ec-foot"><span class="ec-date">Today 8:02</span><span class="badge b-inv">Invoice</span></div>
-    </div>
-    <div class="ecard" style="z-index:8">
-      <div class="ec-from">Skurnik Wines West</div>
-      <div class="ec-subj">Bill of Lading #0215104</div>
-      <div class="ec-foot"><span class="ec-date">Yesterday</span><span class="badge b-del">Delivery</span></div>
-    </div>
-    <div class="ecard" style="z-index:7">
-      <div class="ec-from">Lyra Fine Wine Importers</div>
-      <div class="ec-subj">Invoice #36327 — Feb delivery</div>
-      <div class="ec-foot"><span class="ec-date">Feb 21</span><span class="badge b-pend">Pending</span></div>
-    </div>`;
-  document.getElementById('inboxCount').textContent = '4 items';
-  setOpenHintReady(4);
-}
-
 function showInboxEmpty() {
   inboxBody.innerHTML = `
     <div class="inbox-state">
@@ -276,7 +241,7 @@ function addPopupToCard(card, fname, items) {
 
 export {
   fileCardMap, scanInbox, scanOutlookInbox, populateOutlookCards, reScan,
-  populateInboxCards, showDemoCards, showInboxEmpty, showInboxScanning,
+  populateInboxCards, showInboxEmpty, showInboxScanning,
   showInboxNoResults, showInboxError, collapseAndConnect,
   setOpenHintScanning, setOpenHintReady, setModalLoading, setModalError, resetEmailModal,
   triggerPhotoUpload, uploadInvoiceFile, addPopupToCard

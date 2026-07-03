@@ -4,15 +4,15 @@ import { esc, isAuthExpired, pdfToBase64, imageToBase64 } from './utils.js';
 import { gmailToken, resetGmailConnectionUI } from './auth.js';
 import { addPopupToCard, fileCardMap } from './inbox.js';
 import { inboxBody } from './ui.js';
+import { getState, saveAppState } from './state.js';
 let rowCount = 0;
-// MARGIN SYSTEM
-const costs = [71, 12, 18, 15, 28];
-const committed = [4.0, 4.0, 4.0, 4.0, 4.0];
-const pending = [...committed];
+// MARGIN SYSTEM — arrays are indexed by inventory row index (data-inv-idx)
+const costs = [];
+const committed = [];
+const pending = [];
 let displayMode = 'mult';
-const committedBtg = [false, false, false, false, false];
-const pendingBtg   = [false, false, false, false, false];
-const wlMap = [0, 1, 2, 3, 4];
+const committedBtg = [];
+const pendingBtg = [];
 function sellPrice(cost, mult) { return Math.round(cost * mult); }
 function mgLabel(mult) { return displayMode==='mult' ? '×'+mult.toFixed(1) : '+'+Math.round((mult-1)*100)+'%'; }
 function multToFill(mult) { return ((mult-1.0)/5.0*100).toFixed(1)+'%'; }
@@ -83,6 +83,7 @@ function confirmMg(i) {
   document.getElementById('eb'+i).style.display = '';
   document.getElementById('sw'+i).classList.remove('visible');
   const n = nameEl(i); if (n) { n.contentEditable = 'false'; n.blur(); }
+  persistNow();
 }
 
 function cancelMg(i) {
@@ -119,19 +120,108 @@ function markSold(i) {
       if (footEl) footEl.textContent = total + ' item' + (total !== 1 ? 's' : '');
     }, 230);
   }
+  setTimeout(persistNow, 300); // after both fade-out removals complete
 }
 
 function gatherWineListData() {
   return [...document.querySelectorAll('#wineListBody .menu-block[data-cat]')].map(block => ({
     category: block.dataset.cat,
-    items: [...block.querySelectorAll('.mi')].map(mi => ({
-      name: mi.querySelector('.mi-name')?.textContent?.trim() || '',
-      sub: mi.querySelector('.mi-sub')?.textContent?.trim() || '',
-      region: mi.dataset.region || '',
-      size: mi.dataset.size || '',
-      price: mi.querySelector('[id^="wlp"]')?.textContent?.trim() || ''
-    })).filter(it => it.name)
+    items: [...block.querySelectorAll('.mi')].map(mi => {
+      const priceEl = mi.querySelector('[id^="wlp"]');
+      return {
+        name: mi.querySelector('.mi-name')?.textContent?.trim() || '',
+        sub: mi.querySelector('.mi-sub')?.textContent?.trim() || '',
+        region: mi.dataset.region || '',
+        size: mi.dataset.size || '',
+        price: priceEl?.textContent?.trim() || '',
+        bottle: priceEl?.dataset?.bottle || '',
+        cost: priceEl?.dataset?.glass || '',
+        invIdx: mi.dataset.invIdx || ''
+      };
+    }).filter(it => it.name)
   })).filter(g => g.items.length);
+}
+
+// ─── PERSISTENCE (DOM is runtime truth; state is the serialized snapshot) ────
+
+function snapshotInventory() {
+  return [...document.querySelectorAll('#invBody .inv-row')].map(row => {
+    const i = parseInt(row.dataset.invIdx, 10);
+    const nameNode = row.querySelector('.ir-name');
+    const clone = nameNode ? nameNode.cloneNode(true) : null;
+    if (clone) clone.querySelectorAll('span').forEach(s => s.remove());
+    const metaSpans = [...row.querySelectorAll('.ir-meta-left span')].filter(s => s.textContent !== '\xb7');
+    return {
+      invIdx: i,
+      name: clone ? clone.textContent.trim() : '',
+      size: metaSpans[0]?.textContent || '',
+      qty: (metaSpans[1]?.textContent || '').replace(' btl', '').trim(),
+      region: metaSpans[2]?.textContent || '',
+      category: row.dataset.category || 'Other',
+      cost: costs[i] || 0,
+      mult: committed[i] || 4.0,
+      btg: !!committedBtg[i],
+      parsedAt: row.dataset.parsedAt || null,
+      isNew: !!row.querySelector('.new-tag')
+    };
+  }).filter(it => it.name);
+}
+
+function persistNow() {
+  const st = getState();
+  st.inventory = snapshotInventory();
+  st.wineList = gatherWineListData();
+  saveAppState();
+}
+
+function rehydrateFromState() {
+  const st = getState();
+  if (!st.inventory.length && !st.wineList.length) return false;
+
+  if (st.inventory.length) {
+    const invBody = document.getElementById('invBody');
+    invBody.innerHTML = '';
+    let maxIdx = -1;
+    st.inventory.forEach(it => {
+      const i = Number.isFinite(it.invIdx) ? it.invIdx : maxIdx + 1;
+      maxIdx = Math.max(maxIdx, i);
+      while (costs.length <= i) { costs.push(0); committed.push(4.0); pending.push(4.0); committedBtg.push(false); pendingBtg.push(false); }
+      costs[i] = it.cost; committed[i] = it.mult; pending[i] = it.mult;
+      committedBtg[i] = !!it.btg; pendingBtg[i] = !!it.btg;
+      invBody.insertAdjacentHTML('beforeend', buildInvRow(
+        { name: it.name, size: it.size, region: it.region, category: it.category, cost_per_bottle: it.cost, qty_bottles: it.qty },
+        i, { isNew: it.isNew === true, mult: it.mult, parsedAt: it.parsedAt }
+      ));
+      updateRowDisplay(i);
+      if (it.btg) {
+        document.getElementById('btgb' + i)?.classList.remove('active');
+        document.getElementById('btgg' + i)?.classList.add('active');
+      }
+    });
+    rowCount = maxIdx + 1;
+    const invFoot = document.getElementById('invFoot');
+    invFoot.style.display = '';
+    invFoot.innerHTML = '<button class="btn btn-primary btn-sm" onclick="pushToWineList()">Push to wine list</button><button class="btn btn-sm" onclick="discardParsed()">Discard</button>';
+  }
+
+  if (st.wineList.length) {
+    const wineListBody = document.getElementById('wineListBody');
+    wineListBody.innerHTML = '';
+    let wlIdx = 0;
+    st.wineList.forEach(sec => {
+      const block = document.createElement('div');
+      block.className = 'menu-block';
+      block.dataset.cat = sec.category;
+      block.innerHTML = `<div class="sec-head"><span class="sec-lbl">${esc(sec.category)}</span><span class="sec-rule"></span><span class="sec-count">${sec.items.length}</span></div>`;
+      block.insertAdjacentHTML('beforeend', sec.items.map(it => buildMiHtml(it, wlIdx++)).join(''));
+      wineListBody.appendChild(block);
+    });
+    const countEl = document.querySelector('#colRight .col-foot span[style*="margin-left"]');
+    if (countEl) countEl.textContent = wlIdx + ' item' + (wlIdx !== 1 ? 's' : '');
+  }
+
+  // Re-snapshot after every mutation from here on; nothing to save right now.
+  return true;
 }
 // ─── FILE PARSE FLOW ─────────────────────────────────────────────────────────
 
@@ -342,20 +432,21 @@ async function parseAllFiles() {
   populateParsedItems(label, allItems);
 }
 
-function buildInvRow(item, i) {
+function buildInvRow(item, i, opts = {}) {
+  const { isNew = true, mult = 4.0, parsedAt = new Date().toISOString() } = opts;
   const cost = parseFloat(item.cost_per_bottle) || 0;
-  const sell = Math.round(cost * 4);
+  const sell = sellPrice(cost, mult);
   const svgX = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
   const svgOk = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="1,5 3.5,8.5 9,2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const qty = item.qty_bottles || '';
   const size = item.size || '750ml';
   const region = item.region || '';
   const category = item.category || 'Red';
-  return `<div class="inv-row new-entry" data-category="${category}" data-inv-idx="${i}">
+  return `<div class="inv-row${isNew ? ' new-entry' : ''}" data-category="${category}" data-inv-idx="${i}" data-parsed-at="${esc(parsedAt)}">
     <div class="ir-main">
       <div class="ir-top">
-        <div class="ir-name" contenteditable="false" spellcheck="false">${esc(item.name)}<span class="new-tag">new</span></div>
-        <div class="ir-right"><span class="ir-cost">cost $${cost.toFixed(2)}</span><span class="ir-sell" id="s${i}">$${sell}</span><span class="ir-mg" id="m${i}" onclick="toggleDisplayMode()" title="tap to switch display">\xd74.0</span></div>
+        <div class="ir-name" contenteditable="false" spellcheck="false">${esc(item.name)}${isNew ? '<span class="new-tag">new</span>' : ''}</div>
+        <div class="ir-right"><span class="ir-cost">cost $${cost.toFixed(2)}</span><span class="ir-sell" id="s${i}">$${sell}</span><span class="ir-mg" id="m${i}" onclick="toggleDisplayMode()" title="tap to switch display">\xd7${mult.toFixed(1)}</span></div>
       </div>
       <div class="ir-bottom">
         <div class="ir-meta-left"><span>${esc(size)}</span><span>\xb7</span><span>${qty} btl</span><span>\xb7</span><span>${esc(region)}</span></div>
@@ -411,6 +502,15 @@ function populateParsedItems(source, items) {
   const invFoot = document.getElementById('invFoot');
   invFoot.style.display = '';
   invFoot.innerHTML = '<button class="btn btn-primary btn-sm" onclick="pushToWineList()">Push to wine list</button><button class="btn btn-sm" onclick="discardParsed()">Discard</button>';
+  persistNow();
+}
+
+// Single template for a wine-list item — used by pushToWineList and rehydrate.
+// item: { name, sub?, region, size, price, cost, bottle?, invIdx }
+function buildMiHtml(item, wlIdx) {
+  const sub = item.sub || `${item.size} \xb7 ${item.region}`;
+  const bottle = item.bottle || item.price;
+  return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(sub)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${bottle}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
 }
 
 function pushToWineList() {
@@ -461,11 +561,9 @@ function pushToWineList() {
       insertBefore ? wineListBody.insertBefore(block, insertBefore) : wineListBody.appendChild(block);
     }
 
-    // Append .mi rows — wlIdx is global so IDs stay unique across pushes
-    const miHtml = group.map(item => {
-      const wlIdx = wineListBody.querySelectorAll('.mi').length;
-      return `<div class="mi" data-inv-idx="${item.invIdx}" data-region="${esc(item.region)}" data-size="${esc(item.size)}"><div class="mi-left"><div class="mi-name" contenteditable="true" spellcheck="false">${esc(item.name)}</div><span class="mi-sub" contenteditable="true" spellcheck="false">${esc(item.size)} \xb7 ${esc(item.region)}</span></div><div class="mi-right"><div class="mi-price"><span class="dollar">$</span><span id="wlp${wlIdx}" data-bottle="${item.price}" data-glass="${item.cost}">${item.price}</span></div><span class="mi-edit-hint">edit</span></div></div>`;
-    }).join('');
+    // Append .mi rows — wlIdx counter keeps IDs unique across pushes and within a group
+    let nextWlIdx = wineListBody.querySelectorAll('.mi').length;
+    const miHtml = group.map(item => buildMiHtml(item, nextWlIdx++)).join('');
     block.insertAdjacentHTML('beforeend', miHtml);
 
     // Update section item count
@@ -481,6 +579,7 @@ function pushToWineList() {
   document.getElementById('invBody').querySelectorAll('.parse-banner, .sec-lbl').forEach(el => el.remove());
   document.getElementById('invFoot').style.display = 'none';
   document.getElementById('invFoot').innerHTML = '';
+  persistNow();
 }
 
 function resetInventory() {
@@ -488,7 +587,10 @@ function resetInventory() {
     `<div class="inbox-state"><div class="inbox-state-lbl">No inventory</div><div class="inbox-state-sub">Connect an inbox or upload an invoice file to populate inventory.</div></div>`;
   document.getElementById('invFoot').style.display = 'none';
   document.getElementById('invFoot').innerHTML = '';
-  rowCount = 0;
+  // rowCount intentionally NOT reset: wine-list items keep data-inv-idx references,
+  // so indices must never be reused within a session or live price sync would
+  // target the wrong wine-list row after a discard + new parse.
+  persistNow();
 }
 
 function discardParsed() { resetInventory(); }
@@ -498,6 +600,7 @@ export {
   sellPrice, mgLabel, multToFill, sliderToMult, updateRowDisplay, setBtgMode, toggleDisplayMode,
   liveMg, nameEl, openSlider, closeAllSliders, confirmMg, cancelMg, markSold,
   gatherWineListData, callClaudeWithInvoiceData, parseInvoiceWithClaude, fetchAttachmentFromEmail,
-  parseEmailCard, parseFile, parseAllFiles, buildInvRow, populateParsedItems,
-  pushToWineList, resetInventory, discardParsed
+  parseEmailCard, parseFile, parseAllFiles, buildInvRow, buildMiHtml, populateParsedItems,
+  pushToWineList, resetInventory, discardParsed,
+  persistNow, rehydrateFromState
 };
