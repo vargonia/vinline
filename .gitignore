@@ -1,3 +1,6 @@
 .claude/
 *.mp4
 serve.local.ps1
+node_modules/
+api/.data/
+*.log

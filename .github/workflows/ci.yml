@@ -22,3 +22,17 @@ jobs:
           for f in app/js/*.js; do
             node --input-type=module --check < "$f" || { echo "syntax error in $f"; exit 1; }
           done
+
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install API dependencies
+        working-directory: api
+        run: npm ci
+      - name: Run API tests
+        working-directory: api
+        run: npm test
